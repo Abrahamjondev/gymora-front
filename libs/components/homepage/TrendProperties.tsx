@@ -27,9 +27,9 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 	/** APOLLO REQUESTS **/
 	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
 	const {
-		loading: getPropertiesLoading,
-		data: getPropertiesData,
-		error: getPropertiesError,
+		loading: getTrendPropertiesLoading,
+		data: getTrendPropertiesData,
+		error: getTrendPropertiesError,
 		refetch: getPropertiesRefetch,
 	} = useQuery(GET_PROPERTIES, {
 		fetchPolicy: 'cache-and-network',
