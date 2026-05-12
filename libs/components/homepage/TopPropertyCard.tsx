@@ -25,6 +25,10 @@ const TopPropertyCard = (props: TopPropertyCardProps) => {
 	/** HANDLERS **/
 
 	if (device === 'mobile') {
+		function likePropertyHandler(user: CustomJwtPayload, _id: string) {
+			throw new Error('Function not implemented.');
+		}
+
 		return (
 			<Stack className="top-card-box">
 				<Box
@@ -63,7 +67,7 @@ const TopPropertyCard = (props: TopPropertyCardProps) => {
 								<RemoveRedEyeIcon />
 							</IconButton>
 							<Typography className="view-cnt">{property?.propertyViews}</Typography>
-							<IconButton color={'default'}>
+							<IconButton color={'default'} onClick={() => likePropertyHandler(user, property?._id)}>
 								{property?.meLiked && property?.meLiked[0]?.myFavorite ? (
 									<FavoriteIcon style={{ color: 'red' }} />
 								) : (
