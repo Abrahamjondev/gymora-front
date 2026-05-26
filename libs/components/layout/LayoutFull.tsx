@@ -8,9 +8,9 @@ import { Stack } from '@mui/material';
 import { getJwtToken, updateUserInfo } from '../../auth';
 import Chat from '../Chat';
 import { useReactiveVar } from '@apollo/client';
-import { userVar } from '../../../apollo/store';
-import 'swiper/css';
-import 'swiper/css/pagination';
+import { userVar } from '../../../apollo/store'; //@ts-ignore
+import 'swiper/css'; //@ts-ignore
+import 'swiper/css/pagination'; //@ts-ignore
 import 'swiper/css/navigation';
 
 const withLayoutFull = (Component: any) => {
@@ -65,7 +65,7 @@ const withLayoutFull = (Component: any) => {
 							<Component {...props} />
 						</Stack>
 
-						{user?._id && <Chat />}
+						<Chat />
 
 						<Stack id={'footer'}>
 							<Footer />
