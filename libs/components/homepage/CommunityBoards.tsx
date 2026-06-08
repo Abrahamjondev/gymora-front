@@ -16,35 +16,35 @@ const CommunityBoards = () => {
 		sort: 'articleViews',
 		direction: 'DESC',
 	});
-	const [newsArticles, setNewsArticles] = useState<BoardArticle[]>([]);
-	const [freeArticles, setFreeArticles] = useState<BoardArticle[]>([]);
+	const [workoutGuideArticles, setWorkoutGuideArticles] = useState<BoardArticle[]>([]);
+	const [fitnessTipsArticles, setFitnessTipsArticles] = useState<BoardArticle[]>([]);
 
 	/** APOLLO REQUESTS **/
 	const {
-		loading: getNewsArticlesLoading,
-		data: getNewsArticlesData,
-		error: getNewsArticlesError,
-		refetch: getNewsArticlesRefetch,
+		loading: getWorkoutGuideArticlesLoading,
+		data: getWorkoutGuideArticlesData,
+		error: getWorkoutGuideArticlesError,
+		refetch: getWorkoutGuideArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
-		variables: { input: { ...searchCommunity, limit: 6, search: { articleCategory: BoardArticleCategory.NEWS } } },
+		variables: { input: { ...searchCommunity, limit: 6, search: { articleCategory: BoardArticleCategory.WORKOUT_GUIDE } } },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setNewsArticles(data?.getBoardArticles?.list);
+			setWorkoutGuideArticles(data?.getBoardArticles?.list);
 		},
 	});
 
 	const {
-		loading: getFreeArticlesLoading,
-		data: getFreeArticlesData,
-		error: getFreeArticlesError,
-		refetch: getFreeArticlesRefetch,
+		loading: getFitnessTipsArticlesLoading,
+		data: getFitnessTipsArticlesData,
+		error: getFitnessTipsArticlesError,
+		refetch: getFitnessTipsArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
-		variables: { input: { ...searchCommunity, limit: 3, search: { articleCategory: BoardArticleCategory.FREE } } },
+		variables: { input: { ...searchCommunity, limit: 3, search: { articleCategory: BoardArticleCategory.FITNESS_TIPS } } },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setFreeArticles(data?.getBoardArticles?.list);
+			setFitnessTipsArticles(data?.getBoardArticles?.list);
 		},
 	});
 
@@ -60,26 +60,26 @@ const CommunityBoards = () => {
 					<Stack className="community-main">
 						<Stack className={'community-left'}>
 							<Stack className={'content-top'}>
-								<Link href={'/community?articleCategory=NEWS'}>
-									<span>News</span>
+								<Link href={'/community?articleCategory=WORKOUT_GUIDE'}>
+									<span>Workout Guides</span>
 								</Link>
 								<img src="/img/icons/arrowBig.svg" alt="" />
 							</Stack>
 							<Stack className={'card-wrap'}>
-								{newsArticles.map((article, index) => {
+								{workoutGuideArticles.map((article, index) => {
 									return <CommunityCard vertical={true} article={article} index={index} key={article?._id} />;
 								})}
 							</Stack>
 						</Stack>
 						<Stack className={'community-right'}>
 							<Stack className={'content-top'}>
-								<Link href={'/community?articleCategory=FREE'}>
-									<span>Free</span>
+								<Link href={'/community?articleCategory=FITNESS_TIPS'}>
+									<span>Fitness Tips</span>
 								</Link>
 								<img src="/img/icons/arrowBig.svg" alt="" />
 							</Stack>
 							<Stack className={'card-wrap vertical'}>
-								{freeArticles.map((article, index) => {
+								{fitnessTipsArticles.map((article, index) => {
 									return <CommunityCard vertical={false} article={article} index={index} key={article?._id} />;
 								})}
 							</Stack>

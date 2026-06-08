@@ -67,7 +67,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			router.push(
 				{
 					pathname: router.pathname,
-					query: { articleCategory: 'FREE' },
+					query: { articleCategory: 'FITNESS_TIPS' },
 				},
 				router.pathname,
 				{ shallow: true },
@@ -142,24 +142,24 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 									onChange={tabChangeHandler}
 								>
 									<Tab
-										value={'FREE'}
-										label={'Free Board'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'FREE' ? 'active' : ''}`}
+										value={'FITNESS_TIPS'}
+										label={'Fitness Tips'}
+										className={`tab-button ${searchCommunity.search.articleCategory == 'FITNESS_TIPS' ? 'active' : ''}`}
 									/>
 									<Tab
-										value={'RECOMMEND'}
-										label={'Recommendation'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'RECOMMEND' ? 'active' : ''}`}
+										value={'NUTRITION'}
+										label={'Nutrition'}
+										className={`tab-button ${searchCommunity.search.articleCategory == 'NUTRITION' ? 'active' : ''}`}
 									/>
 									<Tab
-										value={'NEWS'}
-										label={'News'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'NEWS' ? 'active' : ''}`}
+										value={'WORKOUT_GUIDE'}
+										label={'Workout Guide'}
+										className={`tab-button ${searchCommunity.search.articleCategory == 'WORKOUT_GUIDE' ? 'active' : ''}`}
 									/>
 									<Tab
-										value={'HUMOR'}
-										label={'Humor'}
-										className={`tab-button ${searchCommunity.search.articleCategory == 'HUMOR' ? 'active' : ''}`}
+										value={'CHALLENGE'}
+										label={'Challenge'}
+										className={`tab-button ${searchCommunity.search.articleCategory == 'CHALLENGE' ? 'active' : ''}`}
 									/>
 								</TabList>
 							</Stack>
@@ -303,7 +303,7 @@ Community.defaultProps = {
 		sort: 'createdAt',
 		direction: 'ASC',
 		search: {
-			articleCategory: 'FREE',
+			articleCategory: 'FITNESS_TIPS',
 		},
 	},
 };

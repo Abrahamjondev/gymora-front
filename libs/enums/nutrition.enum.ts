@@ -1,0 +1,25 @@
+export enum MealType {
+	BREAKFAST = 'BREAKFAST',
+	LUNCH = 'LUNCH',
+	DINNER = 'DINNER',
+	SNACK = 'SNACK',
+}
+
+export enum FitnessGoal {
+	WEIGHT_LOSS = 'WEIGHT_LOSS',
+	MAINTENANCE = 'MAINTENANCE',
+	MUSCLE_GAIN = 'MUSCLE_GAIN',
+}
+
+export enum Gender {
+	MALE = 'MALE',
+	FEMALE = 'FEMALE',
+}
+
+export enum ActivityLevel {
+	SEDENTARY = 'SEDENTARY',
+	LIGHTLY_ACTIVE = 'LIGHTLY_ACTIVE',
+	MODERATELY_ACTIVE = 'MODERATELY_ACTIVE',
+	VERY_ACTIVE = 'VERY_ACTIVE',
+	EXTRA_ACTIVE = 'EXTRA_ACTIVE',
+}

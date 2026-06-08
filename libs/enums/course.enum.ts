@@ -1,0 +1,13 @@
+export enum CourseDifficulty {
+	BEGINNER = 'BEGINNER',
+	INTERMEDIATE = 'INTERMEDIATE',
+	ADVANCED = 'ADVANCED',
+}
+
+export enum CourseCategory {
+	STRENGTH = 'STRENGTH',
+	CARDIO = 'CARDIO',
+	YOGA = 'YOGA',
+	MOBILITY = 'MOBILITY',
+	NUTRITION = 'NUTRITION',
+}
