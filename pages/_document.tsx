@@ -8,13 +8,13 @@ export default function Document() {
 				<link rel="icon" type="image/png" href="/img/logo/favicon.svg" />
 
 				{/* SEO */}
-				<meta name="keyword" content={'nestar, nestar.uz, devex mern, mern nestjs fullstack'} />
+				<meta name="keyword" content={'gymora, gymora fitness, workout, courses, trainers, nutrition'} />
 				<meta
 					name={'description'}
 					content={
-						'Buy and sell properties anywhere anytime in South Korea. Best Properties at Best prices on nestar.uz | ' +
-						'Покупайте и продавайте недвижимость в любой точке Южной Кореи в любое время. Лучшая недвижимость по лучшим ценам на nestar.uz | ' +
-						'대한민국 언제 어디서나 부동산을 사고팔 수 있습니다. Nestar.uz에서 최적의 가격으로 최고의 부동산을 만나보세요'
+						'Your ultimate fitness platform. Find workouts, courses, and trainers to achieve your fitness goals with Gymora. | ' +
+						'Ваша фитнес-платформа. Найдите тренировки, курсы и тренеров для достижения фитнес-целей с Gymora. | ' +
+						'최고의 피트니스 플랫폼. Gymora에서 운동, 코스, 트레이너를 찾아 피트니스 목표를 달성하세요.'
 					}
 				/>
 			</Head>
