@@ -20,7 +20,8 @@ export const GET_ALL_MEMBERS_BY_ADMIN = gql`
 				memberDesc
 				memberWarnings
 				memberBlocks
-				memberProperties
+				memberCourses
+				memberWorkouts
 				memberRank
 				memberArticles
 				memberPoints
@@ -39,58 +40,96 @@ export const GET_ALL_MEMBERS_BY_ADMIN = gql`
 `;
 
 /**************************
- *        PROPERTY        *
+ *        WORKOUT        *
  *************************/
 
-export const GET_ALL_PROPERTIES_BY_ADMIN = gql`
-	query GetAllPropertiesByAdmin($input: AllPropertiesInquiry!) {
-		getAllPropertiesByAdmin(input: $input) {
+export const GET_ALL_WORKOUTS_BY_ADMIN = gql`
+	query GetAllWorkoutsByAdmin($input: WorkoutsInquiry!) {
+		getAllWorkoutsByAdmin(input: $input) {
 			list {
 				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
+				workoutTitle
+				workoutDesc
+				workoutDifficulty
+				targetMuscle
+				estimatedCaloriesBurned
+				exercises {
+					exerciseName
+					sets
+					reps
+					duration
+				}
+				videoUrl
+				workoutThumbnail
+				workoutRating
+				workoutRatingCount
+				isFree
+				courseId
+				workoutViews
+				workoutLikes
+				workoutRank
 				createdAt
 				updatedAt
-				memberData {
-					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
-					memberNick
-					memberFullName
-					memberImage
-					memberAddress
-					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					deletedAt
-					createdAt
-					updatedAt
-					accessToken
-				}
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+/**************************
+ *        TRAINER        *
+ *************************/
+
+export const GET_ALL_TRAINERS_BY_ADMIN = gql`
+	query GetAllTrainersByAdmin($input: TrainersListInquiry!) {
+		getAllTrainersByAdmin(input: $input) {
+			list {
+				_id
+				memberId
+				trainerBio
+				trainerSpecializations
+				trainerExperience
+				trainerRating
+				trainerRatingCount
+				trainerSocialLinks
+				trainerVerificationStatus
+				trainerRank
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+/**************************
+ *        COURSE         *
+ *************************/
+
+export const GET_ALL_COURSES_BY_ADMIN = gql`
+	query GetAllCoursesByAdmin($input: CoursesInquiry!) {
+		getAllCoursesByAdmin(input: $input) {
+			list {
+				_id
+				trainerId
+				courseTitle
+				courseDesc
+				courseDifficulty
+				courseCategory
+				coursePrice
+				courseDuration
+				courseThumbnail
+				courseVideos
+				courseRating
+				courseRatingCount
+				courseRank
+				createdAt
+				updatedAt
 			}
 			metaCounter {
 				total
@@ -103,9 +142,9 @@ export const GET_ALL_PROPERTIES_BY_ADMIN = gql`
  *      BOARD-ARTICLE     *
  *************************/
 
-export const GET_ALL_BOARD_ARTICLES_BY_ADMIN = gql`
-	query GetAllBoardArticlesByAdmin($input: AllBoardArticlesInquiry!) {
-		getAllBoardArticlesByAdmin(input: $input) {
+export const GET_BOARD_ARTICLES_BY_ADMIN = gql`
+	query GetBoardArticlesByAdmin($input: BoardArticlesInquiry!) {
+		getBoardArticles(input: $input) {
 			list {
 				_id
 				articleCategory
@@ -131,7 +170,8 @@ export const GET_ALL_BOARD_ARTICLES_BY_ADMIN = gql`
 					memberDesc
 					memberWarnings
 					memberBlocks
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberRank
 					memberPoints
 					memberLikes
@@ -178,7 +218,8 @@ export const GET_COMMENTS = gql`
 					memberDesc
 					memberWarnings
 					memberBlocks
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberRank
 					memberPoints
 					memberLikes

@@ -5,7 +5,7 @@ import { Pagination, Stack, Typography } from '@mui/material';
 import PropertyCard from '../property/PropertyCard';
 import { Property } from '../../types/property/property';
 import { T } from '../../types/common';
-import { GET_VISITED } from '../../../apollo/user/query';
+import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 
 const RecentlyVisited: NextPage = () => {
@@ -20,7 +20,7 @@ const RecentlyVisited: NextPage = () => {
 		data: getVisitedData,
 		error: getVisitedError,
 		refetch: getVisitedRefetch,
-	} = useQuery(GET_VISITED, {
+	} = useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'network-only',
 
 		variables: {

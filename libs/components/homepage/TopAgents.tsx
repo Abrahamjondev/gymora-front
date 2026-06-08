@@ -8,7 +8,7 @@ import { Autoplay, Navigation, Pagination } from 'swiper';
 import TopAgentCard from './TopAgentCard';
 import { Member } from '../../types/member/member';
 import { AgentsInquiry } from '../../types/member/member.input';
-import { GET_AGENTS } from '../../../apollo/user/query';
+import { GET_TRAINER_MEMBERS } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 import { T } from '../../types/common';
 
@@ -28,7 +28,7 @@ const TopAgents = (props: TopAgentsProps) => {
 		data: getAgentsData,
 		error: getAgentsError,
 		refetch: getAgentsRefetch,
-	} = useQuery(GET_AGENTS, {
+	} = useQuery(GET_TRAINER_MEMBERS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,

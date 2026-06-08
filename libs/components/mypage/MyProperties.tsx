@@ -10,8 +10,8 @@ import { T } from '../../types/common';
 import { PropertyStatus } from '../../enums/property.enum';
 import { userVar } from '../../../apollo/store';
 import { useRouter } from 'next/router';
-import { UPDATE_PROPERTY } from '../../../apollo/user/mutation';
-import { GET_AGENT_PROPERTIES } from '../../../apollo/user/query';
+import { UPDATE_WORKOUT } from '../../../apollo/user/mutation';
+import { GET_MEMBER_WORKOUTS } from '../../../apollo/user/query';
 import { sweetConfirmAlert, sweetErrorHandling } from '../../sweetAlert';
 
 const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
@@ -24,14 +24,14 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 	/** APOLLO REQUESTS **/
-	const [updateProperty] = useMutation(UPDATE_PROPERTY);
+	const [updateProperty] = useMutation(UPDATE_WORKOUT);
 
 	const {
 		loading: getAgentPropertiesLoading,
 		data: getAgentPropertiesData,
 		error: getAgentPropertiesError,
 		refetch: getAgentPropertiesRefetch,
-	} = useQuery(GET_AGENT_PROPERTIES, {
+	} = useQuery(GET_MEMBER_WORKOUTS, {
 		fetchPolicy: 'network-only',
 
 		variables: {

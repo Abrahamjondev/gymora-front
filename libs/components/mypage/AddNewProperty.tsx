@@ -10,8 +10,8 @@ import { getJwtToken } from '../../auth';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { GET_PROPERTY } from '../../../apollo/user/query';
-import { CREATE_PROPERTY, UPDATE_PROPERTY } from '../../../apollo/user/mutation';
+import { GET_WORKOUT } from '../../../apollo/user/query';
+import { CREATE_WORKOUT, UPDATE_WORKOUT } from '../../../apollo/user/mutation';
 
 const AddProperty = ({ initialValues, ...props }: any) => {
 	const device = useDeviceDetect();
@@ -25,16 +25,16 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 	/** APOLLO REQUESTS **/
-	const [createProperty] = useMutation(CREATE_PROPERTY);
+	const [createProperty] = useMutation(CREATE_WORKOUT);
 
-	const [updateProperty] = useMutation(UPDATE_PROPERTY);
+	const [updateProperty] = useMutation(UPDATE_WORKOUT);
 
 	const {
 		loading: getPropertyLoading,
 		data: getPropertyData,
 		error: getPropertyError,
 		refetch: getPropertyRefetch,
-	} = useQuery(GET_PROPERTY, {
+	} = useQuery(GET_WORKOUT, {
 		fetchPolicy: 'network-only',
 
 		variables: {

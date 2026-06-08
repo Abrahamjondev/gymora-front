@@ -15,8 +15,8 @@ import { PropertyLocation, PropertyStatus } from '../../../libs/enums/property.e
 import { sweetConfirmAlert, sweetErrorHandling } from '../../../libs/sweetAlert';
 import { PropertyUpdate } from '../../../libs/types/property/property.update';
 import { useMutation, useQuery } from '@apollo/client';
-import { REMOVE_PROPERTY_BY_ADMIN, UPDATE_PROPERTY_BY_ADMIN } from '../../../apollo/admin/mutation';
-import { GET_ALL_PROPERTIES_BY_ADMIN } from '../../../apollo/admin/query';
+import { DELETE_WORKOUT_BY_ADMIN, UPDATE_WORKOUT_BY_ADMIN } from '../../../apollo/admin/mutation';
+import { GET_ALL_WORKOUTS_BY_ADMIN } from '../../../apollo/admin/query';
 import { T } from '../../../libs/types/common';
 
 const AdminProperties: NextPage = ({ initialInquiry, ...props }: any) => {
@@ -31,15 +31,15 @@ const AdminProperties: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 	//** APOLLO REQUESTS **//
-	const [updatePropertyByAdmin] = useMutation(UPDATE_PROPERTY_BY_ADMIN);
-	const [removePropertyByAdmin] = useMutation(REMOVE_PROPERTY_BY_ADMIN);
+	const [updatePropertyByAdmin] = useMutation(UPDATE_WORKOUT_BY_ADMIN);
+	const [removePropertyByAdmin] = useMutation(DELETE_WORKOUT_BY_ADMIN);
 
 	const {
 		loading: getAllPropertiesByAdminLoading,
 		data: getAllPropertiesByAdminData,
 		error: getAllPropertiesByAdminError,
 		refetch: getAllPropertiesByAdminRefetch,
-	} = useQuery(GET_ALL_PROPERTIES_BY_ADMIN, {
+	} = useQuery(GET_ALL_WORKOUTS_BY_ADMIN, {
 		fetchPolicy: 'network-only',
 		variables: { input: propertiesInquiry },
 		notifyOnNetworkStatusChange: true,

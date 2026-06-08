@@ -4,9 +4,9 @@ import { gql } from '@apollo/client';
  *         MEMBER         *
  *************************/
 
-export const GET_AGENTS = gql`
-	query GetAgents($input: AgentsInquiry!) {
-		getAgents(input: $input) {
+export const GET_TRAINER_MEMBERS = gql`
+	query GetTrainerMembers($input: TrainersInquiry!) {
+		getTrainerMembers(input: $input) {
 			list {
 				_id
 				memberType
@@ -20,7 +20,8 @@ export const GET_AGENTS = gql`
 				memberDesc
 				memberWarnings
 				memberBlocks
-				memberProperties
+				memberCourses
+				memberWorkouts
 				memberRank
 				memberPoints
 				memberLikes
@@ -55,7 +56,8 @@ query GetMember($input: String!) {
         memberImage
         memberAddress
         memberDesc
-        memberProperties
+        memberCourses
+        memberWorkouts
         memberArticles
         memberPoints
         memberLikes
@@ -79,150 +81,76 @@ query GetMember($input: String!) {
 `);
 
 /**************************
- *        PROPERTY        *
+ *        WORKOUT        *
  *************************/
 
-export const GET_PROPERTY = gql`
-	query GetProperty($input: String!) {
-		getProperty(propertyId: $input) {
+export const GET_WORKOUT = gql`
+	query GetWorkout($input: String!) {
+		getWorkout(workoutId: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
-			createdAt
-			updatedAt
-			memberData {
-				_id
-				memberType
-				memberStatus
-				memberAuthType
-				memberPhone
-				memberNick
-				memberFullName
-				memberImage
-				memberAddress
-				memberDesc
-				memberWarnings
-				memberBlocks
-				memberPoints
-				memberLikes
-				memberViews
-				deletedAt
-				createdAt
-				updatedAt
-				accessToken
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			exercises {
+				exerciseName
+				sets
+				reps
+				duration
 			}
+			videoUrl
+			workoutThumbnail
+			workoutRating
+			workoutRatingCount
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
+			workoutRank
 			meLiked {
 				memberId
 				likeRefId
 				myFavorite
 			}
+			createdAt
+			updatedAt
 		}
 	}
 `;
 
-export const GET_PROPERTIES = gql`
-	query GetProperties($input: PropertiesInquiry!) {
-		getProperties(input: $input) {
+export const GET_WORKOUTS = gql`
+	query GetWorkouts($input: WorkoutsInquiry!) {
+		getWorkouts(input: $input) {
 			list {
 				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyRank
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
-				createdAt
-				updatedAt
-				memberData {
-					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
-					memberNick
-					memberFullName
-					memberImage
-					memberAddress
-					memberDesc
-					memberWarnings
-					memberBlocks
-					memberProperties
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					deletedAt
-					createdAt
-					updatedAt
+				workoutTitle
+				workoutDesc
+				workoutDifficulty
+				targetMuscle
+				estimatedCaloriesBurned
+				exercises {
+					exerciseName
+					sets
+					reps
+					duration
 				}
+				videoUrl
+				workoutThumbnail
+				workoutRating
+				workoutRatingCount
+				isFree
+				courseId
+				workoutViews
+				workoutLikes
+				workoutRank
 				meLiked {
 					memberId
 					likeRefId
 					myFavorite
 				}
-			}
-			metaCounter {
-				total
-			}
-		}
-	}
-`;
-
-export const GET_AGENT_PROPERTIES = gql`
-	query GetAgentProperties($input: AgentPropertiesInquiry!) {
-		getAgentProperties(input: $input) {
-			list {
-				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
-				memberId
-				soldAt
-				deletedAt
-				constructedAt
 				createdAt
 				updatedAt
 			}
@@ -233,128 +161,69 @@ export const GET_AGENT_PROPERTIES = gql`
 	}
 `;
 
-export const GET_FAVORITES = gql`
-	query GetFavorites($input: OrdinaryInquiry!) {
-		getFavorites(input: $input) {
-			list {
-				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyComments
-				propertyRank
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
+export const GET_MEMBER_WORKOUTS = gql`
+	query GetMemberWorkouts {
+		getMemberWorkouts {
+			_id
+			memberId
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			exercises {
+				exerciseName
+				sets
+				reps
+				duration
+			}
+			videoUrl
+			workoutThumbnail
+			workoutRating
+			workoutRatingCount
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
+			workoutRank
+			meLiked {
 				memberId
-				soldAt
-				deletedAt
-				constructedAt
-				createdAt
-				updatedAt
-				memberData {
-					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
-					memberNick
-					memberFullName
-					memberImage
-					memberAddress
-					memberDesc
-					memberProperties
-					memberArticles
-					memberPoints
-					memberLikes
-					memberViews
-					memberComments
-					memberFollowings
-					memberFollowers
-					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
-					createdAt
-					updatedAt
-					accessToken
-				}
+				likeRefId
+				myFavorite
 			}
-			metaCounter {
-				total
-			}
+			createdAt
+			updatedAt
 		}
 	}
 `;
 
-export const GET_VISITED = gql`
-	query GetVisited($input: OrdinaryInquiry!) {
-		getVisited(input: $input) {
-			list {
-				_id
-				propertyType
-				propertyStatus
-				propertyLocation
-				propertyAddress
-				propertyTitle
-				propertyPrice
-				propertySquare
-				propertyBeds
-				propertyRooms
-				propertyViews
-				propertyLikes
-				propertyComments
-				propertyRank
-				propertyImages
-				propertyDesc
-				propertyBarter
-				propertyRent
-				memberId
-				soldAt
-				deletedAt
-				constructedAt
-				createdAt
-				updatedAt
-				memberData {
-					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
-					memberNick
-					memberFullName
-					memberImage
-					memberAddress
-					memberDesc
-					memberProperties
-					memberArticles
-					memberPoints
-					memberLikes
-					memberViews
-					memberComments
-					memberFollowings
-					memberFollowers
-					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
-					createdAt
-					updatedAt
-					accessToken
-				}
+export const GET_WORKOUTS_BY_MEMBER_ID = gql`
+	query GetWorkoutsByMemberId($input: String!) {
+		getWorkoutsByMemberId(memberId: $input) {
+			_id
+			memberId
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			exercises {
+				exerciseName
+				sets
+				reps
+				duration
 			}
-			metaCounter {
-				total
-			}
+			videoUrl
+			workoutThumbnail
+			workoutRating
+			workoutRatingCount
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
+			workoutRank
+			createdAt
+			updatedAt
 		}
 	}
 `;
@@ -391,7 +260,8 @@ export const GET_BOARD_ARTICLE = gql`
 				memberDesc
 				memberWarnings
 				memberBlocks
-				memberProperties
+				memberCourses
+				memberWorkouts
 				memberRank
 				memberPoints
 				memberLikes
@@ -443,7 +313,8 @@ export const GET_BOARD_ARTICLES = gql`
 					memberDesc
 					memberWarnings
 					memberBlocks
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberRank
 					memberPoints
 					memberLikes
@@ -489,7 +360,8 @@ export const GET_COMMENTS = gql`
 					memberDesc
 					memberWarnings
 					memberBlocks
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberRank
 					memberPoints
 					memberLikes
@@ -540,7 +412,8 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberArticles
 					memberPoints
 					memberLikes
@@ -583,7 +456,8 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					memberImage
 					memberAddress
 					memberDesc
-					memberProperties
+					memberCourses
+					memberWorkouts
 					memberArticles
 					memberPoints
 					memberLikes

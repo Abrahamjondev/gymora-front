@@ -27,10 +27,10 @@ import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations'; //@ts-ignore
 import 'swiper/css'; //@ts-ignore
 import 'swiper/css/pagination';
-import { GET_COMMENTS, GET_PROPERTIES, GET_PROPERTY } from '../../apollo/user/query';
+import { GET_COMMENTS, GET_WORKOUTS, GET_WORKOUT } from '../../apollo/user/query';
 import { T } from '../../libs/types/common';
 import { Direction, Message } from '../../libs/enums/common.enum';
-import { CREATE_COMMENT, LIKE_TARGET_PROPERTY } from '../../apollo/user/mutation';
+import { CREATE_COMMENT, LIKE_WORKOUT } from '../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 
 SwiperCore.use([Autoplay, Navigation, Pagination]);
@@ -59,14 +59,14 @@ const PropertyDetail: NextPage = ({ initialComment, ...props }: any) => {
 	});
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetProperty] = useMutation(LIKE_WORKOUT);
 	const [createComment] = useMutation(CREATE_COMMENT);
 	const {
 		loading: getPropertyLoading,
 		data: getPropertyData,
 		error: getPropertyError,
 		refetch: getPropertyRefetch,
-	} = useQuery(GET_PROPERTY, {
+	} = useQuery(GET_WORKOUT, {
 		fetchPolicy: 'network-only',
 		variables: { input: propertyId },
 		skip: !propertyId,
@@ -82,7 +82,7 @@ const PropertyDetail: NextPage = ({ initialComment, ...props }: any) => {
 		data: getPropertiesData,
 		error: getPropertiesError,
 		refetch: getPropertiesRefetch,
-	} = useQuery(GET_PROPERTIES, {
+	} = useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'cache-and-network',
 		variables: {
 			input: {

@@ -6,8 +6,8 @@ import PropertyCard from '../property/PropertyCard';
 import { Property } from '../../types/property/property';
 import { T } from '../../types/common';
 import { useMutation, useQuery } from '@apollo/client';
-import { LIKE_TARGET_PROPERTY } from '../../../apollo/user/mutation';
-import { GET_FAVORITES } from '../../../apollo/user/query';
+import { LIKE_WORKOUT } from '../../../apollo/user/mutation';
+import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 
@@ -19,14 +19,14 @@ const MyFavorites: NextPage = () => {
 
 	/** APOLLO REQUESTS **/
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_TARGET_PROPERTY);
+	const [likeTargetProperty] = useMutation(LIKE_WORKOUT);
 
 	const {
 		loading: getFavoritesLoading,
 		data: getFavoritesData,
 		error: getFavoritesError,
 		refetch: getFavoritesRefetch,
-	} = useQuery(GET_FAVORITES, {
+	} = useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'network-only',
 
 		variables: {

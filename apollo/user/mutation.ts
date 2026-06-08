@@ -19,7 +19,8 @@ export const SIGN_UP = gql`
 			memberDesc
 			memberWarnings
 			memberBlocks
-			memberProperties
+			memberCourses
+			memberWorkouts
 			memberRank
 			memberArticles
 			memberPoints
@@ -48,7 +49,8 @@ export const LOGIN = gql`
 			memberDesc
 			memberWarnings
 			memberBlocks
-			memberProperties
+			memberCourses
+			memberWorkouts
 			memberRank
 			memberPoints
 			memberLikes
@@ -74,7 +76,8 @@ export const UPDATE_MEMBER = gql`
 			memberImage
 			memberAddress
 			memberDesc
-			memberProperties
+			memberCourses
+			memberWorkouts
 			memberRank
 			memberArticles
 			memberPoints
@@ -105,7 +108,8 @@ export const LIKE_TARGET_MEMBER = gql`
 			memberDesc
 			memberWarnings
 			memberBlocks
-			memberProperties
+			memberCourses
+			memberWorkouts
 			memberRank
 			memberPoints
 			memberLikes
@@ -119,90 +123,77 @@ export const LIKE_TARGET_MEMBER = gql`
 `;
 
 /**************************
- *        PROPERTY        *
+ *        WORKOUT        *
  *************************/
 
-export const CREATE_PROPERTY = gql`
-	mutation CreateProperty($input: PropertyInput!) {
-		createProperty(input: $input) {
+export const CREATE_WORKOUT = gql`
+	mutation CreateWorkout($input: WorkoutInput!) {
+		createWorkout(input: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			exercises {
+				exerciseName
+				sets
+				reps
+				duration
+			}
+			videoUrl
+			workoutThumbnail
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
 			createdAt
 			updatedAt
 		}
 	}
 `;
 
-export const UPDATE_PROPERTY = gql`
-	mutation UpdateProperty($input: PropertyUpdate!) {
-		updateProperty(input: $input) {
+export const UPDATE_WORKOUT = gql`
+	mutation UpdateWorkout($input: WorkoutUpdate!) {
+		updateWorkout(input: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			exercises {
+				exerciseName
+				sets
+				reps
+				duration
+			}
+			videoUrl
+			workoutThumbnail
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
 			createdAt
 			updatedAt
 		}
 	}
 `;
 
-export const LIKE_TARGET_PROPERTY = gql`
-	mutation LikeTargetProperty($input: String!) {
-		likeTargetProperty(propertyId: $input) {
+export const LIKE_WORKOUT = gql`
+	mutation LikeWorkout($input: String!) {
+		likeWorkout(workoutId: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
+			workoutTitle
+			workoutDifficulty
+			targetMuscle
+			workoutThumbnail
+			isFree
+			workoutViews
+			workoutLikes
 			createdAt
 			updatedAt
 		}
@@ -250,8 +241,8 @@ export const UPDATE_BOARD_ARTICLE = gql`
 `;
 
 export const LIKE_TARGET_BOARD_ARTICLE = gql`
-	mutation LikeTargetBoardArticle($input: String!) {
-		likeTargetBoardArticle(articleId: $input) {
+	mutation LikeBoardArticle($input: String!) {
+		likeBoardArticle(articleId: $input) {
 			_id
 			articleCategory
 			articleStatus

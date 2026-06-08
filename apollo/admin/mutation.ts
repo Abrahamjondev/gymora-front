@@ -5,7 +5,7 @@ import { gql } from '@apollo/client';
  *************************/
 
 export const UPDATE_MEMBER_BY_ADMIN = gql`
-	mutation UpdateMemberByAdmin($input: MemberUpdate!) {
+	mutation UpdateMemberByAdmin($input: MemberUpdateByAdmin!) {
 		updateMemberByAdmin(input: $input) {
 			_id
 			memberType
@@ -17,7 +17,8 @@ export const UPDATE_MEMBER_BY_ADMIN = gql`
 			memberImage
 			memberAddress
 			memberDesc
-			memberProperties
+			memberCourses
+			memberWorkouts
 			memberRank
 			memberArticles
 			memberPoints
@@ -34,63 +35,102 @@ export const UPDATE_MEMBER_BY_ADMIN = gql`
 `;
 
 /**************************
- *        PROPERTY        *
+ *        WORKOUT        *
  *************************/
 
-export const UPDATE_PROPERTY_BY_ADMIN = gql`
-	mutation UpdatePropertyByAdmin($input: PropertyUpdate!) {
-		updatePropertyByAdmin(input: $input) {
+export const UPDATE_WORKOUT_BY_ADMIN = gql`
+	mutation UpdateWorkoutByAdmin($input: WorkoutUpdate!) {
+		updateWorkoutByAdmin(input: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
+			workoutTitle
+			workoutDesc
+			workoutDifficulty
+			targetMuscle
+			estimatedCaloriesBurned
+			isFree
+			courseId
+			workoutViews
+			workoutLikes
 			createdAt
 			updatedAt
 		}
 	}
 `;
 
-export const REMOVE_PROPERTY_BY_ADMIN = gql`
-	mutation RemovePropertyByAdmin($input: String!) {
-		removePropertyByAdmin(propertyId: $input) {
+export const DELETE_WORKOUT_BY_ADMIN = gql`
+	mutation DeleteWorkoutByAdmin($input: String!) {
+		deleteWorkoutByAdmin(workoutId: $input) {
 			_id
-			propertyType
-			propertyStatus
-			propertyLocation
-			propertyAddress
-			propertyTitle
-			propertyPrice
-			propertySquare
-			propertyBeds
-			propertyRooms
-			propertyViews
-			propertyLikes
-			propertyImages
-			propertyDesc
-			propertyBarter
-			propertyRent
+			workoutTitle
+			workoutDifficulty
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *        TRAINER        *
+ *************************/
+
+export const UPDATE_TRAINER_BY_ADMIN = gql`
+	mutation UpdateTrainerByAdmin($input: TrainerUpdate!) {
+		updateTrainerByAdmin(input: $input) {
+			_id
 			memberId
-			soldAt
-			deletedAt
-			constructedAt
+			trainerBio
+			trainerSpecializations
+			trainerExperience
+			trainerRating
+			trainerVerificationStatus
+			trainerRank
 			createdAt
 			updatedAt
+		}
+	}
+`;
+
+export const DELETE_TRAINER_BY_ADMIN = gql`
+	mutation DeleteTrainerByAdmin($input: String!) {
+		deleteTrainerByAdmin(trainerId: $input) {
+			_id
+			memberId
+			trainerBio
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *        COURSE         *
+ *************************/
+
+export const UPDATE_COURSE_BY_ADMIN = gql`
+	mutation UpdateCourseByAdmin($input: CourseUpdate!) {
+		updateCourseByAdmin(input: $input) {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			courseRating
+			courseRank
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const DELETE_COURSE_BY_ADMIN = gql`
+	mutation DeleteCourseByAdmin($input: String!) {
+		deleteCourseByAdmin(courseId: $input) {
+			_id
+			courseTitle
+			courseCategory
+			createdAt
 		}
 	}
 `;
@@ -99,27 +139,9 @@ export const REMOVE_PROPERTY_BY_ADMIN = gql`
  *      BOARD-ARTICLE     *
  *************************/
 
-export const UPDATE_BOARD_ARTICLE_BY_ADMIN = gql`
-	mutation UpdateBoardArticleByAdmin($input: BoardArticleUpdate!) {
-		updateBoardArticleByAdmin(input: $input) {
-			_id
-			articleCategory
-			articleStatus
-			articleTitle
-			articleContent
-			articleImage
-			articleViews
-			articleLikes
-			memberId
-			createdAt
-			updatedAt
-		}
-	}
-`;
-
-export const REMOVE_BOARD_ARTICLE_BY_ADMIN = gql`
-	mutation RemoveBoardArticleByAdmin($input: String!) {
-		removeBoardArticleByAdmin(articleId: $input) {
+export const DELETE_BOARD_ARTICLE_BY_ADMIN = gql`
+	mutation DeleteBoardArticleByAdmin($input: String!) {
+		deleteBoardArticleByAdmin(articleId: $input) {
 			_id
 			articleCategory
 			articleStatus

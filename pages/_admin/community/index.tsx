@@ -15,8 +15,9 @@ import { BoardArticleCategory, BoardArticleStatus } from '../../../libs/enums/bo
 import { sweetConfirmAlert, sweetErrorHandling } from '../../../libs/sweetAlert';
 import { BoardArticleUpdate } from '../../../libs/types/board-article/board-article.update';
 import { useMutation, useQuery } from '@apollo/client';
-import { REMOVE_BOARD_ARTICLE_BY_ADMIN, UPDATE_BOARD_ARTICLE_BY_ADMIN } from '../../../apollo/admin/mutation';
-import { GET_ALL_BOARD_ARTICLES_BY_ADMIN } from '../../../apollo/admin/query';
+import { DELETE_BOARD_ARTICLE_BY_ADMIN } from '../../../apollo/admin/mutation';
+import { UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
+import { GET_BOARD_ARTICLES_BY_ADMIN } from '../../../apollo/admin/query';
 import { T } from '../../../libs/types/common';
 
 const AdminCommunity: NextPage = ({ initialInquiry, ...props }: any) => {
@@ -32,15 +33,15 @@ const AdminCommunity: NextPage = ({ initialInquiry, ...props }: any) => {
 	/** APOLLO REQUESTS **/
 
 	//** APOLLO REQUESTS **//
-	const [updateBoardArticleByAdmin] = useMutation(UPDATE_BOARD_ARTICLE_BY_ADMIN);
-	const [removeBoardArticleByAdmin] = useMutation(REMOVE_BOARD_ARTICLE_BY_ADMIN);
+	const [updateBoardArticleByAdmin] = useMutation(UPDATE_BOARD_ARTICLE);
+	const [removeBoardArticleByAdmin] = useMutation(DELETE_BOARD_ARTICLE_BY_ADMIN);
 
 	const {
 		loading: getAllBoardArticlesByAdminLoading,
 		data: getAllBoardArticlesByAdminData,
 		error: getAllBoardArticlesByAdminError,
 		refetch: getAllBoardArticlesByAdminRefetch,
-	} = useQuery(GET_ALL_BOARD_ARTICLES_BY_ADMIN, {
+	} = useQuery(GET_BOARD_ARTICLES_BY_ADMIN, {
 		fetchPolicy: 'network-only',
 		variables: { input: communityInquiry },
 		notifyOnNetworkStatusChange: true,
