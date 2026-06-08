@@ -1,6 +1,6 @@
 # Gymora Frontend Modification Instructions
 
-This client project is being migrated from nestar-next to petoria-next
+This client project is being migrated from nestar-next to gymora-next
 
 ## Rules
 
@@ -56,3 +56,13 @@ Analyze first, then make incremental UI changes.
 3. Make small incremental changes.
 4. Run typecheck after each phase.
 5. Do not remove working logic unless replaced safely.
+
+## Package Manager
+
+- Use Yarn for all frontend command.
+- Do not use npm or pmpm.
+- Install dependencies with:
+
+```bash
+yarn
+```
