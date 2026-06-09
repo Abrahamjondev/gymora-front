@@ -71,6 +71,11 @@ query GetMember($input: String!) {
         createdAt
         updatedAt
         accessToken
+        meLiked {
+					memberId
+					likeRefId
+					myFavorite
+				}
         meFollowed {
 					followingId
 					followerId
@@ -79,6 +84,129 @@ query GetMember($input: String!) {
     }
 }
 `);
+
+/**************************
+ *        TRAINER        *
+ *************************/
+
+export const GET_TRAINERS = gql`
+	query GetTrainers($input: TrainersListInquiry!) {
+		getTrainers(input: $input) {
+			list {
+				_id
+				memberId
+				trainerBio
+				trainerSpecializations
+				trainerExperience
+				trainerRating
+				trainerRatingCount
+				trainerSocialLinks
+				trainerVerificationStatus
+				trainerRank
+				meLiked {
+					memberId
+					likeRefId
+					myFavorite
+				}
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_TRAINER = gql`
+	query GetTrainer($input: String!) {
+		getTrainer(trainerId: $input) {
+			_id
+			memberId
+			trainerBio
+			trainerSpecializations
+			trainerExperience
+			trainerRating
+			trainerRatingCount
+			trainerSocialLinks
+			trainerVerificationStatus
+			trainerRank
+			meLiked {
+				memberId
+				likeRefId
+				myFavorite
+			}
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
+ *        COURSE         *
+ *************************/
+
+export const GET_COURSES = gql`
+	query GetCourses($input: CoursesInquiry!) {
+		getCourses(input: $input) {
+			list {
+				_id
+				trainerId
+				courseTitle
+				courseDesc
+				courseDifficulty
+				courseCategory
+				coursePrice
+				courseDuration
+				courseThumbnail
+				courseVideos
+				courseRating
+				courseRatingCount
+				courseRank
+				createdAt
+				updatedAt
+			}
+			metaCounter {
+				total
+			}
+		}
+	}
+`;
+
+export const GET_COURSE = gql`
+	query GetCourse($input: String!) {
+		getCourse(courseId: $input) {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			courseThumbnail
+			courseVideos
+			purchasedMembers
+			lessons {
+				_id
+				courseId
+				title
+				description
+				videoUrl
+				weekNumber
+				order
+				duration
+				createdAt
+				updatedAt
+			}
+			courseRating
+			courseRatingCount
+			courseRank
+			createdAt
+			updatedAt
+		}
+	}
+`;
 
 /**************************
  *        WORKOUT        *
@@ -249,26 +377,9 @@ export const GET_BOARD_ARTICLE = gql`
 			updatedAt
 			memberData {
 				_id
-				memberType
-				memberStatus
-				memberAuthType
-				memberPhone
 				memberNick
-				memberFullName
 				memberImage
-				memberAddress
-				memberDesc
-				memberWarnings
-				memberBlocks
-				memberCourses
-				memberWorkouts
-				memberRank
-				memberPoints
-				memberLikes
-				memberViews
-				deletedAt
-				createdAt
-				updatedAt
+				memberType
 			}
 			meLiked {
 				memberId
@@ -302,26 +413,9 @@ export const GET_BOARD_ARTICLES = gql`
 				}
 				memberData {
 					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
-					memberFullName
 					memberImage
-					memberAddress
-					memberDesc
-					memberWarnings
-					memberBlocks
-					memberCourses
-					memberWorkouts
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					deletedAt
-					createdAt
-					updatedAt
+					memberType
 				}
 			}
 			metaCounter {
@@ -487,6 +581,336 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 			metaCounter {
 				total
 			}
+		}
+	}
+`;
+
+/**************************
+ *       NUTRITION        *
+ *************************/
+
+export const GET_MEAL_HISTORY = gql`
+	query GetMealHistory {
+		getMealHistory {
+			_id
+			memberId
+			mealType
+			mealName
+			calories
+			protein
+			carbs
+			fats
+			mealDate
+			mealImage
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const GET_NUTRITION_HISTORY = gql`
+	query GetNutritionHistory {
+		getNutritionHistory {
+			_id
+			memberId
+			nutritionDate
+			totalCalories
+			totalProtein
+			totalCarbs
+			totalFats
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const GET_NUTRITION_RECOMMENDATION = gql`
+	query GetNutritionRecommendation($input: NutritionRecommendationInput!) {
+		getNutritionRecommendation(input: $input) {
+			bmr
+			tdee
+			dailyCalories
+			dailyProtein
+			dailyCarbs
+			dailyFats
+			bmi
+			bmiCategory
+			goal
+			mealsPerDay
+			mealPlan {
+				mealType
+				suggestedFoods
+				targetCalories
+				targetProtein
+				targetCarbs
+				targetFats
+			}
+			tips
+		}
+	}
+`;
+
+export const GET_DASHBOARD_STATS = gql`
+	query GetDashboardStats {
+		getDashboardStats {
+			memberId
+			totalCalories
+			workoutCount
+			progressEntries
+			subscriptionSummary
+		}
+	}
+`;
+
+export const GET_PROGRESS_TIMELINE = gql`
+	query GetProgressTimeline {
+		getProgressTimeline {
+			_id
+			memberId
+			progressDate
+			weight
+			chest
+			waist
+			hips
+			bodyFat
+			progressPhotos
+			progressNote
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const CALCULATE_ANALYTICS = gql`
+	query CalculateAnalytics($input: AnalyticsInput!) {
+		calculateAnalytics(input: $input) {
+			bmi
+			bmr
+			dailyCalories
+			summary
+		}
+	}
+`;
+
+/**************************
+ *     NOTIFICATIONS      *
+ *************************/
+
+export const GET_NOTIFICATIONS = gql`
+	query GetNotifications {
+		getNotifications {
+			_id
+			memberId
+			notificationType
+			notificationTitle
+			notificationMessage
+			isRead
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
+ *   MEMBER COURSES       *
+ *************************/
+
+export const GET_TRAINER_COURSES = gql`
+	query GetTrainerCourses {
+		getTrainerCourses {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			courseThumbnail
+			courseRating
+			courseRatingCount
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const GET_MEMBER_PURCHASED_COURSES = gql`
+	query GetMemberPurchasedCourses {
+		getMemberPurchasedCourses {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			courseThumbnail
+			courseRating
+			courseRatingCount
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
+ *    TRAINER DETAIL      *
+ *************************/
+
+export const GET_TRAINER_BY_MEMBER_ID = gql`
+	query GetTrainerByMemberId($input: String!) {
+		getTrainerByMemberId(memberId: $input) {
+			_id
+			memberId
+			trainerBio
+			trainerSpecializations
+			trainerExperience
+			trainerRating
+			trainerRatingCount
+			trainerSocialLinks
+			trainerVerificationStatus
+			trainerRank
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const GET_COURSES_BY_TRAINER_ID = gql`
+	query GetCoursesByTrainerId($input: String!) {
+		getCoursesByTrainerId(trainerId: $input) {
+			_id
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			courseThumbnail
+			courseRating
+			createdAt
+		}
+	}
+`;
+
+export const GET_TRAINER_REVIEWS = gql`
+	query GetTrainerReviews($input: String!) {
+		getTrainerReviews(trainerId: $input) {
+			_id
+			memberId
+			trainerId
+			reviewRating
+			reviewText
+			memberData {
+				_id
+				memberNick
+				memberImage
+			}
+			createdAt
+		}
+	}
+`;
+
+export const GET_WORKOUT_REVIEWS = gql`
+	query GetWorkoutReviews($input: String!) {
+		getWorkoutReviews(workoutId: $input) {
+			_id
+			memberId
+			workoutId
+			reviewRating
+			reviewText
+			memberData {
+				_id
+				memberNick
+				memberImage
+			}
+			createdAt
+		}
+	}
+`;
+
+export const GET_COURSE_REVIEWS = gql`
+	query GetCourseReviews($input: String!) {
+		getCourseReviews(courseId: $input) {
+			_id
+			memberId
+			courseId
+			reviewRating
+			reviewText
+			memberData {
+				_id
+				memberNick
+				memberImage
+			}
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *    SUBSCRIPTION        *
+ *************************/
+
+export const GET_MEMBER_SUBSCRIPTIONS = gql`
+	query GetMemberSubscriptions {
+		getMemberSubscriptions {
+			_id
+			memberId
+			subscriptionPlan
+			subscriptionStatus
+			startDate
+			endDate
+			createdAt
+		}
+	}
+`;
+
+export const GET_PAYMENT_HISTORY = gql`
+	query GetPaymentHistory {
+		getPaymentHistory {
+			_id
+			memberId
+			paymentAmount
+			paymentCurrency
+			paymentStatus
+			subscriptionPlan
+			transactionId
+			paymentProvider
+			paymentNote
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *         CHAT           *
+ *************************/
+
+export const GET_CONVERSATIONS = gql`
+	query GetConversations {
+		getConversations {
+			partnerId
+			partnerNick
+			partnerImage
+			lastMessage
+			lastMessageAt
+			isRead
+			isOnline
+		}
+	}
+`;
+
+export const GET_MESSAGE_HISTORY = gql`
+	query GetMessageHistory($input: String!) {
+		getMessageHistory(partnerId: $input) {
+			_id
+			senderId
+			receiverId
+			message
+			isRead
+			createdAt
 		}
 	}
 `;

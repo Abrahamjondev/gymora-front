@@ -30,8 +30,14 @@ const AdminMenuList = (props: any) => {
 		if (device === 'mobile') setMobileLayout(true);
 
 		switch (pathnames[1]) {
-			case 'properties':
-				setClickMenu(['Properties']);
+			case 'workouts':
+				setClickMenu(['Workouts']);
+				break;
+			case 'courses':
+				setClickMenu(['Courses']);
+				break;
+			case 'trainers':
+				setClickMenu(['Trainers']);
 				break;
 			case 'community':
 				setClickMenu(['Community']);
@@ -84,9 +90,19 @@ const AdminMenuList = (props: any) => {
 			on_click: () => subMenuChangeHandler('Users'),
 		},
 		{
-			title: 'Properties',
+			title: 'Workouts',
 			icon: <UserCircleGear size={20} color="#bdbdbd" weight="fill" />,
-			on_click: () => subMenuChangeHandler('Properties'),
+			on_click: () => subMenuChangeHandler('Workouts'),
+		},
+		{
+			title: 'Courses',
+			icon: <UserCircleGear size={20} color="#bdbdbd" weight="fill" />,
+			on_click: () => subMenuChangeHandler('Courses'),
+		},
+		{
+			title: 'Trainers',
+			icon: <UserCircleGear size={20} color="#bdbdbd" weight="fill" />,
+			on_click: () => subMenuChangeHandler('Trainers'),
 		},
 		{
 			title: 'Community',
@@ -102,7 +118,9 @@ const AdminMenuList = (props: any) => {
 
 	const sub_menu_set: any = {
 		Users: [{ title: 'List', url: '/_admin/users' }],
-		Properties: [{ title: 'List', url: '/_admin/properties' }],
+		Workouts: [{ title: 'List', url: '/_admin/workouts' }],
+		Courses: [{ title: 'List', url: '/_admin/courses' }],
+		Trainers: [{ title: 'List', url: '/_admin/trainers' }],
 		Community: [{ title: 'List', url: '/_admin/community' }],
 		Cs: [
 			{ title: 'FAQ', url: '/_admin/cs/faq' },

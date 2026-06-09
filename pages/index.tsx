@@ -1,15 +1,14 @@
 import { NextPage } from 'next';
 import useDeviceDetect from '../libs/hooks/useDeviceDetect';
 import withLayoutMain from '../libs/components/layout/LayoutHome';
-import CommunityBoards from '../libs/components/homepage/CommunityBoards';
-import PopularProperties from '../libs/components/homepage/PopularProperties';
-import TopAgents from '../libs/components/homepage/TopAgents';
-import Events from '../libs/components/homepage/Events';
-import TrendProperties from '../libs/components/homepage/TrendProperties';
-import TopProperties from '../libs/components/homepage/TopProperties';
 import { Stack } from '@mui/material';
-import Advertisement from '../libs/components/homepage/Advertisement';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import HeroSection from '../libs/components/homepage/HeroSection';
+import FeaturedWorkouts from '../libs/components/homepage/FeaturedWorkouts';
+import EliteTrainers from '../libs/components/homepage/EliteTrainers';
+import SubscriptionPlans from '../libs/components/homepage/SubscriptionPlans';
+import LandingFooter from '../libs/components/homepage/LandingFooter';
+import CommunityBoards from '../libs/components/homepage/CommunityBoards';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -20,29 +19,16 @@ export const getStaticProps = async ({ locale }: any) => ({
 const Home: NextPage = () => {
 	const device = useDeviceDetect();
 
-	if (device === 'mobile') {
-		return (
-			<Stack className={'home-page'}>
-				<TrendProperties />
-				<PopularProperties />
-				<Advertisement />
-				<TopProperties />
-				<TopAgents />
-			</Stack>
-		);
-	} else {
-		return (
-			<Stack className={'home-page'}>
-				<TrendProperties />
-				<PopularProperties />
-				<Advertisement />
-				<TopProperties />
-				<TopAgents />
-				<Events />
-				<CommunityBoards />
-			</Stack>
-		);
-	}
+	return (
+		<Stack className={'home-page'} sx={{ background: '#131314', minHeight: '100vh' }}>
+			<HeroSection />
+			<FeaturedWorkouts />
+			<EliteTrainers />
+			<SubscriptionPlans />
+			<CommunityBoards />
+			<LandingFooter />
+		</Stack>
+	);
 };
 
 export default withLayoutMain(Home);

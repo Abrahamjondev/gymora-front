@@ -5,7 +5,7 @@
 a {
 	white-space: nowrap;
 	text-decoration: none;
-	color: #212121;
+	color: #b9caca;
 }
 button {
 	text-transform: none;
@@ -13,10 +13,11 @@ button {
 	padding: 0;
 }
 button.outline {
-	border: 1px solid #eee;
+	border: 1px solid #3a494a;
 }
 button.contain {
-	color: #fff;
+	color: #003739;
+	background: #e9feff;
 }
 span,
 p {
@@ -24,16 +25,18 @@ p {
 }
 body {
 	font-family: $font;
+	background-color: #131314;
+	color: #e5e2e3;
 	&::-webkit-scrollbar {
 		width: 9px;
 	}
 	&::-webkit-scrollbar-thumb {
 		height: 30%;
-		background: #bdbdbd;
+		background: #3a494a;
 		border-radius: 10px;
 	}
 	&::-webkit-scrollbar-track {
-		background: #eee;
+		background: #1c1b1c;
 	}
 
 	.MuiPopover-paper {
@@ -43,7 +46,7 @@ body {
 hr {
 	border-width: 0;
 	border-bottom-width: thin;
-	border-color: #eee;
+	border-color: #3a494a;
 	margin: auto;
 }
 
@@ -54,7 +57,7 @@ hr {
 
 	.container {
 		position: relative;
-		width: 1300px;
+		width: 1200px;
 		margin: 0 auto;
 		display: flex;
 	}

@@ -319,3 +319,140 @@ export const UNSUBSCRIBE = gql`
 		}
 	}
 `;
+
+/**************************
+ *       NUTRITION        *
+ *************************/
+
+export const ADD_MEAL_LOG = gql`
+	mutation AddMealLog($input: MealLogInput!) {
+		addMealLog(input: $input) {
+			_id
+			memberId
+			mealType
+			mealName
+			calories
+			protein
+			carbs
+			fats
+			mealDate
+			mealImage
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const DELETE_MEAL_LOG = gql`
+	mutation DeleteMealLog($input: String!) {
+		deleteMealLog(mealLogId: $input) {
+			_id
+			mealName
+		}
+	}
+`;
+
+/**************************
+ *       PROGRESS         *
+ *************************/
+
+export const ADD_PROGRESS = gql`
+	mutation AddProgress($input: ProgressInput!) {
+		addProgress(input: $input) {
+			_id
+			memberId
+			progressDate
+			weight
+			chest
+			waist
+			hips
+			bodyFat
+			progressPhotos
+			progressNote
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+/**************************
+ *     NOTIFICATIONS      *
+ *************************/
+
+export const MARK_NOTIFICATION_READ = gql`
+	mutation MarkNotificationRead($input: String!) {
+		markNotificationRead(notificationId: $input) {
+			_id
+			isRead
+		}
+	}
+`;
+
+/**************************
+ *       TRAINER          *
+ *************************/
+
+export const CREATE_TRAINER = gql`
+	mutation CreateTrainer($input: TrainerInput!) {
+		createTrainer(input: $input) {
+			_id
+			memberId
+			trainerBio
+			trainerSpecializations
+			trainerExperience
+			trainerVerificationStatus
+			createdAt
+		}
+	}
+`;
+
+
+/**************************
+ *        REVIEW          *
+ *************************/
+
+export const CREATE_REVIEW = gql`
+	mutation CreateReview($input: ReviewInput!) {
+		createReview(input: $input) {
+			_id
+			memberId
+			trainerId
+			courseId
+			workoutId
+			reviewRating
+			reviewText
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *    COURSE PURCHASE     *
+ *************************/
+
+export const PURCHASE_COURSE = gql`
+	mutation PurchaseCourse($input: String!) {
+		purchaseCourse(courseId: $input) {
+			_id
+			courseTitle
+			purchasedMembers
+		}
+	}
+`;
+
+/**************************
+ *         CHAT           *
+ *************************/
+
+export const SEND_MESSAGE = gql`
+	mutation SendMessage($input: ChatInput!) {
+		sendMessage(input: $input) {
+			_id
+			senderId
+			receiverId
+			message
+			isRead
+			createdAt
+		}
+	}
+`;

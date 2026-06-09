@@ -5,8 +5,8 @@ import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation, Pagination } from 'swiper';
-import { Property } from '../../types/property/property';
-import { PropertiesInquiry } from '../../types/property/property.input';
+import { Workout } from '../../types/workout/workout';
+import { WorkoutsInquiry } from '../../types/workout/workout.input';
 import TrendPropertyCard from './TrendPropertyCard';
 import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { useMutation, useQuery } from '@apollo/client';
@@ -16,16 +16,16 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAler
 import { Message } from '../../enums/common.enum';
 
 interface TrendPropertiesProps {
-	initialInput: PropertiesInquiry;
+	initialInput: WorkoutsInquiry;
 }
 
 const TrendProperties = (props: TrendPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const [trendProperties, setTrendProperties] = useState<Property[]>([]);
+	const [trendProperties, setTrendProperties] = useState<Workout[]>([]);
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_WORKOUT);
+	const [likeWorkout] = useMutation(LIKE_WORKOUT);
 	const {
 		loading: getTrendPropertiesLoading,
 		data: getTrendPropertiesData,
@@ -36,7 +36,7 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setTrendProperties(data?.getProperties?.list);
+			setTrendProperties(data?.getWorkouts?.list);
 		},
 	});
 	/** HANDLERS **/
@@ -45,7 +45,7 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({ variables: { input: id } });
+			await likeWorkout({ variables: { input: id } });
 
 			await getPropertiesRefetch({ input: initialInput });
 
@@ -78,7 +78,7 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 								spaceBetween={15}
 								modules={[Autoplay]}
 							>
-								{trendProperties.map((property: Property) => {
+								{trendProperties.map((property: Workout) => {
 									return (
 										<SwiperSlide key={property._id} className={'trend-property-slide'}>
 											<TrendPropertyCard property={property} likePropertyHandler={likePropertyHandler} />
@@ -127,7 +127,7 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 									el: '.swiper-trend-pagination',
 								}}
 							>
-								{trendProperties.map((property: Property) => {
+								{trendProperties.map((property: Workout) => {
 									return (
 										<SwiperSlide key={property._id} className={'trend-property-slide'}>
 											<TrendPropertyCard property={property} likePropertyHandler={likePropertyHandler} />
@@ -147,7 +147,7 @@ TrendProperties.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 8,
-		sort: 'propertyLikes',
+		sort: 'workoutLikes',
 		direction: 'DESC',
 		search: {},
 	},

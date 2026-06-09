@@ -56,6 +56,7 @@ Analyze first, then make incremental UI changes.
 3. Make small incremental changes.
 4. Run typecheck after each phase.
 5. Do not remove working logic unless replaced safely.
+6. Update gymora/docs/ai/COMPLETED_TASKS.md after major changes if cannot find just create those folder and files
 
 ## Package Manager
 

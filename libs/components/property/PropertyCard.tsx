@@ -3,17 +3,16 @@ import { Stack, Typography, Box } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import FavoriteIcon from '@mui/icons-material/Favorite';
 import FavoriteBorderIcon from '@mui/icons-material/FavoriteBorder';
-import { Property } from '../../types/property/property';
+import { Workout } from '../../types/workout/workout';
 import Link from 'next/link';
-import { formatterStr } from '../../utils';
-import { REACT_APP_API_URL, topPropertyRank } from '../../config';
+import { REACT_APP_API_URL, topWorkoutRank } from '../../config';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import IconButton from '@mui/material/IconButton';
 import RemoveRedEyeIcon from '@mui/icons-material/RemoveRedEye';
 
 interface PropertyCardType {
-	property: Property;
+	property: Workout;
 	likePropertyHandler?: any;
 	myFavorites?: boolean;
 	recentlyVisited?: boolean;
@@ -23,32 +22,32 @@ const PropertyCard = (props: PropertyCardType) => {
 	const { property, likePropertyHandler, myFavorites, recentlyVisited } = props;
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
-	const imagePath: string = property?.propertyImages[0]
-		? `${REACT_APP_API_URL}/${property?.propertyImages[0]}`
+	const imagePath: string = property?.workoutThumbnail
+		? `${REACT_APP_API_URL}/${property?.workoutThumbnail}`
 		: '/img/banner/header1.svg';
 
 	if (device === 'mobile') {
-		return <div>PROPERTY CARD</div>;
+		return <div>WORKOUT CARD</div>;
 	} else {
 		return (
 			<Stack className="card-config">
 				<Stack className="top">
 					<Link
 						href={{
-							pathname: '/property/detail',
+							pathname: '/workout/detail',
 							query: { id: property?._id },
 						}}
 					>
 						<img src={imagePath} alt="" />
 					</Link>
-					{property && property?.propertyRank > topPropertyRank && (
+					{property && (property?.workoutRank ?? 0) > topWorkoutRank && (
 						<Box component={'div'} className={'top-badge'}>
 							<img src="/img/icons/electricity.svg" alt="" />
 							<Typography>TOP</Typography>
 						</Box>
 					)}
 					<Box component={'div'} className={'price-box'}>
-						<Typography>${formatterStr(property?.propertyPrice)}</Typography>
+						<Typography>{property?.isFree ? 'Free' : 'Paid'}</Typography>
 					</Box>
 				</Stack>
 				<Stack className="bottom">
@@ -56,28 +55,28 @@ const PropertyCard = (props: PropertyCardType) => {
 						<Stack className="name">
 							<Link
 								href={{
-									pathname: '/property/detail',
+									pathname: '/workout/detail',
 									query: { id: property?._id },
 								}}
 							>
-								<Typography>{property.propertyTitle}</Typography>
+								<Typography>{property.workoutTitle}</Typography>
 							</Link>
 						</Stack>
 						<Stack className="address">
 							<Typography>
-								{property.propertyAddress}, {property.propertyLocation}
+								{property.targetMuscle} - {property.workoutDifficulty}
 							</Typography>
 						</Stack>
 					</Stack>
 					<Stack className="options">
 						<Stack className="option">
-							<img src="/img/icons/bed.svg" alt="" /> <Typography>{property.propertyBeds} bed</Typography>
+							<img src="/img/icons/expand.svg" alt="" /> <Typography>{property.estimatedCaloriesBurned} cal</Typography>
 						</Stack>
 						<Stack className="option">
-							<img src="/img/icons/room.svg" alt="" /> <Typography>{property.propertyRooms} room</Typography>
+							<img src="/img/icons/room.svg" alt="" /> <Typography>{property.workoutDifficulty}</Typography>
 						</Stack>
 						<Stack className="option">
-							<img src="/img/icons/expand.svg" alt="" /> <Typography>{property.propertySquare} m2</Typography>
+							<img src="/img/icons/bed.svg" alt="" /> <Typography>{property.targetMuscle}</Typography>
 						</Stack>
 					</Stack>
 					<Stack className="divider"></Stack>
@@ -85,15 +84,15 @@ const PropertyCard = (props: PropertyCardType) => {
 						<Stack className="type">
 							<Typography
 								sx={{ fontWeight: 500, fontSize: '13px' }}
-								className={property.propertyRent ? '' : 'disabled-type'}
+								className={property.isFree ? '' : 'disabled-type'}
 							>
-								Rent
+								Free
 							</Typography>
 							<Typography
 								sx={{ fontWeight: 500, fontSize: '13px' }}
-								className={property.propertyBarter ? '' : 'disabled-type'}
+								className={!property.isFree ? '' : 'disabled-type'}
 							>
-								Barter
+								Paid
 							</Typography>
 						</Stack>
 						{!recentlyVisited && (
@@ -101,7 +100,7 @@ const PropertyCard = (props: PropertyCardType) => {
 								<IconButton color={'default'}>
 									<RemoveRedEyeIcon />
 								</IconButton>
-								<Typography className="view-cnt">{property?.propertyViews}</Typography>
+								<Typography className="view-cnt">{property?.workoutViews}</Typography>
 								<IconButton color={'default'} onClick={() => likePropertyHandler(user, property?._id)}>
 									{myFavorites ? (
 										<FavoriteIcon color="primary" />
@@ -111,7 +110,7 @@ const PropertyCard = (props: PropertyCardType) => {
 										<FavoriteBorderIcon />
 									)}
 								</IconButton>
-								<Typography className="view-cnt">{property?.propertyLikes}</Typography>
+								<Typography className="view-cnt">{property?.workoutLikes}</Typography>
 							</Stack>
 						)}
 					</Stack>

@@ -3,7 +3,7 @@ import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
 import PropertyCard from '../property/PropertyCard';
-import { Property } from '../../types/property/property';
+import { Workout } from '../../types/workout/workout';
 import { T } from '../../types/common';
 import { useMutation, useQuery } from '@apollo/client';
 import { LIKE_WORKOUT } from '../../../apollo/user/mutation';
@@ -13,7 +13,7 @@ import { sweetMixinErrorAlert } from '../../sweetAlert';
 
 const MyFavorites: NextPage = () => {
 	const device = useDeviceDetect();
-	const [myFavorites, setMyFavorites] = useState<Property[]>([]);
+	const [myFavorites, setMyFavorites] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchFavorites, setSearchFavorites] = useState<T>({ page: 1, limit: 6 });
 
@@ -36,9 +36,9 @@ const MyFavorites: NextPage = () => {
 		notifyOnNetworkStatusChange: true,
 
 		onCompleted(data: T) {
-			setMyFavorites(data?.getFavorites?.list);
+			setMyFavorites(data?.getWorkouts?.list);
 
-			setTotal(data?.getFavorites?.metaCounter?.[0]?.total || 0);
+			setTotal(data?.getWorkouts?.metaCounter?.[0]?.total || 0);
 		},
 	});
 	/** HANDLERS **/
@@ -80,7 +80,7 @@ const MyFavorites: NextPage = () => {
 				</Stack>
 				<Stack className="favorites-list-box">
 					{myFavorites?.length ? (
-						myFavorites?.map((property: Property) => {
+						myFavorites?.map((property: Workout) => {
 							return <PropertyCard property={property} likePropertyHandler={likePropertyHandler} myFavorites={true} />;
 						})
 					) : (

@@ -159,27 +159,9 @@ export const GET_BOARD_ARTICLES_BY_ADMIN = gql`
 				updatedAt
 				memberData {
 					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
-					memberFullName
 					memberImage
-					memberAddress
-					memberDesc
-					memberWarnings
-					memberBlocks
-					memberCourses
-					memberWorkouts
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					deletedAt
-					createdAt
-					updatedAt
-					accessToken
+					memberType
 				}
 			}
 			metaCounter {
@@ -207,27 +189,9 @@ export const GET_COMMENTS = gql`
 				updatedAt
 				memberData {
 					_id
-					memberType
-					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
-					memberFullName
 					memberImage
-					memberAddress
-					memberDesc
-					memberWarnings
-					memberBlocks
-					memberCourses
-					memberWorkouts
-					memberRank
-					memberPoints
-					memberLikes
-					memberViews
-					deletedAt
-					createdAt
-					updatedAt
-					accessToken
+					memberType
 				}
 			}
 			metaCounter {

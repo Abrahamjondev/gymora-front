@@ -6,21 +6,21 @@ import { Autoplay, Navigation, Pagination } from 'swiper';
 import WestIcon from '@mui/icons-material/West';
 import EastIcon from '@mui/icons-material/East';
 import PopularPropertyCard from './PopularPropertyCard';
-import { Property } from '../../types/property/property';
+import { Workout } from '../../types/workout/workout';
 import Link from 'next/link';
-import { PropertiesInquiry } from '../../types/property/property.input';
+import { WorkoutsInquiry } from '../../types/workout/workout.input';
 import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 import { T } from '../../types/common';
 
 interface PopularPropertiesProps {
-	initialInput: PropertiesInquiry;
+	initialInput: WorkoutsInquiry;
 }
 
 const PopularProperties = (props: PopularPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const [popularProperties, setPopularProperties] = useState<Property[]>([]);
+	const [popularProperties, setPopularProperties] = useState<Workout[]>([]);
 
 	/** APOLLO REQUESTS **/
 	const {
@@ -33,7 +33,7 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setPopularProperties(data?.getProperties?.list);
+			setPopularProperties(data?.getWorkouts?.list);
 		},
 	});
 	/** HANDLERS **/
@@ -45,7 +45,7 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 			<Stack className={'popular-properties'}>
 				<Stack className={'container'}>
 					<Stack className={'info-box'}>
-						<span>Popular properties</span>
+						<span>Popular Workouts</span>
 					</Stack>
 					<Stack className={'card-box'}>
 						<Swiper
@@ -55,7 +55,7 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 							spaceBetween={25}
 							modules={[Autoplay]}
 						>
-							{popularProperties.map((property: Property) => {
+							{popularProperties.map((property: Workout) => {
 								return (
 									<SwiperSlide key={property._id} className={'popular-property-slide'}>
 										<PopularPropertyCard property={property} />
@@ -73,13 +73,13 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 				<Stack className={'container'}>
 					<Stack className={'info-box'}>
 						<Box component={'div'} className={'left'}>
-							<span>Popular properties</span>
+							<span>Popular Workouts</span>
 							<p>Popularity is based on views</p>
 						</Box>
 						<Box component={'div'} className={'right'}>
 							<div className={'more-box'}>
-								<Link href={'/property'}>
-									<span>See All Categories</span>
+								<Link href={'/workout'}>
+									<span>See All Workouts</span>
 								</Link>
 								<img src="/img/icons/rightup.svg" alt="" />
 							</div>
@@ -99,7 +99,7 @@ const PopularProperties = (props: PopularPropertiesProps) => {
 								el: '.swiper-popular-pagination',
 							}}
 						>
-							{popularProperties.map((property: Property) => {
+							{popularProperties.map((property: Workout) => {
 								return (
 									<SwiperSlide key={property._id} className={'popular-property-slide'}>
 										<PopularPropertyCard property={property} />
@@ -123,7 +123,7 @@ PopularProperties.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 7,
-		sort: 'propertyViews',
+		sort: 'workoutViews',
 		direction: 'DESC',
 		search: {},
 	},

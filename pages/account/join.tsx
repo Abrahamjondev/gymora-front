@@ -2,7 +2,7 @@ import React, { useCallback, useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import { Box, Button, Checkbox, FormControlLabel, FormGroup, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import { logIn, signUp } from '../../libs/auth';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
@@ -25,14 +25,8 @@ const Join: NextPage = () => {
 		setLoginView(state);
 	};
 
-	const checkUserTypeHandler = (e: any) => {
-		const checked = e.target.checked;
-		if (checked) {
-			const value = e.target.name;
-			handleInput('type', value);
-		} else {
-			handleInput('type', 'USER');
-		}
+	const checkUserTypeHandler = (type: string) => {
+		handleInput('type', type);
 	};
 
 	const handleInput = useCallback((name: any, value: any) => {
@@ -42,176 +36,195 @@ const Join: NextPage = () => {
 	}, []);
 
 	const doLogin = useCallback(async () => {
-		console.warn(input);
 		try {
+			if (!input.nick || !input.password) {
+				await sweetMixinErrorAlert('Please fill in all fields');
+				return;
+			}
 			await logIn(input.nick, input.password);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err.message);
+			const msg = (err.message || 'Login failed').replace('Definer: ', '');
+			await sweetMixinErrorAlert(msg);
 		}
 	}, [input]);
 
 	const doSignUp = useCallback(async () => {
-		console.warn(input);
 		try {
+			if (!input.nick || !input.password || !input.phone) {
+				await sweetMixinErrorAlert('Please fill in all fields');
+				return;
+			}
 			await signUp(input.nick, input.password, input.phone, input.type);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
-			await sweetMixinErrorAlert(err.message);
+			const msg = (err.message || 'Signup failed').replace('Definer: ', '');
+			await sweetMixinErrorAlert(msg);
 		}
 	}, [input]);
 
-	console.log('+input: ', input);
+	const inputStyle = {
+		width: '100%',
+		padding: '14px 16px',
+		background: 'rgba(255,255,255,0.03)',
+		border: '1px solid #3a494a',
+		borderRadius: '8px',
+		fontFamily: 'Hanken Grotesk, sans-serif',
+		fontSize: '14px',
+		color: '#e5e2e3',
+		outline: 'none',
+	};
+
+	const labelStyle = {
+		fontFamily: 'JetBrains Mono, monospace',
+		fontSize: '11px',
+		letterSpacing: '0.05em',
+		color: '#849495',
+		textTransform: 'uppercase' as const,
+		display: 'block',
+		marginBottom: '8px',
+	};
 
 	if (device === 'mobile') {
-		return <div>LOGIN MOBILE</div>;
-	} else {
-		return (
-			<Stack className={'join-page'}>
-				<Stack className={'container'}>
-					<Stack className={'main'}>
-						<Stack className={'left'}>
-							{/* @ts-ignore */}
-							<Box className={'logo'}>
-								<img src="/img/logo/logoText.svg" alt="" />
-								<span>Gymora</span>
-							</Box>
-							<Box className={'info'}>
-								<span>{loginView ? 'login' : 'signup'}</span>
-								<p>{loginView ? 'Login' : 'Sign'} in with this account across the following sites.</p>
-							</Box>
-							<Box className={'input-wrap'}>
-								<div className={'input-box'}>
-									<span>Nickname</span>
-									<input
-										type="text"
-										placeholder={'Enter Nickname'}
-										onChange={(e) => handleInput('nick', e.target.value)}
-										required={true}
-										onKeyDown={(event) => {
-											if (event.key == 'Enter' && loginView) doLogin();
-											if (event.key == 'Enter' && !loginView) doSignUp();
-										}}
-									/>
-								</div>
-								<div className={'input-box'}>
-									<span>Password</span>
-									<input
-										type="text"
-										placeholder={'Enter Password'}
-										onChange={(e) => handleInput('password', e.target.value)}
-										required={true}
-										onKeyDown={(event) => {
-											if (event.key == 'Enter' && loginView) doLogin();
-											if (event.key == 'Enter' && !loginView) doSignUp();
-										}}
-									/>
-								</div>
-								{!loginView && (
-									<div className={'input-box'}>
-										<span>Phone</span>
-										<input
-											type="text"
-											placeholder={'Enter Phone'}
-											onChange={(e) => handleInput('phone', e.target.value)}
-											required={true}
-											onKeyDown={(event) => {
-												if (event.key == 'Enter') doSignUp();
-											}}
-										/>
-									</div>
-								)}
-							</Box>
-							<Box className={'register'}>
-								{!loginView && (
-									<div className={'type-option'}>
-										<span className={'text'}>I want to be registered as:</span>
-										<div>
-											<FormGroup>
-												<FormControlLabel
-													control={
-														<Checkbox
-															size="small"
-															name={'USER'}
-															onChange={checkUserTypeHandler}
-															checked={input?.type == 'USER'}
-														/>
-													}
-													label="User"
-												/>
-											</FormGroup>
-											<FormGroup>
-												<FormControlLabel
-													control={
-														<Checkbox
-															size="small"
-															name={'AGENT'}
-															onChange={checkUserTypeHandler}
-															checked={input?.type == 'AGENT'}
-														/>
-													}
-													label="Agent"
-												/>
-											</FormGroup>
-										</div>
-									</div>
-								)}
-
-								{loginView && (
-									<div className={'remember-info'}>
-										<FormGroup>
-											<FormControlLabel control={<Checkbox defaultChecked size="small" />} label="Remember me" />
-										</FormGroup>
-										<a>Lost your password?</a>
-									</div>
-								)}
-
-								{loginView ? (
-									<Button
-										variant="contained"
-										endIcon={<img src="/img/icons/rightup.svg" alt="" />}
-										disabled={input.nick == '' || input.password == ''}
-										onClick={doLogin}
-									>
-										LOGIN
-									</Button>
-								) : (
-									<Button
-										variant="contained"
-										disabled={input.nick == '' || input.password == '' || input.phone == '' || input.type == ''}
-										onClick={doSignUp}
-										endIcon={<img src="/img/icons/rightup.svg" alt="" />}
-									>
-										SIGNUP
-									</Button>
-								)}
-							</Box>
-							<Box className={'ask-info'}>
-								{loginView ? (
-									<p>
-										Not registered yet?
-										<b
-											onClick={() => {
-												viewChangeHandler(false);
-											}}
-										>
-											SIGNUP
-										</b>
-									</p>
-								) : (
-									<p>
-										Have account?
-										<b onClick={() => viewChangeHandler(true)}> LOGIN</b>
-									</p>
-								)}
-							</Box>
-						</Stack>
-						<Stack className={'right'}></Stack>
-					</Stack>
-				</Stack>
-			</Stack>
-		);
+		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA LOGIN MOBILE</div>;
 	}
+
+	return (
+		<div style={{ background: '#131314', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
+			<div style={{ maxWidth: '440px', width: '100%' }}>
+				{/* Logo */}
+				<div style={{ textAlign: 'center', marginBottom: '40px' }}>
+					<h1 style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em', color: '#e9feff' }}>
+						GYMORA
+					</h1>
+					<p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#849495', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
+						Elite Performance
+					</p>
+				</div>
+
+				{/* Card */}
+				<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '32px' }}>
+					{/* Tabs */}
+					<div style={{ display: 'flex', marginBottom: '32px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #3a494a' }}>
+						<button
+							onClick={() => viewChangeHandler(true)}
+							style={{
+								flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
+								fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', fontWeight: 700,
+								background: loginView ? '#e9feff' : 'transparent',
+								color: loginView ? '#003739' : '#849495',
+								transition: 'all 0.2s',
+							}}
+						>
+							Login
+						</button>
+						<button
+							onClick={() => viewChangeHandler(false)}
+							style={{
+								flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
+								fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', fontWeight: 700,
+								background: !loginView ? '#e9feff' : 'transparent',
+								color: !loginView ? '#003739' : '#849495',
+								transition: 'all 0.2s',
+							}}
+						>
+							Sign Up
+						</button>
+					</div>
+
+					{/* Form */}
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+						<div>
+							<span style={labelStyle}>Nickname</span>
+							<input
+								type="text"
+								placeholder="Enter Nickname"
+								style={inputStyle}
+								onChange={(e) => handleInput('nick', e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter' && loginView) doLogin();
+									if (e.key === 'Enter' && !loginView) doSignUp();
+								}}
+							/>
+						</div>
+						<div>
+							<span style={labelStyle}>Password</span>
+							<input
+								type="password"
+								placeholder="Enter Password"
+								style={inputStyle}
+								onChange={(e) => handleInput('password', e.target.value)}
+								onKeyDown={(e) => {
+									if (e.key === 'Enter' && loginView) doLogin();
+									if (e.key === 'Enter' && !loginView) doSignUp();
+								}}
+							/>
+						</div>
+						{!loginView && (
+							<>
+								<div>
+									<span style={labelStyle}>Phone</span>
+									<input
+										type="text"
+										placeholder="Enter Phone"
+										style={inputStyle}
+										onChange={(e) => handleInput('phone', e.target.value)}
+										onKeyDown={(e) => {
+											if (e.key === 'Enter') doSignUp();
+										}}
+									/>
+								</div>
+							</>
+						)}
+					</div>
+
+					{/* Submit */}
+					<button
+						onClick={loginView ? doLogin : doSignUp}
+						disabled={
+							loginView
+								? input.nick === '' || input.password === ''
+								: input.nick === '' || input.password === '' || input.phone === ''
+						}
+						style={{
+							width: '100%',
+							padding: '16px',
+							marginTop: '24px',
+							borderRadius: '8px',
+							border: 'none',
+							fontFamily: 'Hanken Grotesk, sans-serif',
+							fontSize: '16px',
+							fontWeight: 700,
+							cursor: 'pointer',
+							textTransform: 'uppercase',
+							letterSpacing: '0.05em',
+							background:
+								(loginView && input.nick && input.password) || (!loginView && input.nick && input.password && input.phone)
+									? '#e9feff'
+									: '#353436',
+							color:
+								(loginView && input.nick && input.password) || (!loginView && input.nick && input.password && input.phone)
+									? '#003739'
+									: '#849495',
+						}}
+					>
+						{loginView ? 'Login' : 'Create Account'}
+					</button>
+
+					{/* Switch */}
+					<p style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', color: '#849495' }}>
+						{loginView ? "Don't have an account? " : 'Already have an account? '}
+						<span
+							onClick={() => viewChangeHandler(!loginView)}
+							style={{ color: '#e9feff', fontWeight: 700, cursor: 'pointer' }}
+						>
+							{loginView ? 'Sign Up' : 'Login'}
+						</span>
+					</p>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default withLayoutBasic(Join);

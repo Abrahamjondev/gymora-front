@@ -2,153 +2,119 @@ import React from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import { Stack, Box } from '@mui/material';
+import { useRouter } from 'next/router';
+import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+
+export const getStaticProps = async ({ locale }: any) => ({
+	props: {
+		...(await serverSideTranslations(locale, ['common'])),
+	},
+});
 
 const About: NextPage = () => {
 	const device = useDeviceDetect();
+	const router = useRouter();
 
 	if (device === 'mobile') {
-		return <div>ABOUT PAGE MOBILE</div>;
-	} else {
-		return (
-			<Stack className={'about-page'}>
-				<Stack className={'intro'}>
-					<Stack className={'container'}>
-						<Stack className={'left'}>
-							<strong>We're on a Mission to Change View of Real Estate Field.</strong>
-						</Stack>
-						<Stack className={'right'}>
-							<p>
-								It doesn’t matter how organized you are — a surplus of toys will always ensure your house is a mess
-								waiting to happen. Fortunately, getting kids on board with the idea of ditching their stuff is a lot
-								easier than it sounds.
-								<br />
-								<br />
-								Maecenas quis viverra metus, et efficitur ligula. Nam congue augue et ex congue, sed luctus lectus
-								congue. Integer convallis condimentum sem. Duis elementum tortor eget condimentum tempor. Praesent
-								sollicitudin lectus ut pharetra pulvinar.
-							</p>
-							<Stack className={'boxes'}>
-								<div className={'box'}>
-									<div>
-										<img src="/img/icons/garden.svg" alt="" />
-									</div>
-									<span>Modern Villa</span>
-									<p>Nullam sollicitudin blandit Nullam maximus.</p>
-								</div>
-								<div className={'box'}>
-									<div>
-										<img src="/img/icons/securePayment.svg" alt="" />
-									</div>
-									<span>Secure Payment</span>
-									<p>Nullam sollicitudin blandit Nullam maximus.</p>
-								</div>
-							</Stack>
-						</Stack>
-					</Stack>
-				</Stack>
-				<Stack className={'statistics'}>
-					<Stack className={'container'}>
-						<Stack className={'banner'}>
-							<img src="/img/banner/header1.svg" alt="" />
-						</Stack>
-						<Stack className={'info'}>
-							<Box component={'div'}>
-								<strong>4M</strong>
-								<p>Award Winning</p>
-							</Box>
-							<Box component={'div'}>
-								<strong>12K</strong>
-								<p>Property Ready</p>
-							</Box>
-							<Box component={'div'}>
-								<strong>20M</strong>
-								<p>Happy Customer</p>
-							</Box>
-						</Stack>
-					</Stack>
-				</Stack>
-				<Stack className={'agents'}>
-					<Stack className={'container'}>
-						<span className={'title'}>Our Exclusive Agetns</span>
-						<p className={'desc'}>Aliquam lacinia diam quis lacus euismod</p>
-						<Stack className={'wrap'}>
-							{/*{[1, 2, 3, 4, 5].map(() => {*/}
-							{/*	return <AgentCard />;*/}
-							{/*})}*/}
-						</Stack>
-					</Stack>
-				</Stack>
-				<Stack className={'options'}>
-					<img src="/img/banner/aboutBanner.svg" alt="" className={'about-banner'} />
-					<Stack className={'container'}>
-						<strong>Let’s find the right selling option for you</strong>
-						<Stack>
-							<div className={'icon-box'}>
-								<img src="/img/icons/security.svg" alt="" />
-							</div>
-							<div className={'text-box'}>
-								<span>Property Management</span>
-								<p>Nullam sollicitudin blandit eros eu pretium. Nullam maximus ultricies auctor.</p>
-							</div>
-						</Stack>
-						<Stack>
-							<div className={'icon-box'}>
-								<img src="/img/icons/keywording.svg" alt="" />
-							</div>
-							<div className={'text_-box'}>
-								<span>Property Management</span>
-								<p>Nullam sollicitudin blandit eros eu pretium. Nullam maximus ultricies auctor.</p>
-							</div>
-						</Stack>
-						<Stack>
-							<div className={'icon-box'}>
-								<img src="/img/icons/investment.svg" alt="" />
-							</div>
-							<div className={'text-box'}>
-								<span>Property Management</span>
-								<p>Nullam sollicitudin blandit eros eu pretium. Nullam maximus ultricies auctor.</p>
-							</div>
-						</Stack>
-						<Stack className={'btn'}>
-							Learn More
-							<img src="/img/icons/rightup.svg" alt="" />
-						</Stack>
-					</Stack>
-				</Stack>
-				<Stack className={'partners'}>
-					<Stack className={'container'}>
-						<span>Trusted bu the world's best</span>
-						<Stack className={'wrap'}>
-							<img src="/img/icons/brands/amazon.svg" alt="" />
-							<img src="/img/icons/brands/amd.svg" alt="" />
-							<img src="/img/icons/brands/cisco.svg" alt="" />
-							<img src="/img/icons/brands/dropcam.svg" alt="" />
-							<img src="/img/icons/brands/spotify.svg" alt="" />
-						</Stack>
-					</Stack>
-				</Stack>
-				<Stack className={'help'}>
-					<Stack className={'container'}>
-						<Box component={'div'} className={'left'}>
-							<strong>Need help? Talk to our expert.</strong>
-							<p>Talk to our experts or Browse through more properties.</p>
-						</Box>
-						<Box component={'div'} className={'right'}>
-							<div className={'white'}>
-								Contact Us
-								<img src="/img/icons/rightup.svg" alt="" />
-							</div>
-							<div className={'black'}>
-								<img src="/img/icons/call.svg" alt="" />
-								920 851 9087
-							</div>
-						</Box>
-					</Stack>
-				</Stack>
-			</Stack>
-		);
+		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA ABOUT MOBILE</div>;
 	}
+
+	return (
+		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
+			<div style={{ maxWidth: '1000px', margin: '0 auto', padding: '0 24px' }}>
+				{/* Hero */}
+				<div style={{ textAlign: 'center', marginBottom: '64px' }}>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.2em', color: '#00f5ff', fontWeight: 500, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
+						About Gymora
+					</span>
+					<h1 style={{ fontFamily: 'Hanken Grotesk', fontSize: '48px', lineHeight: '52px', letterSpacing: '-0.02em', fontWeight: 800, color: '#e5e2e3', maxWidth: '700px', margin: '0 auto 20px' }}>
+						Elevating Human Performance
+					</h1>
+					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', lineHeight: '28px', color: '#b9caca', maxWidth: '600px', margin: '0 auto' }}>
+						Gymora is an elite fitness platform connecting world-class trainers with dedicated athletes. We combine precision programming, scientific nutrition, and data-driven insights to transform physical potential.
+					</p>
+				</div>
+
+				{/* Stats */}
+				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px', marginBottom: '64px' }}>
+					{[
+						{ value: '50K+', label: 'Active Athletes' },
+						{ value: '200+', label: 'Elite Trainers' },
+						{ value: '500+', label: 'Programs' },
+						{ value: '94%', label: 'Success Rate' },
+					].map((stat) => (
+						<div key={stat.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '32px', textAlign: 'center' }}>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '36px', fontWeight: 800, color: '#e9feff', display: 'block', marginBottom: '8px' }}>
+								{stat.value}
+							</span>
+							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+								{stat.label}
+							</span>
+						</div>
+					))}
+				</div>
+
+				{/* Mission */}
+				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '64px' }}>
+					<div>
+						<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>
+							Our Mission
+						</h2>
+						<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '26px', color: '#b9caca' }}>
+							We believe that elite-level training should be accessible to everyone. Gymora bridges the gap between professional coaching and everyday athletes through technology, community, and science-backed programming.
+						</p>
+					</div>
+					<div>
+						<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>
+							Our Approach
+						</h2>
+						<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '26px', color: '#b9caca' }}>
+							Every workout, course, and nutrition plan on Gymora is designed by verified professionals. Our platform combines biometric insights, AI-powered food analysis, and progressive overload tracking to optimize your results.
+						</p>
+					</div>
+				</div>
+
+				{/* Features */}
+				<div style={{ marginBottom: '64px' }}>
+					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px', textAlign: 'center' }}>
+						What Sets Us Apart
+					</h2>
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
+						{[
+							{ icon: '💪', title: 'Precision Training', desc: 'Every rep tracked, every set optimized. Our workouts use micro-periodization for maximum results.' },
+							{ icon: '🧬', title: 'Data-Driven Insights', desc: 'BMI, BMR, TDEE calculations. AI food analysis. Your body, quantified.' },
+							{ icon: '🎯', title: 'Verified Trainers', desc: 'NASM, ACE, and CSCS certified professionals. No influencers — only experts.' },
+							{ icon: '📊', title: 'Progress Tracking', desc: 'Body measurements, weight logs, progress photos. See your transformation over time.' },
+							{ icon: '🥗', title: 'Smart Nutrition', desc: 'Meal logging, macro tracking, personalized recommendations based on your goals.' },
+							{ icon: '👥', title: 'Elite Community', desc: 'Connect with athletes, share achievements, join challenges, and grow together.' },
+						].map((f) => (
+							<div key={f.title} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px' }}>
+								<span style={{ fontSize: '28px', display: 'block', marginBottom: '12px' }}>{f.icon}</span>
+								<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 600, color: '#e5e2e3', marginBottom: '8px' }}>{f.title}</h3>
+								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '20px', color: '#849495' }}>{f.desc}</p>
+							</div>
+						))}
+					</div>
+				</div>
+
+				{/* CTA */}
+				<div style={{ background: 'rgba(0,220,229,0.05)', border: '1px solid rgba(0,220,229,0.2)', borderRadius: '16px', padding: '48px', textAlign: 'center' }}>
+					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '32px', fontWeight: 800, color: '#e5e2e3', marginBottom: '12px' }}>
+						Ready to transform?
+					</h2>
+					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', color: '#b9caca', marginBottom: '24px' }}>
+						Join thousands of athletes already training with Gymora
+					</p>
+					<button
+						onClick={() => router.push('/account/join')}
+						style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '16px 40px', fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, cursor: 'pointer' }}
+					>
+						Get Started Free
+					</button>
+				</div>
+			</div>
+		</div>
+	);
 };
 
 export default withLayoutBasic(About);

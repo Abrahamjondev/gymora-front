@@ -4,10 +4,8 @@ import { Pagination, Stack, Typography } from '@mui/material';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { PropertyCard } from './PropertyCard';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import { Property } from '../../types/property/property';
-import { AgentPropertiesInquiry } from '../../types/property/property.input';
+import { Workout } from '../../types/workout/workout';
 import { T } from '../../types/common';
-import { PropertyStatus } from '../../enums/property.enum';
 import { userVar } from '../../../apollo/store';
 import { useRouter } from 'next/router';
 import { UPDATE_WORKOUT } from '../../../apollo/user/mutation';
@@ -16,13 +14,11 @@ import { sweetConfirmAlert, sweetErrorHandling } from '../../sweetAlert';
 
 const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 	const device = useDeviceDetect();
-	const [searchFilter, setSearchFilter] = useState<AgentPropertiesInquiry>(initialInput);
-	const [agentProperties, setAgentProperties] = useState<Property[]>([]);
+	const [agentProperties, setAgentProperties] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 
-	/** APOLLO REQUESTS **/
 	/** APOLLO REQUESTS **/
 	const [updateProperty] = useMutation(UPDATE_WORKOUT);
 
@@ -33,71 +29,33 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 		refetch: getAgentPropertiesRefetch,
 	} = useQuery(GET_MEMBER_WORKOUTS, {
 		fetchPolicy: 'network-only',
-
-		variables: {
-			input: searchFilter,
-		},
-
 		notifyOnNetworkStatusChange: true,
-
 		onCompleted: (data: T) => {
-			setAgentProperties(data?.getAgentProperties?.list);
-
-			setTotal(data?.getAgentProperties?.metaCounter?.[0]?.total ?? 0);
+			setAgentProperties(data?.getMemberWorkouts ?? []);
+			setTotal(data?.getMemberWorkouts?.length ?? 0);
 		},
 	});
+
 	/** HANDLERS **/
-	const paginationHandler = (e: T, value: number) => {
-		setSearchFilter({ ...searchFilter, page: value });
-	};
-
-	const changeStatusHandler = (value: PropertyStatus) => {
-		setSearchFilter({ ...searchFilter, search: { propertyStatus: value } });
-	};
-
 	const deletePropertyHandler = async (id: string) => {
 		try {
-			if (await sweetConfirmAlert('Are you sure to delete this property?')) {
+			if (await sweetConfirmAlert('Are you sure to delete this workout?')) {
 				await updateProperty({
 					variables: {
 						input: {
 							_id: id,
-							propertyStatus: 'DELETE',
 						},
 					},
 				});
 
-				await getAgentPropertiesRefetch({
-					input: searchFilter,
-				});
+				await getAgentPropertiesRefetch();
 			}
 		} catch (err: any) {
 			await sweetErrorHandling(err);
 		}
 	};
 
-	const updatePropertyHandler = async (status: string, id: string) => {
-		try {
-			if (await sweetConfirmAlert(`Are you sure change to ${status} status?`)) {
-				await updateProperty({
-					variables: {
-						input: {
-							_id: id,
-							propertyStatus: status,
-						},
-					},
-				});
-
-				await getAgentPropertiesRefetch({
-					input: searchFilter,
-				});
-			}
-		} catch (err: any) {
-			await sweetErrorHandling(err);
-		}
-	};
-
-	if (user?.memberType !== 'AGENT') {
+	if (user?.memberType !== 'TRAINER') {
 		router.back();
 	}
 
@@ -108,48 +66,32 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 			<div id="my-property-page">
 				<Stack className="main-title-box">
 					<Stack className="right-box">
-						<Typography className="main-title">My Properties</Typography>
+						<Typography className="main-title">My Workouts</Typography>
 						<Typography className="sub-title">We are glad to see you again!</Typography>
 					</Stack>
 				</Stack>
 				<Stack className="property-list-box">
-					<Stack className="tab-name-box">
-						<Typography
-							onClick={() => changeStatusHandler(PropertyStatus.ACTIVE)}
-							className={searchFilter.search.propertyStatus === 'ACTIVE' ? 'active-tab-name' : 'tab-name'}
-						>
-							On Sale
-						</Typography>
-						<Typography
-							onClick={() => changeStatusHandler(PropertyStatus.SOLD)}
-							className={searchFilter.search.propertyStatus === 'SOLD' ? 'active-tab-name' : 'tab-name'}
-						>
-							On Sold
-						</Typography>
-					</Stack>
 					<Stack className="list-box">
 						<Stack className="listing-title-box">
 							<Typography className="title-text">Listing title</Typography>
 							<Typography className="title-text">Date Published</Typography>
-							<Typography className="title-text">Status</Typography>
+							<Typography className="title-text">Difficulty</Typography>
 							<Typography className="title-text">View</Typography>
-							{searchFilter.search.propertyStatus === 'ACTIVE' && (
-								<Typography className="title-text">Action</Typography>
-							)}
+							<Typography className="title-text">Action</Typography>
 						</Stack>
 
 						{agentProperties?.length === 0 ? (
 							<div className={'no-data'}>
 								<img src="/img/icons/icoAlert.svg" alt="" />
-								<p>No Property found!</p>
+								<p>No Workout found!</p>
 							</div>
 						) : (
-							agentProperties.map((property: Property) => {
+							agentProperties.map((property: Workout) => {
 								return (
 									<PropertyCard
 										property={property}
 										deletePropertyHandler={deletePropertyHandler}
-										updatePropertyHandler={updatePropertyHandler}
+										key={property._id}
 									/>
 								);
 							})
@@ -157,17 +99,8 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 
 						{agentProperties.length !== 0 && (
 							<Stack className="pagination-config">
-								<Stack className="pagination-box">
-									<Pagination
-										count={Math.ceil(total / searchFilter.limit)}
-										page={searchFilter.page}
-										shape="circular"
-										color="primary"
-										onChange={paginationHandler}
-									/>
-								</Stack>
 								<Stack className="total-result">
-									<Typography>{total} property available</Typography>
+									<Typography>{total} workout{total > 1 ? 's' : ''} available</Typography>
 								</Stack>
 							</Stack>
 						)}
@@ -179,14 +112,7 @@ const MyProperties: NextPage = ({ initialInput, ...props }: any) => {
 };
 
 MyProperties.defaultProps = {
-	initialInput: {
-		page: 1,
-		limit: 5,
-		sort: 'createdAt',
-		search: {
-			propertyStatus: 'ACTIVE',
-		},
-	},
+	initialInput: {},
 };
 
 export default MyProperties;

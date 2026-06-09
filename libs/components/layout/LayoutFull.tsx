@@ -2,8 +2,8 @@ import React, { useEffect } from 'react';
 import { useRouter } from 'next/router';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Head from 'next/head';
-import Top from '../Top';
-import Footer from '../Footer';
+import GymNavbar from '../common/GymNavbar';
+import GymFooter from '../common/GymFooter';
 import { Stack } from '@mui/material';
 import { getJwtToken, updateUserInfo } from '../../auth';
 import Chat from '../Chat';
@@ -25,8 +25,6 @@ const withLayoutFull = (Component: any) => {
 			if (jwt) updateUserInfo(jwt);
 		}, []);
 
-		/** HANDLERS **/
-
 		if (device == 'mobile') {
 			return (
 				<>
@@ -34,18 +32,12 @@ const withLayoutFull = (Component: any) => {
 						<title>Gymora</title>
 						<meta name={'title'} content={`Gymora`} />
 					</Head>
-					<Stack id="mobile-wrap">
-						<Stack id={'top'}>
-							<Top />
-						</Stack>
-
-						<Stack id={'main'}>
+					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
+						<GymNavbar />
+						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
 							<Component {...props} />
 						</Stack>
-
-						<Stack id={'footer'}>
-							<Footer />
-						</Stack>
+						<GymFooter />
 					</Stack>
 				</>
 			);
@@ -56,20 +48,16 @@ const withLayoutFull = (Component: any) => {
 						<title>Gymora</title>
 						<meta name={'title'} content={`Gymora`} />
 					</Head>
-					<Stack id="pc-wrap">
-						<Stack id={'top'}>
-							<Top />
-						</Stack>
+					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
+						<GymNavbar />
 
-						<Stack id={'main'}>
+						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
 							<Component {...props} />
 						</Stack>
 
 						<Chat />
 
-						<Stack id={'footer'}>
-							<Footer />
-						</Stack>
+						<GymFooter />
 					</Stack>
 				</>
 			);

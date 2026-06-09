@@ -14,20 +14,18 @@ import {
 } from '@mui/material';
 import Avatar from '@mui/material/Avatar';
 import { Stack } from '@mui/material';
-import { Property } from '../../../types/property/property';
+import { Workout } from '../../../types/workout/workout';
 import { REACT_APP_API_URL } from '../../../config';
 import DeleteIcon from '@mui/icons-material/Delete';
 import Typography from '@mui/material/Typography';
-import { PropertyStatus } from '../../../enums/property.enum';
 
 interface Data {
 	id: string;
 	title: string;
-	price: string;
-	agent: string;
-	location: string;
-	type: string;
-	status: string;
+	difficulty: string;
+	targetMuscle: string;
+	calories: string;
+	isFree: string;
 }
 
 type Order = 'asc' | 'desc';
@@ -44,7 +42,7 @@ const headCells: readonly HeadCell[] = [
 		id: 'id',
 		numeric: true,
 		disablePadding: false,
-		label: 'MB ID',
+		label: 'ID',
 	},
 	{
 		id: 'title',
@@ -53,34 +51,28 @@ const headCells: readonly HeadCell[] = [
 		label: 'TITLE',
 	},
 	{
-		id: 'price',
+		id: 'difficulty',
 		numeric: false,
 		disablePadding: false,
-		label: 'PRICE',
+		label: 'DIFFICULTY',
 	},
 	{
-		id: 'agent',
+		id: 'targetMuscle',
 		numeric: false,
 		disablePadding: false,
-		label: 'AGENT',
+		label: 'TARGET MUSCLE',
 	},
 	{
-		id: 'location',
+		id: 'calories',
 		numeric: false,
 		disablePadding: false,
-		label: 'LOCATION',
+		label: 'CALORIES',
 	},
 	{
-		id: 'type',
+		id: 'isFree',
 		numeric: false,
 		disablePadding: false,
-		label: 'TYPE',
-	},
-	{
-		id: 'status',
-		numeric: false,
-		disablePadding: false,
-		label: 'STATUS',
+		label: 'FREE',
 	},
 ];
 
@@ -114,7 +106,7 @@ function EnhancedTableHead(props: EnhancedTableProps) {
 }
 
 interface PropertyPanelListType {
-	properties: Property[];
+	properties: Workout[];
 	anchorEl: any;
 	menuIconClickHandler: any;
 	menuIconCloseHandler: any;
@@ -148,86 +140,30 @@ export const PropertyPanelList = (props: PropertyPanelListType) => {
 						)}
 
 						{properties.length !== 0 &&
-							properties.map((property: Property, index: number) => {
-								const propertyImage = `${REACT_APP_API_URL}/${property?.propertyImages[0]}`;
+							properties.map((property: Workout, index: number) => {
+								const workoutImage = property?.workoutThumbnail
+									? `${REACT_APP_API_URL}/${property?.workoutThumbnail}`
+									: '/img/profile/defaultUser.svg';
 
 								return (
 									<TableRow hover key={property?._id} sx={{ '&:last-child td, &:last-child th': { border: 0 } }}>
 										<TableCell align="left">{property._id}</TableCell>
 										<TableCell align="left" className={'name'}>
-											{property.propertyStatus === PropertyStatus.ACTIVE ? (
-												<Stack direction={'row'}>
-													<Link href={`/property/detail?id=${property?._id}`}>
-														<div>
-															<Avatar alt="Remy Sharp" src={propertyImage} sx={{ ml: '2px', mr: '10px' }} />
-														</div>
-													</Link>
-													<Link href={`/property/detail?id=${property?._id}`}>
-														<div>{property.propertyTitle}</div>
-													</Link>
-												</Stack>
-											) : (
-												<Stack direction={'row'}>
+											<Stack direction={'row'}>
+												<Link href={`/workout/detail?id=${property?._id}`}>
 													<div>
-														<Avatar alt="Remy Sharp" src={propertyImage} sx={{ ml: '2px', mr: '10px' }} />
+														<Avatar alt="Workout" src={workoutImage} sx={{ ml: '2px', mr: '10px' }} />
 													</div>
-
-													<div style={{ marginTop: '10px ' }}>{property.propertyTitle}</div>
-												</Stack>
-											)}
+												</Link>
+												<Link href={`/workout/detail?id=${property?._id}`}>
+													<div>{property.workoutTitle}</div>
+												</Link>
+											</Stack>
 										</TableCell>
-										<TableCell align="center">{property.propertyPrice}</TableCell>
-										<TableCell align="center">{property.memberData?.memberNick}</TableCell>
-										<TableCell align="center">{property.propertyLocation}</TableCell>
-										<TableCell align="center">{property.propertyType}</TableCell>
-										<TableCell align="center">
-											{property.propertyStatus === PropertyStatus.DELETE && (
-												<Button
-													variant="outlined"
-													sx={{ p: '3px', border: 'none', ':hover': { border: '1px solid #000000' } }}
-													onClick={() => removePropertyHandler(property._id)}
-												>
-													<DeleteIcon fontSize="small" />
-												</Button>
-											)}
-
-											{property.propertyStatus === PropertyStatus.SOLD && (
-												<Button className={'badge warning'}>{property.propertyStatus}</Button>
-											)}
-
-											{property.propertyStatus === PropertyStatus.ACTIVE && (
-												<>
-													<Button onClick={(e: any) => menuIconClickHandler(e, index)} className={'badge success'}>
-														{property.propertyStatus}
-													</Button>
-
-													<Menu
-														className={'menu-modal'}
-														MenuListProps={{
-															'aria-labelledby': 'fade-button',
-														}}
-														anchorEl={anchorEl[index]}
-														open={Boolean(anchorEl[index])}
-														onClose={menuIconCloseHandler}
-														TransitionComponent={Fade}
-														sx={{ p: 1 }}
-													>
-														{Object.values(PropertyStatus)
-															.filter((ele) => ele !== property.propertyStatus)
-															.map((status: string) => (
-																<MenuItem
-																	onClick={() => updatePropertyHandler({ _id: property._id, propertyStatus: status })}
-																	key={status}
-																>
-																	<Typography variant={'subtitle1'} component={'span'}>
-																		{status}
-																	</Typography>
-																</MenuItem>
-															))}
-													</Menu>
-												</>
-											)}
-										</TableCell>
+										<TableCell align="center">{property.workoutDifficulty}</TableCell>
+										<TableCell align="center">{property.targetMuscle}</TableCell>
+										<TableCell align="center">{property.estimatedCaloriesBurned} cal</TableCell>
+										<TableCell align="center">{property.isFree ? 'Yes' : 'No'}</TableCell>
 									</TableRow>
 								);
 							})}

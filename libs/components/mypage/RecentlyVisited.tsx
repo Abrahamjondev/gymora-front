@@ -3,14 +3,14 @@ import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import { Pagination, Stack, Typography } from '@mui/material';
 import PropertyCard from '../property/PropertyCard';
-import { Property } from '../../types/property/property';
+import { Workout } from '../../types/workout/workout';
 import { T } from '../../types/common';
 import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { useQuery } from '@apollo/client';
 
 const RecentlyVisited: NextPage = () => {
 	const device = useDeviceDetect();
-	const [recentlyVisited, setRecentlyVisited] = useState<Property[]>([]);
+	const [recentlyVisited, setRecentlyVisited] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchVisited, setSearchVisited] = useState<T>({ page: 1, limit: 6 });
 
@@ -28,9 +28,9 @@ const RecentlyVisited: NextPage = () => {
 		},
 
 		onCompleted(data: T) {
-			setRecentlyVisited(data?.getVisited?.list);
+			setRecentlyVisited(data?.getWorkouts?.list);
 
-			setTotal(data?.getVisited?.metaCounter?.[0]?.total || 0);
+			setTotal(data?.getWorkouts?.metaCounter?.[0]?.total || 0);
 		},
 	});
 	/** HANDLERS **/
@@ -51,7 +51,7 @@ const RecentlyVisited: NextPage = () => {
 				</Stack>
 				<Stack className="favorites-list-box">
 					{recentlyVisited?.length ? (
-						recentlyVisited?.map((property: Property) => {
+						recentlyVisited?.map((property: Workout) => {
 							return <PropertyCard property={property} recentlyVisited={true} />;
 						})
 					) : (

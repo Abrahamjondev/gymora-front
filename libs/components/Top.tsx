@@ -145,7 +145,7 @@ const Top = () => {
 				<Link href={'/'}>
 					<div>{t('Home')}</div>
 				</Link>
-				<Link href={'/property'}>
+				<Link href={'/workout'}>
 					<div>{t('Properties')}</div>
 				</Link>
 				<Link href={'/agent'}>
@@ -173,7 +173,7 @@ const Top = () => {
 							<Link href={'/'}>
 								<div>{t('Home')}</div>
 							</Link>
-							<Link href={'/property'}>
+							<Link href={'/workout'}>
 								<div>{t('Properties')}</div>
 							</Link>
 							<Link href={'/agent'}>

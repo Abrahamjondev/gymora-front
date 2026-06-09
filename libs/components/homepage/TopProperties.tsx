@@ -6,8 +6,8 @@ import EastIcon from '@mui/icons-material/East';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Autoplay, Navigation, Pagination } from 'swiper';
 import TopPropertyCard from './TopPropertyCard';
-import { PropertiesInquiry } from '../../types/property/property.input';
-import { Property } from '../../types/property/property';
+import { WorkoutsInquiry } from '../../types/workout/workout.input';
+import { Workout } from '../../types/workout/workout';
 import { useMutation, useQuery } from '@apollo/client';
 import { GET_WORKOUTS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
@@ -16,17 +16,17 @@ import { Message } from '../../enums/common.enum';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 
 interface TopPropertiesProps {
-	initialInput: PropertiesInquiry;
+	initialInput: WorkoutsInquiry;
 }
 
 const TopProperties = (props: TopPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
-	const [topProperties, setTopProperties] = useState<Property[]>([]);
+	const [topProperties, setTopProperties] = useState<Workout[]>([]);
 	console.log(topProperties);
 
 	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_WORKOUT);
+	const [likeWorkout] = useMutation(LIKE_WORKOUT);
 	const {
 		loading: getPropertiesLoading,
 		data: getPropertiesData,
@@ -37,7 +37,7 @@ const TopProperties = (props: TopPropertiesProps) => {
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setTopProperties(data?.getProperties?.list);
+			setTopProperties(data?.getWorkouts?.list);
 		},
 	});
 	/** HANDLERS **/
@@ -47,7 +47,7 @@ const TopProperties = (props: TopPropertiesProps) => {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 
-			await likeTargetProperty({ variables: { input: id } });
+			await likeWorkout({ variables: { input: id } });
 
 			await getPropertiesRefetch({ input: initialInput });
 
@@ -73,7 +73,7 @@ const TopProperties = (props: TopPropertiesProps) => {
 							spaceBetween={15}
 							modules={[Autoplay]}
 						>
-							{topProperties.map((property: Property) => {
+							{topProperties.map((property: Workout) => {
 								return (
 									<SwiperSlide className={'top-property-slide'} key={property?._id}>
 										<TopPropertyCard property={property} likePropertyHandler={likePropertyHandler} />
@@ -116,7 +116,7 @@ const TopProperties = (props: TopPropertiesProps) => {
 								el: '.swiper-top-pagination',
 							}}
 						>
-							{topProperties.map((property: Property) => {
+							{topProperties.map((property: Workout) => {
 								return (
 									<SwiperSlide className={'top-property-slide'} key={property?._id}>
 										<TopPropertyCard property={property} likePropertyHandler={likePropertyHandler} />
@@ -135,7 +135,7 @@ TopProperties.defaultProps = {
 	initialInput: {
 		page: 1,
 		limit: 8,
-		sort: 'propertyRank',
+		sort: 'workoutRank',
 		direction: 'DESC',
 		search: {},
 	},

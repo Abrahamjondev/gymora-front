@@ -1,11 +1,8 @@
 import React, { useEffect } from 'react';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Head from 'next/head';
-import Top from '../Top';
-import Footer from '../Footer';
+import GymNavbar from '../common/GymNavbar';
 import { Stack } from '@mui/material';
-import FiberContainer from '../common/FiberContainer';
-import HeaderFilter from '../homepage/HeaderFilter';
 import { userVar } from '../../../apollo/store';
 import { useReactiveVar } from '@apollo/client';
 import { getJwtToken, updateUserInfo } from '../../auth';
@@ -25,8 +22,6 @@ const withLayoutMain = (Component: any) => {
 			if (jwt) updateUserInfo(jwt);
 		}, []);
 
-		/** HANDLERS **/
-
 		if (device == 'mobile') {
 			return (
 				<>
@@ -34,17 +29,10 @@ const withLayoutMain = (Component: any) => {
 						<title>Gymora</title>
 						<meta name={'title'} content={`Gymora`} />
 					</Head>
-					<Stack id="mobile-wrap">
-						<Stack id={'top'}>
-							<Top />
-						</Stack>
-
-						<Stack id={'main'}>
+					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
+						<GymNavbar />
+						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
 							<Component {...props} />
-						</Stack>
-
-						<Stack id={'footer'}>
-							<Footer />
 						</Stack>
 					</Stack>
 				</>
@@ -56,27 +44,14 @@ const withLayoutMain = (Component: any) => {
 						<title>Gymora</title>
 						<meta name={'title'} content={`Gymora`} />
 					</Head>
-					<Stack id="pc-wrap">
-						<Stack id={'top'}>
-							<Top />
-						</Stack>
+					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
+						<GymNavbar />
 
-						<Stack className={'header-main'}>
-							<FiberContainer />
-							<Stack className={'container'}>
-								<HeaderFilter />
-							</Stack>
-						</Stack>
-
-						<Stack id={'main'}>
+						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
 							<Component {...props} />
 						</Stack>
 
 						<Chat />
-
-						<Stack id={'footer'}>
-							<Footer />
-						</Stack>
 					</Stack>
 				</>
 			);

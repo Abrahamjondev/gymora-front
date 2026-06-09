@@ -24,16 +24,16 @@ const TopAgents = (props: TopAgentsProps) => {
 
 	/** APOLLO REQUESTS **/
 	const {
-		loading: getAgentsLoading,
-		data: getAgentsData,
-		error: getAgentsError,
-		refetch: getAgentsRefetch,
+		loading: getTrainersLoading,
+		data: getTrainersData,
+		error: getTrainersError,
+		refetch: getTrainersRefetch,
 	} = useQuery(GET_TRAINER_MEMBERS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: initialInput },
 		notifyOnNetworkStatusChange: true,
 		onCompleted: (data: T) => {
-			setTopAgents(data?.getAgents?.list);
+			setTopAgents(data?.getTrainerMembers?.list);
 		},
 	});
 	/** HANDLERS **/
