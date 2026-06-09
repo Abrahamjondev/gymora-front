@@ -456,3 +456,177 @@ export const SEND_MESSAGE = gql`
 		}
 	}
 `;
+
+/**************************
+ *       LESSONS          *
+ *************************/
+
+export const COMPLETE_LESSON = gql`
+	mutation CompleteLesson($input: String!) {
+		completeLesson(lessonId: $input) {
+			_id
+			memberId
+			courseId
+			lessonId
+			isCompleted
+			completedAt
+		}
+	}
+`;
+
+export const CREATE_LESSON = gql`
+	mutation CreateLesson($input: LessonInput!) {
+		createLesson(input: $input) {
+			_id
+			courseId
+			title
+			description
+			videoUrl
+			weekNumber
+			order
+			duration
+			createdAt
+		}
+	}
+`;
+
+export const UPDATE_LESSON = gql`
+	mutation UpdateLesson($input: LessonUpdate!) {
+		updateLesson(input: $input) {
+			_id
+			title
+			description
+			videoUrl
+			weekNumber
+			order
+			duration
+		}
+	}
+`;
+
+export const DELETE_LESSON = gql`
+	mutation DeleteLesson($input: String!) {
+		deleteLesson(lessonId: $input) {
+			_id
+			title
+		}
+	}
+`;
+
+/**************************
+ *    COURSE CREATE       *
+ *************************/
+
+export const CREATE_COURSE = gql`
+	mutation CreateCourse($input: CourseInput!) {
+		createCourse(input: $input) {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			createdAt
+		}
+	}
+`;
+
+export const CREATE_COURSE_CHECKOUT_SESSION = gql`
+	mutation CreateCourseCheckoutSession($courseId: String!, $baseUrl: String!) {
+		createCourseCheckoutSession(courseId: $courseId, baseUrl: $baseUrl) 
+	}
+`;
+
+export const CONFIRM_COURSE_PAYMENT = gql`
+	mutation ConfirmCoursePayment($sessionId: String!, $courseId: String!) {
+		confirmCoursePayment(sessionId: $sessionId, courseId: $courseId) {
+			_id
+			courseTitle
+			purchasedMembers
+		}
+	}
+`;
+
+/**************************
+ *     SUBSCRIPTION       *
+ *************************/
+
+export const CREATE_SUBSCRIPTION = gql`
+	mutation CreateSubscription($input: SubscriptionInput!) {
+		createSubscription(input: $input) {
+			_id
+			memberId
+			subscriptionPlan
+			subscriptionStatus
+			createdAt
+		}
+	}
+`;
+
+export const INITIATE_PAYMENT = gql`
+	mutation InitiatePayment($input: PaymentInput!) {
+		initiatePayment(input: $input) {
+			paymentId
+			provider
+			clientSecret
+			redirectUrl
+		}
+	}
+`;
+
+/**************************
+ *     AI ANALYSIS        *
+ *************************/
+
+export const ANALYZE_FOOD_IMAGE = gql`
+	mutation AnalyzeFoodImage($file: Upload!) {
+		analyzeFoodImage(file: $file) {
+			_id
+			foodName
+			estimatedCalories
+			protein
+			carbs
+			fats
+			aiProvider
+			createdAt
+		}
+	}
+`;
+
+/**************************
+ *       UPLOADS          *
+ *************************/
+
+export const IMAGE_UPLOADER = gql`
+	mutation ImageUploader($file: Upload!, $target: String!) {
+		imageUploader(file: $file, target: $target)
+	}
+`;
+
+export const VIDEO_UPLOADER = gql`
+	mutation VideoUploader($file: Upload!) {
+		videoUploader(file: $file)
+	}
+`;
+
+export const IMAGES_UPLOADER = gql`
+	mutation ImagesUploader($files: [Upload!]!, $target: String!) {
+		imagesUploader(files: $files, target: $target)
+	}
+`;
+
+export const CREATE_NOTIFICATION = gql`
+	mutation CreateNotification($input: NotificationInput!) {
+		createNotification(input: $input) {
+			_id
+			memberId
+			notificationType
+			notificationTitle
+			notificationMessage
+			isRead
+			createdAt
+		}
+	}
+`;

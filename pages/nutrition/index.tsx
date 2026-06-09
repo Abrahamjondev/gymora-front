@@ -5,7 +5,7 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
-import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION } from '../../apollo/user/query';
+import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION, GET_AI_ANALYZE_HISTORY } from '../../apollo/user/query';
 import { ADD_MEAL_LOG, DELETE_MEAL_LOG } from '../../apollo/user/mutation';
 import { T } from '../../libs/types/common';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
@@ -43,6 +43,14 @@ const NutritionPage: NextPage = () => {
 		skip: !user?._id,
 		variables: { input: { gender: 'MALE', age: 25, heightCm: 175, weightKg: 75, activityLevel: 'MODERATELY_ACTIVE', goal: 'MAINTENANCE' } },
 		onCompleted: (data: T) => setRecommendation(data?.getNutritionRecommendation),
+	});
+
+	const [aiHistory, setAiHistory] = useState<any[]>([]);
+
+	useQuery(GET_AI_ANALYZE_HISTORY, {
+		fetchPolicy: 'network-only',
+		skip: !user?._id,
+		onCompleted: (d: T) => setAiHistory(d?.getAIAnalyzeHistory ?? []),
 	});
 
 	const [addMealLog] = useMutation(ADD_MEAL_LOG);
@@ -196,6 +204,23 @@ const NutritionPage: NextPage = () => {
 									<div key={i} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
 										<span style={{ color: '#00dce5', fontSize: '12px' }}>✓</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: '#b9caca', lineHeight: '18px' }}>{tip}</span>
+									</div>
+								))}
+							</div>
+						)}
+						{/* AI Analysis History */}
+						{aiHistory.length > 0 && (
+							<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', marginTop: '20px' }}>
+								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3', marginBottom: '12px' }}>AI Food Analysis</h4>
+								{aiHistory.slice(0, 5).map((ai: any) => (
+									<div key={ai._id} style={{ padding: '10px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3', display: 'block', marginBottom: '4px' }}>{ai.foodName}</span>
+										<div style={{ display: 'flex', gap: '10px' }}>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5' }}>{Math.round(ai.estimatedCalories)} kcal</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}>P:{Math.round(ai.protein)}g</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}>C:{Math.round(ai.carbs)}g</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}>F:{Math.round(ai.fats)}g</span>
+										</div>
 									</div>
 								))}
 							</div>

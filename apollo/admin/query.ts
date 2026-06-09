@@ -200,3 +200,24 @@ export const GET_COMMENTS = gql`
 		}
 	}
 `;
+
+/**************************
+ *       LESSONS          *
+ *************************/
+
+export const GET_LESSONS_BY_ADMIN = gql`
+	query GetLessonsByAdmin($input: String!) {
+		getLessonsByAdmin(courseId: $input) {
+			_id
+			courseId
+			title
+			description
+			videoUrl
+			weekNumber
+			order
+			duration
+			createdAt
+			updatedAt
+		}
+	}
+`;

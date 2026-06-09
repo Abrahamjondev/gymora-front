@@ -19,7 +19,7 @@ import {
 	GET_MEMBER_PURCHASED_COURSES,
 	GET_TRAINER_COURSES,
 } from '../../apollo/user/query';
-import { CREATE_TRAINER, CREATE_WORKOUT, MARK_NOTIFICATION_READ } from '../../apollo/user/mutation';
+import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ } from '../../apollo/user/mutation';
 import { Workout } from '../../libs/types/workout/workout';
 import { Course } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
@@ -36,6 +36,7 @@ const menuItems = [
 	{ key: 'createWorkout', label: 'Create Workout', icon: '•', trainerOnly: true },
 	{ key: 'myCourses', label: 'My Courses', icon: '•' },
 	{ key: 'trainerCourses', label: 'Trainer Courses', icon: '•', trainerOnly: true },
+	{ key: 'createCourse', label: 'Create Course', icon: '•', trainerOnly: true },
 	{ key: 'myArticles', label: 'My Articles', icon: '•', trainerOrAdmin: true },
 	{ key: 'writeArticle', label: 'Write Article', icon: '•', trainerOrAdmin: true },
 	{ key: 'notifications', label: 'Notifications', icon: '•' },
@@ -70,6 +71,8 @@ const MyPage: NextPage = () => {
 	const [markRead] = useMutation(MARK_NOTIFICATION_READ);
 	const [createTrainer] = useMutation(CREATE_TRAINER);
 	const [createWorkout] = useMutation(CREATE_WORKOUT);
+	const [createCourseMut] = useMutation(CREATE_COURSE);
+	const [newCourse, setNewCourse] = useState({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
 
 	/** LIFECYCLES **/
 	useEffect(() => {
@@ -98,6 +101,16 @@ const MyPage: NextPage = () => {
 			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
 			await sweetMixinSuccessAlert('Workout created!');
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
+		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+	};
+
+	const createCourseHandler = async () => {
+		try {
+			if (!newCourse.courseTitle) throw new Error('Course title required');
+			await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration) } } });
+			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
+			await sweetMixinSuccessAlert('Course created!');
+			router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
@@ -260,6 +273,26 @@ const MyPage: NextPage = () => {
 									))}
 								</div>
 							)}
+						</div>
+					)}
+
+					{/* Create Course */}
+					{category === 'createCourse' && (
+						<div>
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Create Course</h2>
+							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
+								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Title *</span><input value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Course title" style={inputStyle} /></div>
+								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Description</span><textarea value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this course..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
+								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Category</span><select value={newCourse.courseCategory} onChange={(e) => setNewCourse({ ...newCourse, courseCategory: e.target.value })} style={inputStyle}><option value="STRENGTH">Strength</option><option value="CARDIO">Cardio</option><option value="YOGA">Yoga</option><option value="MOBILITY">Mobility</option><option value="NUTRITION">Nutrition</option></select></div>
+									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Difficulty</span><select value={newCourse.courseDifficulty} onChange={(e) => setNewCourse({ ...newCourse, courseDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
+								</div>
+								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Price ($)</span><input type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} style={inputStyle} /></div>
+									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Duration (weeks)</span><input type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} style={inputStyle} /></div>
+								</div>
+								<button onClick={createCourseHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Course</button>
+							</div>
 						</div>
 					)}
 

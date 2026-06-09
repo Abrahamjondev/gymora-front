@@ -175,3 +175,16 @@ export const REMOVE_COMMENT_BY_ADMIN = gql`
 		}
 	}
 `;
+
+/**************************
+ *       LESSONS          *
+ *************************/
+
+export const DELETE_LESSON_BY_ADMIN = gql`
+	mutation DeleteLessonByAdmin($input: String!) {
+		deleteLessonByAdmin(lessonId: $input) {
+			_id
+			title
+		}
+	}
+`;

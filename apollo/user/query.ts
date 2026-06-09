@@ -914,3 +914,98 @@ export const GET_MESSAGE_HISTORY = gql`
 		}
 	}
 `;
+
+/**************************
+ *       LESSONS          *
+ *************************/
+
+export const GET_LESSONS_BY_COURSE = gql`
+	query GetLessonsByCourse($input: String!) {
+		getLessonsByCourse(courseId: $input) {
+			_id
+			courseId
+			title
+			description
+			videoUrl
+			weekNumber
+			order
+			duration
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
+export const GET_LESSON_PROGRESS = gql`
+	query GetLessonProgress($input: String!) {
+		getLessonProgress(courseId: $input) {
+			_id
+			memberId
+			courseId
+			lessonId
+			isCompleted
+			completedAt
+			unlockedAt
+			createdAt
+		}
+	}
+`;
+
+export const GET_FREE_WORKOUT_COUNT = gql`
+	query GetFreeWorkoutCount {
+		getFreeWorkoutCount
+	}
+`;
+
+/**************************
+ *    AI / ANALYTICS      *
+ *************************/
+
+export const GET_AI_ANALYZE_HISTORY = gql`
+	query GetAIAnalyzeHistory {
+		getAIAnalyzeHistory {
+			_id
+			memberId
+			imageUrl
+			foodName
+			estimatedCalories
+			protein
+			carbs
+			fats
+			aiProvider
+			createdAt
+		}
+	}
+`;
+
+export const GET_RECOMMENDATIONS = gql`
+	query GetRecommendations($input: RecommendationInput!) {
+		getRecommendations(input: $input) {
+			target
+			items
+			reason
+		}
+	}
+`;
+
+/**************************
+ *     ONLINE STATUS      *
+ *************************/
+
+export const GET_ONLINE_STATUS = gql`
+	query GetOnlineStatus {
+		getOnlineStatus {
+			memberId
+			isOnline
+		}
+	}
+`;
+
+export const GET_PARTNER_ONLINE_STATUS = gql`
+	query GetPartnerOnlineStatus($input: String!) {
+		getPartnerOnlineStatus(partnerId: $input) {
+			memberId
+			isOnline
+		}
+	}
+`;

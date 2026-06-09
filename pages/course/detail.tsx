@@ -8,8 +8,8 @@ import { Course, Lesson } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import { GET_COURSE, GET_COURSE_REVIEWS } from '../../apollo/user/query';
-import { PURCHASE_COURSE, CREATE_REVIEW } from '../../apollo/user/mutation';
+import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS } from '../../apollo/user/query';
+import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION } from '../../apollo/user/mutation';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
@@ -27,18 +27,39 @@ const CourseDetail: NextPage = () => {
 	const [reviews, setReviews] = useState<any[]>([]);
 	const [reviewText, setReviewText] = useState('');
 	const [reviewRating, setReviewRating] = useState(5);
+	const [lessonProgress, setLessonProgress] = useState<any[]>([]);
 
 	const { loading, refetch } = useQuery(GET_COURSE, { fetchPolicy: 'network-only', variables: { input: courseId }, skip: !courseId, notifyOnNetworkStatusChange: true, onCompleted: (d: T) => { if (d?.getCourse) setCourse(d.getCourse); } });
 	const { refetch: reviewsRefetch } = useQuery(GET_COURSE_REVIEWS, { fetchPolicy: 'network-only', variables: { input: courseId }, skip: !courseId, onCompleted: (d: T) => setReviews(d?.getCourseReviews ?? []) });
+	const { refetch: progressRefetch } = useQuery(GET_LESSON_PROGRESS, { fetchPolicy: 'network-only', variables: { input: courseId }, skip: !courseId || !user?._id, onCompleted: (d: T) => setLessonProgress(d?.getLessonProgress ?? []) });
 
 	const [purchaseCourse] = useMutation(PURCHASE_COURSE);
 	const [createReview] = useMutation(CREATE_REVIEW);
+	const [completeLesson] = useMutation(COMPLETE_LESSON);
+	const [createCheckoutSession] = useMutation(CREATE_COURSE_CHECKOUT_SESSION);
 
 	useEffect(() => { if (router.query.id) setCourseId(router.query.id as string); }, [router]);
+
+	const isLessonCompleted = (lessonId: string) => lessonProgress.some((p: any) => p.lessonId === lessonId && p.isCompleted);
+
+	const completeLessonHandler = async (lessonId: string) => {
+		try {
+			if (!user?._id) throw new Error(Messages.error2);
+			await completeLesson({ variables: { input: lessonId } });
+			const { data } = await progressRefetch({ input: courseId });
+			if (data?.getLessonProgress) setLessonProgress(data.getLessonProgress);
+			await sweetMixinSuccessAlert('Lesson completed!');
+		} catch (err: any) { sweetMixinErrorAlert(err.message.replace('Definer: ', '')).then(); }
+	};
 
 	const enrollHandler = async () => {
 		try {
 			if (!user?._id) { await sweetMixinErrorAlert(Messages.error2); router.push('/account/join'); return; }
+			if (course && course.coursePrice > 0) {
+				const { data } = await createCheckoutSession({ variables: { courseId, baseUrl: window.location.origin } });
+				const url = data?.createCourseCheckoutSession;
+				if (url) { window.location.href = url; return; }
+			}
 			await purchaseCourse({ variables: { input: courseId } });
 			const { data } = await refetch({ input: courseId });
 			if (data?.getCourse) setCourse(data.getCourse);
@@ -102,7 +123,14 @@ const CourseDetail: NextPage = () => {
 									<div key={l._id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px' }}>
 										<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{l.title}</h4>
 										{l.description && <p style={{ fontFamily: 'Hanken Grotesk', fontSize: '12px', color: '#849495', marginBottom: '8px' }}>{l.description}</p>}
-										{l.duration && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{Math.round(l.duration)} min</span>}
+										<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+											{l.duration && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{Math.round(l.duration)} min</span>}
+											{isEnrolled && (
+												isLessonCompleted(l._id)
+													? <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba' }}>Completed</span>
+													: <button onClick={(e) => { e.stopPropagation(); completeLessonHandler(l._id); }} style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5', background: 'rgba(0,220,229,0.1)', border: '1px solid rgba(0,220,229,0.2)', borderRadius: '4px', padding: '3px 8px', cursor: 'pointer' }}>Mark done</button>
+											)}
+										</div>
 									</div>
 								))}
 							</div>
