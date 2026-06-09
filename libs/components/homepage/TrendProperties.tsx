@@ -51,11 +51,9 @@ const TrendProperties = (props: TrendPropertiesProps) => {
 
 			await sweetTopSmallSuccessAlert('success', 800).then();
 		} catch (err: any) {
-			console.log('likePropertyHandler error:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
-	if (trendProperties) console.log('trendProperties:', trendProperties);
 	if (!trendProperties) return null;
 
 	if (device === 'mobile') {

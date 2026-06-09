@@ -858,11 +858,14 @@ export const GET_MEMBER_SUBSCRIPTIONS = gql`
 		getMemberSubscriptions {
 			_id
 			memberId
+			paymentId
 			subscriptionPlan
 			subscriptionStatus
-			startDate
-			endDate
+			startedAt
+			expiresAt
+			price
 			createdAt
+			updatedAt
 		}
 	}
 `;

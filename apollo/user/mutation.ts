@@ -560,6 +560,10 @@ export const CREATE_SUBSCRIPTION = gql`
 			memberId
 			subscriptionPlan
 			subscriptionStatus
+			price
+			startedAt
+			expiresAt
+			paymentId
 			createdAt
 		}
 	}

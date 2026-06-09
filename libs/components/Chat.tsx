@@ -115,7 +115,6 @@ const Chat = () => {
 				onClickHandler();
 			}
 		} catch (err: any) {
-			console.log(err);
 		}
 	};
 

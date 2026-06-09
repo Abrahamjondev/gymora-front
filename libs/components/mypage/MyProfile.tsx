@@ -81,7 +81,6 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			updateData.memberImage = responseImage;
 			setUpdateData({ ...updateData });
 		} catch (err) {
-			console.log('Error, uploadImage:', err);
 		}
 	};
 

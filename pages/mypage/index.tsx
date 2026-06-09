@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { NextPage } from 'next';
-import { CircularProgress, Stack } from '@mui/material';
+import { Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import MyProfile from '../../libs/components/mypage/MyProfile';
@@ -13,11 +13,8 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { getJwtToken, updateUserInfo } from '../../libs/auth';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import {
-	GET_MEMBER_WORKOUTS,
-	GET_DASHBOARD_STATS,
-	GET_NOTIFICATIONS,
-	GET_MEMBER_PURCHASED_COURSES,
-	GET_TRAINER_COURSES,
+	GET_MEMBER_WORKOUTS, GET_DASHBOARD_STATS, GET_NOTIFICATIONS,
+	GET_MEMBER_PURCHASED_COURSES, GET_TRAINER_COURSES, GET_RECOMMENDATIONS,
 } from '../../apollo/user/query';
 import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ } from '../../apollo/user/mutation';
 import { Workout } from '../../libs/types/workout/workout';
@@ -30,21 +27,21 @@ export const getStaticProps = async ({ locale }: any) => ({
 });
 
 const menuItems = [
-	{ key: 'dashboard', label: 'Dashboard', icon: '•' },
-	{ key: 'myProfile', label: 'My Profile', icon: '•' },
-	{ key: 'myWorkouts', label: 'My Workouts', icon: '•', trainerOnly: true },
-	{ key: 'createWorkout', label: 'Create Workout', icon: '•', trainerOnly: true },
-	{ key: 'myCourses', label: 'My Courses', icon: '•' },
-	{ key: 'trainerCourses', label: 'Trainer Courses', icon: '•', trainerOnly: true },
-	{ key: 'createCourse', label: 'Create Course', icon: '•', trainerOnly: true },
-	{ key: 'myArticles', label: 'My Articles', icon: '•', trainerOrAdmin: true },
-	{ key: 'writeArticle', label: 'Write Article', icon: '•', trainerOrAdmin: true },
-	{ key: 'notifications', label: 'Notifications', icon: '•' },
-	{ key: 'chat', label: 'Messages', icon: '•', isLink: '/chat' },
-	{ key: 'nutrition', label: 'Nutrition', icon: '•', isLink: '/nutrition' },
-	{ key: 'progress', label: 'Progress', icon: '•', isLink: '/progress' },
-	{ key: 'subscription', label: 'Subscription', icon: '•', isLink: '/subscription' },
-	{ key: 'becomeTrainer', label: 'Become Trainer', icon: '•', userOnly: true },
+	{ key: 'dashboard', label: 'Dashboard' },
+	{ key: 'myProfile', label: 'My Profile' },
+	{ key: 'myWorkouts', label: 'My Workouts', trainerOnly: true },
+	{ key: 'createWorkout', label: 'Create Workout', trainerOnly: true },
+	{ key: 'myCourses', label: 'My Courses' },
+	{ key: 'trainerCourses', label: 'Trainer Courses', trainerOnly: true },
+	{ key: 'createCourse', label: 'Create Course', trainerOnly: true },
+	{ key: 'myArticles', label: 'My Articles', trainerOrAdmin: true },
+	{ key: 'writeArticle', label: 'Write Article', trainerOrAdmin: true },
+	{ key: 'notifications', label: 'Notifications' },
+	{ key: 'chat', label: 'Messages', isLink: '/chat' },
+	{ key: 'nutrition', label: 'Nutrition', isLink: '/nutrition' },
+	{ key: 'progress', label: 'Progress', isLink: '/progress' },
+	{ key: 'subscription', label: 'Subscription', isLink: '/subscription' },
+	{ key: 'becomeTrainer', label: 'Become Trainer', userOnly: true },
 ];
 
 const MyPage: NextPage = () => {
@@ -58,7 +55,9 @@ const MyPage: NextPage = () => {
 	const [notifications, setNotifications] = useState<any[]>([]);
 	const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
 	const [trainerCourses, setTrainerCourses] = useState<Course[]>([]);
+	const [recommendations, setRecommendations] = useState<any[]>([]);
 	const [newWorkout, setNewWorkout] = useState({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
+	const [newCourse, setNewCourse] = useState({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
 	const [trainerForm, setTrainerForm] = useState({ trainerBio: '', trainerSpecializations: '', trainerExperience: 1 });
 
 	/** APOLLO **/
@@ -67,14 +66,13 @@ const MyPage: NextPage = () => {
 	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
 	useQuery(GET_MEMBER_PURCHASED_COURSES, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setPurchasedCourses(d?.getMemberPurchasedCourses ?? []) });
 	useQuery(GET_TRAINER_COURSES, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setTrainerCourses(d?.getTrainerCourses ?? []) });
+	useQuery(GET_RECOMMENDATIONS, { fetchPolicy: 'cache-and-network', skip: !user?._id, variables: { input: { memberId: user?._id, goals: ['GENERAL'] } }, onCompleted: (d: T) => setRecommendations(d?.getRecommendations ?? []) });
 
 	const [markRead] = useMutation(MARK_NOTIFICATION_READ);
 	const [createTrainer] = useMutation(CREATE_TRAINER);
 	const [createWorkout] = useMutation(CREATE_WORKOUT);
 	const [createCourseMut] = useMutation(CREATE_COURSE);
-	const [newCourse, setNewCourse] = useState({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
 
-	/** LIFECYCLES **/
 	useEffect(() => {
 		if (user._id) return;
 		const jwt = getJwtToken();
@@ -82,7 +80,6 @@ const MyPage: NextPage = () => {
 		router.push('/').then();
 	}, [user._id, router]);
 
-	/** HANDLERS **/
 	const menuHandler = (key: string, isLink?: string) => {
 		if (isLink) router.push(isLink);
 		else router.push({ pathname: '/mypage', query: { category: key } }, undefined, { shallow: true });
@@ -122,23 +119,26 @@ const MyPage: NextPage = () => {
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
-	const inputStyle = { padding: '12px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', outline: 'none', width: '100%' };
+	const inputStyle: React.CSSProperties = { padding: '12px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', outline: 'none', width: '100%' };
+	const cardStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.35s cubic-bezier(0.22,1,0.36,1)' };
+	const labelStyle: React.CSSProperties = { fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px', letterSpacing: '0.04em' };
+	const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
-	if (device === 'mobile') return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA MY PAGE MOBILE</div>;
+	if (device === 'mobile') return <div style={{ padding: '24px', color: '#e5e2e3', background: '#0d0d0e' }}>GYMORA MY PAGE MOBILE</div>;
 
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '260px 1fr', gap: '32px' }}>
+		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
+			<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '240px 1fr', gap: '24px' }}>
 				{/* Sidebar */}
 				<div>
-					<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '24px', textAlign: 'center', marginBottom: '20px' }}>
-						<div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 12px', border: '2px solid #3a494a' }}>
+					<div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
+						<div style={{ width: '72px', height: '72px', borderRadius: '12px', overflow: 'hidden', margin: '0 auto 12px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
 							<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 						</div>
-						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e5e2e3', marginBottom: '4px' }}>{user?.memberFullName || user?.memberNick || 'User'}</h3>
-						<p style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#00dce5', textTransform: 'uppercase' }}>{user?.memberType || 'USER'}</p>
+						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3', marginBottom: '2px' }}>{user?.memberFullName || user?.memberNick || 'User'}</h3>
+						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(0,220,229,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{user?.memberType || 'USER'}</span>
 					</div>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '4px' }}>
+					<nav style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
 						{menuItems
 							.filter((item) => {
 								if ((item as any).trainerOnly) return user?.memberType === 'TRAINER';
@@ -147,67 +147,109 @@ const MyPage: NextPage = () => {
 								return true;
 							})
 							.map((item) => (
-								<button key={item.key} onClick={() => menuHandler(item.key, (item as any).isLink)} style={{ padding: '12px 16px', borderRadius: '8px', border: 'none', textAlign: 'left', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: category === item.key ? 700 : 400, cursor: 'pointer', background: category === item.key ? 'rgba(0,220,229,0.1)' : 'transparent', color: category === item.key ? '#e9feff' : '#849495', borderLeft: category === item.key ? '3px solid #00dce5' : '3px solid transparent', display: 'flex', alignItems: 'center', gap: '10px' }}>
-									<span>{item.icon}</span> {item.label}
+								<button key={item.key} onClick={() => menuHandler(item.key, (item as any).isLink)} style={{
+									padding: '10px 14px', borderRadius: '8px', border: 'none', textAlign: 'left',
+									fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: category === item.key ? 600 : 400,
+									cursor: 'pointer', transition: 'all 0.2s ease',
+									background: category === item.key ? 'rgba(0,220,229,0.08)' : 'transparent',
+									color: category === item.key ? '#e9feff' : 'rgba(185,202,202,0.6)',
+									borderLeft: category === item.key ? '2px solid #00dce5' : '2px solid transparent',
+									display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+								}}>
+									{item.label}
+									{item.key === 'notifications' && unreadCount > 0 && (
+										<span style={{ background: '#00dce5', color: '#003739', fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '9999px', fontFamily: 'JetBrains Mono' }}>{unreadCount}</span>
+									)}
 								</button>
 							))}
-					</div>
+					</nav>
 				</div>
 
 				{/* Content */}
 				<div>
 					{/* Dashboard */}
 					{category === 'dashboard' && (
-						<div>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#e5e2e3', marginBottom: '24px' }}>Welcome back, {user?.memberNick}!</h2>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#ffffff', marginBottom: '24px' }}>Welcome back, {user?.memberNick}</h2>
+
+							{/* Stats */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
 								{[
 									{ label: 'Total Calories', value: dashboardStats?.totalCalories ? Math.round(dashboardStats.totalCalories) : 0, color: '#ff8a00' },
 									{ label: 'Workouts', value: dashboardStats?.workoutCount ?? user?.memberWorkouts ?? 0, color: '#00dce5' },
-									{ label: 'Progress Entries', value: dashboardStats?.progressEntries ?? 0, color: '#66daba' },
+									{ label: 'Progress', value: dashboardStats?.progressEntries ?? 0, color: '#66daba' },
 									{ label: 'Courses', value: user?.memberCourses ?? 0, color: '#ddb7ff' },
 								].map((s) => (
-									<div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>{s.label}</span>
-										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '32px', fontWeight: 800, color: s.color }}>{s.value}</span>
+									<div key={s.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px' }}>
+										<span style={labelStyle}>{s.label}</span>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: s.color, display: 'block', marginTop: '4px' }}>{s.value}</span>
 									</div>
 								))}
 							</div>
-							{dashboardStats?.subscriptionSummary && (
-								<div style={{ background: 'rgba(0,220,229,0.05)', border: '1px solid rgba(0,220,229,0.2)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e9feff' }}>{dashboardStats.subscriptionSummary}</span>
+
+							{/* Recommendations */}
+							{recommendations.length > 0 && (
+								<div style={{ background: 'rgba(0,220,229,0.03)', border: '1px solid rgba(0,220,229,0.1)', borderRadius: '14px', padding: '24px', marginBottom: '20px' }}>
+									<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Recommendations for You</h3>
+									<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+										{recommendations.map((rec: any, i: number) => (
+											<div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9px', color: '#00dce5', textTransform: 'uppercase', padding: '3px 8px', background: 'rgba(0,220,229,0.1)', borderRadius: '4px', border: '1px solid rgba(0,220,229,0.15)', whiteSpace: 'nowrap', marginTop: '2px' }}>{rec.target}</span>
+												<div>
+													<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', lineHeight: '1.4', marginBottom: '4px' }}>{rec.reason}</p>
+													{rec.items?.length > 0 && (
+														<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)' }}>{rec.items.length} suggestion{rec.items.length > 1 ? 's' : ''}</span>
+													)}
+												</div>
+											</div>
+										))}
+									</div>
 								</div>
 							)}
-							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-								<button onClick={() => menuHandler('nutrition', '/nutrition')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', textAlign: 'left' }}>
-									
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>Nutrition Dashboard</span>
-								</button>
-								<button onClick={() => menuHandler('progress', '/progress')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', textAlign: 'left' }}>
-									
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>Progress Tracker</span>
-								</button>
+
+							{/* Subscription summary */}
+							{dashboardStats?.subscriptionSummary && (
+								<div style={{ background: 'rgba(255,138,0,0.04)', border: '1px solid rgba(255,138,0,0.12)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
+									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(255,183,127,0.9)' }}>{dashboardStats.subscriptionSummary}</span>
+								</div>
+							)}
+
+							{/* Quick actions */}
+							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
+								{[
+									{ label: 'Nutrition', desc: 'Track meals & macros', link: '/nutrition' },
+									{ label: 'Progress', desc: 'Log body metrics', link: '/progress' },
+									{ label: 'Community', desc: 'Read & write articles', link: '/community' },
+								].map((action) => (
+									<button key={action.label} onClick={() => router.push(action.link)} style={{ ...cardStyle, padding: '20px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}
+										onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.15)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
+										onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', display: 'block', marginBottom: '4px' }}>{action.label}</span>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '12px', color: 'rgba(185,202,202,0.5)' }}>{action.desc}</span>
+									</button>
+								))}
 							</div>
 						</div>
 					)}
 
 					{category === 'myProfile' && <MyProfile />}
 
-					{/* My Workouts */}
 					{category === 'myWorkouts' && (
-						<div>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
 								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Workouts ({myWorkouts.length})</h2>
-								<button onClick={() => menuHandler('createWorkout')} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
+								<button onClick={() => menuHandler('createWorkout')} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
 							</div>
-							{myWorkouts.length === 0 ? <p style={{ color: '#849495' }}>No workouts yet.</p> : (
-								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+							{myWorkouts.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No workouts yet.</p> : (
+								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{myWorkouts.map((w) => (
-										<div key={w._id} onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+										<div key={w._id} onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })} style={cardStyle}
+											onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+											onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={w.workoutThumbnail ? `${REACT_APP_API_URL}/${w.workoutThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-											<div style={{ padding: '16px' }}>
-												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>{w.workoutTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{w.workoutDifficulty} • {w.estimatedCaloriesBurned} cal</span>
+											<div style={{ padding: '14px' }}>
+												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{w.workoutTitle}</h4>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{w.workoutDifficulty} · {w.estimatedCaloriesBurned} kcal</span>
 											</div>
 										</div>
 									))}
@@ -216,38 +258,35 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{/* Create Workout */}
 					{category === 'createWorkout' && (
-						<div>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Create Workout</h2>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Title *</span><input value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder="Workout title" style={inputStyle} /></div>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Description</span><textarea value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder="Describe this workout..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
+								<div><span style={labelStyle}>Title *</span><input value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder="Workout title" style={inputStyle} /></div>
+								<div><span style={labelStyle}>Description</span><textarea value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder="Describe this workout..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
 								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Target Muscle *</span><input value={newWorkout.targetMuscle} onChange={(e) => setNewWorkout({ ...newWorkout, targetMuscle: e.target.value })} placeholder="e.g. Chest, Legs" style={inputStyle} /></div>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Difficulty</span><select value={newWorkout.workoutDifficulty} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
+									<div><span style={labelStyle}>Target Muscle *</span><input value={newWorkout.targetMuscle} onChange={(e) => setNewWorkout({ ...newWorkout, targetMuscle: e.target.value })} placeholder="e.g. Chest, Legs" style={inputStyle} /></div>
+									<div><span style={labelStyle}>Difficulty</span><select value={newWorkout.workoutDifficulty} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
 								</div>
-								<div>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Est. Calories Burned</span>
-									<input type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} style={inputStyle} />
-								</div>
-								<button onClick={createWorkoutHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Workout</button>
+								<div><span style={labelStyle}>Est. Calories Burned</span><input type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} style={inputStyle} /></div>
+								<button onClick={createWorkoutHandler} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Workout</button>
 							</div>
 						</div>
 					)}
 
-					{/* My Purchased Courses */}
 					{category === 'myCourses' && (
-						<div>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>My Courses ({purchasedCourses.length})</h2>
-							{purchasedCourses.length === 0 ? <p style={{ color: '#849495' }}>No purchased courses yet. <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>Browse courses →</span></p> : (
-								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+							{purchasedCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses yet. <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>Browse courses →</span></p> : (
+								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{purchasedCourses.map((c) => (
-										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={cardStyle}
+											onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,138,0,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+											onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={c.courseThumbnail ? `${REACT_APP_API_URL}/${c.courseThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-											<div style={{ padding: '16px' }}>
-												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>{c.courseTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{c.courseCategory} • {c.courseDuration}w • {c.courseDifficulty}</span>
+											<div style={{ padding: '14px' }}>
+												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{c.courseTitle}</h4>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{c.courseCategory} · {c.courseDuration}w · {c.courseDifficulty}</span>
 											</div>
 										</div>
 									))}
@@ -256,18 +295,22 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{/* Trainer Courses */}
 					{category === 'trainerCourses' && (
-						<div>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>My Created Courses ({trainerCourses.length})</h2>
-							{trainerCourses.length === 0 ? <p style={{ color: '#849495' }}>No courses created yet.</p> : (
-								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>Trainer Courses ({trainerCourses.length})</h2>
+								<button onClick={() => menuHandler('createCourse')} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
+							</div>
+							{trainerCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses created yet.</p> : (
+								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{trainerCourses.map((c) => (
-										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}>
+										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={cardStyle}
+											onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,138,0,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
+											onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={c.courseThumbnail ? `${REACT_APP_API_URL}/${c.courseThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-											<div style={{ padding: '16px' }}>
-												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>{c.courseTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{c.courseCategory} • ${c.coursePrice} • ★ {c.courseRating?.toFixed(1) ?? '-'}</span>
+											<div style={{ padding: '14px' }}>
+												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{c.courseTitle}</h4>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{c.courseCategory} · ${c.coursePrice} · {c.courseRating ? `★ ${c.courseRating.toFixed(1)}` : 'No ratings'}</span>
 											</div>
 										</div>
 									))}
@@ -276,22 +319,21 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{/* Create Course */}
 					{category === 'createCourse' && (
-						<div>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Create Course</h2>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Title *</span><input value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Course title" style={inputStyle} /></div>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Description</span><textarea value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this course..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
+								<div><span style={labelStyle}>Title *</span><input value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Course title" style={inputStyle} /></div>
+								<div><span style={labelStyle}>Description</span><textarea value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this course..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
 								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Category</span><select value={newCourse.courseCategory} onChange={(e) => setNewCourse({ ...newCourse, courseCategory: e.target.value })} style={inputStyle}><option value="STRENGTH">Strength</option><option value="CARDIO">Cardio</option><option value="YOGA">Yoga</option><option value="MOBILITY">Mobility</option><option value="NUTRITION">Nutrition</option></select></div>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Difficulty</span><select value={newCourse.courseDifficulty} onChange={(e) => setNewCourse({ ...newCourse, courseDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
+									<div><span style={labelStyle}>Category</span><select value={newCourse.courseCategory} onChange={(e) => setNewCourse({ ...newCourse, courseCategory: e.target.value })} style={inputStyle}><option value="STRENGTH">Strength</option><option value="CARDIO">Cardio</option><option value="YOGA">Yoga</option><option value="MOBILITY">Mobility</option><option value="NUTRITION">Nutrition</option></select></div>
+									<div><span style={labelStyle}>Difficulty</span><select value={newCourse.courseDifficulty} onChange={(e) => setNewCourse({ ...newCourse, courseDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
 								</div>
 								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Price ($)</span><input type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} style={inputStyle} /></div>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Duration (weeks)</span><input type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} style={inputStyle} /></div>
+									<div><span style={labelStyle}>Price ($)</span><input type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} style={inputStyle} /></div>
+									<div><span style={labelStyle}>Duration (weeks)</span><input type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} style={inputStyle} /></div>
 								</div>
-								<button onClick={createCourseHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Course</button>
+								<button onClick={createCourseHandler} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Course</button>
 							</div>
 						</div>
 					)}
@@ -299,21 +341,22 @@ const MyPage: NextPage = () => {
 					{category === 'myArticles' && <MyArticles />}
 					{category === 'writeArticle' && <WriteArticle />}
 
-					{/* Notifications */}
 					{category === 'notifications' && (
-						<div>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Notifications</h2>
-							{notifications.length === 0 ? <p style={{ color: '#849495' }}>No notifications.</p> : (
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
+								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>Notifications</h2>
+								{unreadCount > 0 && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'rgba(0,220,229,0.7)' }}>{unreadCount} unread</span>}
+							</div>
+							{notifications.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No notifications.</p> : (
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 									{notifications.map((n: any) => (
-										<div key={n._id} onClick={() => !n.isRead && markNotifRead(n._id)} style={{ background: n.isRead ? 'rgba(255,255,255,0.02)' : 'rgba(0,220,229,0.05)', border: `1px solid ${n.isRead ? 'rgba(255,255,255,0.08)' : 'rgba(0,220,229,0.2)'}`, borderRadius: '12px', padding: '20px', cursor: n.isRead ? 'default' : 'pointer' }}>
-											<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5', textTransform: 'uppercase' }}>{n.notificationType}</span>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}>{new Date(n.createdAt).toLocaleDateString()}</span>
+										<div key={n._id} onClick={() => !n.isRead && markNotifRead(n._id)} style={{ background: n.isRead ? 'rgba(255,255,255,0.015)' : 'rgba(0,220,229,0.03)', border: `1px solid ${n.isRead ? 'rgba(255,255,255,0.04)' : 'rgba(0,220,229,0.12)'}`, borderRadius: '12px', padding: '18px', cursor: n.isRead ? 'default' : 'pointer', transition: 'all 0.2s ease' }}>
+											<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9px', color: n.isRead ? 'rgba(185,202,202,0.3)' : '#00dce5', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.notificationType}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{new Date(n.createdAt).toLocaleDateString()}</span>
 											</div>
-											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{n.notificationTitle}</h4>
-											<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#b9caca' }}>{n.notificationMessage}</p>
-											{!n.isRead && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5', marginTop: '8px', display: 'block' }}>Click to mark as read</span>}
+											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: n.isRead ? 'rgba(229,226,227,0.6)' : '#e5e2e3', marginBottom: '4px' }}>{n.notificationTitle}</h4>
+											<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: 'rgba(185,202,202,0.5)', lineHeight: '1.4' }}>{n.notificationMessage}</p>
 										</div>
 									))}
 								</div>
@@ -321,22 +364,21 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{/* Become Trainer */}
 					{category === 'becomeTrainer' && (
-						<div>
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>Become a Trainer</h2>
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', marginBottom: '24px' }}>Fill in your details to apply as a Gymora trainer. After approval, you can create workouts and courses.</p>
+							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.5)', marginBottom: '24px' }}>Create your trainer profile to start sharing workouts and courses.</p>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Bio *</span><textarea value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder="Tell us about your training background..." style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Specializations (comma separated)</span><input value={trainerForm.trainerSpecializations} onChange={(e) => setTrainerForm({ ...trainerForm, trainerSpecializations: e.target.value })} placeholder="Strength, HIIT, Mobility" style={inputStyle} /></div>
-								<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Years of Experience</span><input type="number" value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
-								<button onClick={becomeTrainerHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Apply as Trainer</button>
+								<div><span style={labelStyle}>Bio *</span><textarea value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder="Tell us about your training background..." style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
+								<div><span style={labelStyle}>Specializations (comma separated)</span><input value={trainerForm.trainerSpecializations} onChange={(e) => setTrainerForm({ ...trainerForm, trainerSpecializations: e.target.value })} placeholder="Strength, HIIT, Mobility" style={inputStyle} /></div>
+								<div><span style={labelStyle}>Years of Experience</span><input type="number" value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
+								<button onClick={becomeTrainerHandler} style={{ background: 'linear-gradient(135deg, #66daba, #00dce5)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Apply as Trainer</button>
 							</div>
 						</div>
 					)}
 
-					{category === 'followers' && <div><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Followers</h2><p style={{ color: '#849495' }}>Coming soon.</p></div>}
-					{category === 'followings' && <div><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Following</h2><p style={{ color: '#849495' }}>Coming soon.</p></div>}
+					{category === 'followers' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Followers</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
+					{category === 'followings' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Following</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
 				</div>
 			</div>
 		</div>

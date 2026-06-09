@@ -96,10 +96,8 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 
 			const responseImage = response.data.data.imageUploader;
 
-			console.log('+responseImage: ', responseImage);
 			setInsertWorkoutData({ ...insertWorkoutData, workoutThumbnail: responseImage });
 		} catch (err: any) {
-			console.log('err: ', err.message);
 			await sweetMixinErrorAlert(err.message);
 		}
 	}
@@ -163,7 +161,6 @@ const AddProperty = ({ initialValues, ...props }: any) => {
 		router.back();
 	}
 
-	console.log('+insertWorkoutData', insertWorkoutData);
 
 	if (device === 'mobile') {
 		return <div>ADD NEW WORKOUT MOBILE PAGE</div>;

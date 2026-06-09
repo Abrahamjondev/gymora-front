@@ -54,7 +54,6 @@ const Filter = (props: FilterType) => {
 					{ scroll: false },
 				);
 			} catch (err: any) {
-				console.log('ERROR, difficultySelectHandler:', err);
 			}
 		},
 		[searchFilter],
@@ -75,7 +74,6 @@ const Filter = (props: FilterType) => {
 					{ scroll: false },
 				);
 			} catch (err: any) {
-				console.log('ERROR, targetMuscleHandler:', err);
 			}
 		},
 		[searchFilter],
@@ -97,7 +95,6 @@ const Filter = (props: FilterType) => {
 					{ scroll: false },
 				);
 			} catch (err: any) {
-				console.log('ERROR, isFreeHandler:', err);
 			}
 		},
 		[searchFilter],
@@ -112,7 +109,6 @@ const Filter = (props: FilterType) => {
 				{ scroll: false },
 			);
 		} catch (err: any) {
-			console.log('ERROR, refreshHandler:', err);
 		}
 	};
 

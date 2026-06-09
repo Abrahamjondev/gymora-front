@@ -18,8 +18,7 @@ const MyFavorites: NextPage = () => {
 	const [searchFavorites, setSearchFavorites] = useState<T>({ page: 1, limit: 6 });
 
 	/** APOLLO REQUESTS **/
-	/** APOLLO REQUESTS **/
-	const [likeTargetProperty] = useMutation(LIKE_WORKOUT);
+	const [likeWorkout] = useMutation(LIKE_WORKOUT);
 
 	const {
 		loading: getFavoritesLoading,
@@ -51,7 +50,7 @@ const MyFavorites: NextPage = () => {
 
 			if (!user?._id) throw new Error(Messages.error2);
 
-			await likeTargetProperty({
+			await likeWorkout({
 				variables: {
 					input: id,
 				},
@@ -61,7 +60,6 @@ const MyFavorites: NextPage = () => {
 				input: searchFavorites,
 			});
 		} catch (err: any) {
-			console.log('ERROR, likePropertyHandler:', err.message);
 
 			sweetMixinErrorAlert(err.message).then();
 		}

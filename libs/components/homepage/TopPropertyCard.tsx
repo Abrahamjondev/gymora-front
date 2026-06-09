@@ -24,7 +24,6 @@ const TopPropertyCard = (props: TopPropertyCardProps) => {
 	/** HANDLERS **/
 
 	const pushDetailHandler = async (workoutId: string) => {
-		console.log('workoutId:', workoutId);
 		await router.push({ pathname: '/workout/detail', query: { id: workoutId } });
 	};
 

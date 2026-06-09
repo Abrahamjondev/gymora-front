@@ -23,7 +23,6 @@ const TopProperties = (props: TopPropertiesProps) => {
 	const { initialInput } = props;
 	const device = useDeviceDetect();
 	const [topProperties, setTopProperties] = useState<Workout[]>([]);
-	console.log(topProperties);
 
 	/** APOLLO REQUESTS **/
 	const [likeWorkout] = useMutation(LIKE_WORKOUT);
@@ -53,7 +52,6 @@ const TopProperties = (props: TopPropertiesProps) => {
 
 			await sweetTopSmallSuccessAlert('success', 800).then();
 		} catch (err: any) {
-			console.log('likePropertyHandler error:', err.message);
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};

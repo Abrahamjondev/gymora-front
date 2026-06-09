@@ -25,7 +25,6 @@ export const PropertyCard = (props: PropertyCardProps) => {
 
 	/** HANDLERS **/
 	const pushEditProperty = async (id: string) => {
-		console.log('+pushEditProperty: ', id);
 		await router.push({
 			pathname: '/mypage',
 			query: { category: 'addProperty', propertyId: id },

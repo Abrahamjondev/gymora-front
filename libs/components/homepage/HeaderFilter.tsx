@@ -77,7 +77,6 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 				});
 				setOpenDifficulty(false);
 			} catch (err: any) {
-				console.log('ERROR, difficultySelectHandler:', err);
 			}
 		},
 		[searchFilter],
@@ -94,7 +93,6 @@ const HeaderFilter = (props: HeaderFilterProps) => {
 				`/workout?input=${JSON.stringify(searchFilter)}`,
 			);
 		} catch (err: any) {
-			console.log('ERROR, pushSearchHandler:', err);
 		}
 	};
 
