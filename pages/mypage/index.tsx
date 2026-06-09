@@ -39,8 +39,10 @@ const menuItems = [
 	{ key: 'myArticles', label: 'My Articles', icon: '📝', trainerOrAdmin: true },
 	{ key: 'writeArticle', label: 'Write Article', icon: '✍️', trainerOrAdmin: true },
 	{ key: 'notifications', label: 'Notifications', icon: '🔔' },
+	{ key: 'chat', label: 'Messages', icon: '💬', isLink: '/chat' },
 	{ key: 'nutrition', label: 'Nutrition', icon: '🥗', isLink: '/nutrition' },
 	{ key: 'progress', label: 'Progress', icon: '📈', isLink: '/progress' },
+	{ key: 'subscription', label: 'Subscription', icon: '💎', isLink: '/subscription' },
 	{ key: 'becomeTrainer', label: 'Become Trainer', icon: '🎯', userOnly: true },
 ];
 

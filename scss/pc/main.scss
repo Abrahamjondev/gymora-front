@@ -4,11 +4,7 @@
 
 @import '/scss/pc/homepage/homepage';
 
-@import '/scss/pc/property/property';
-@import '/scss/pc/property/detail.scss';
-
-@import '/scss/pc/agent/agent';
-@import '/scss/pc/agent/detail.scss';
+/* Old Nestar property/agent SCSS removed — pages use inline dark styles */
 @import '/scss/pc/mypage/mypage.scss';
 @import '/scss/pc/mypage/addNewProperty.scss';
 @import '/scss/pc/mypage/myProperties.scss';
