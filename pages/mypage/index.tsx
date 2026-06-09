@@ -57,7 +57,7 @@ const MyPage: NextPage = () => {
 	const [notifications, setNotifications] = useState<any[]>([]);
 	const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
 	const [trainerCourses, setTrainerCourses] = useState<Course[]>([]);
-	const [newWorkout, setNewWorkout] = useState({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, isFree: true });
+	const [newWorkout, setNewWorkout] = useState({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
 	const [trainerForm, setTrainerForm] = useState({ trainerBio: '', trainerSpecializations: '', trainerExperience: 1 });
 
 	/** APOLLO **/
@@ -87,14 +87,15 @@ const MyPage: NextPage = () => {
 
 	const markNotifRead = async (id: string) => {
 		await markRead({ variables: { input: id } });
-		await notifRefetch();
+		const { data: rd } = await notifRefetch();
+		if (rd?.getNotifications) setNotifications(rd.getNotifications);
 	};
 
 	const createWorkoutHandler = async () => {
 		try {
 			if (!newWorkout.workoutTitle || !newWorkout.targetMuscle) throw new Error('Title and target muscle required');
 			await createWorkout({ variables: { input: { ...newWorkout, estimatedCaloriesBurned: Number(newWorkout.estimatedCaloriesBurned) } } });
-			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, isFree: true });
+			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
 			await sweetMixinSuccessAlert('Workout created!');
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
@@ -193,7 +194,7 @@ const MyPage: NextPage = () => {
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={w.workoutThumbnail ? `${REACT_APP_API_URL}/${w.workoutThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
 											<div style={{ padding: '16px' }}>
 												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>{w.workoutTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{w.workoutDifficulty} • {w.estimatedCaloriesBurned} cal • {w.isFree ? 'FREE' : 'PREMIUM'}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{w.workoutDifficulty} • {w.estimatedCaloriesBurned} cal</span>
 											</div>
 										</div>
 									))}
@@ -213,13 +214,9 @@ const MyPage: NextPage = () => {
 									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Target Muscle *</span><input value={newWorkout.targetMuscle} onChange={(e) => setNewWorkout({ ...newWorkout, targetMuscle: e.target.value })} placeholder="e.g. Chest, Legs" style={inputStyle} /></div>
 									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Difficulty</span><select value={newWorkout.workoutDifficulty} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
 								</div>
-								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Est. Calories</span><input type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} style={inputStyle} /></div>
-									<div><span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Access</span>
-										<div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
-											{[true, false].map((v) => (<button key={String(v)} onClick={() => setNewWorkout({ ...newWorkout, isFree: v })} style={{ flex: 1, padding: '12px', borderRadius: '8px', border: newWorkout.isFree === v ? '2px solid #00dce5' : '1px solid #3a494a', background: newWorkout.isFree === v ? 'rgba(0,220,229,0.1)' : 'transparent', color: newWorkout.isFree === v ? '#e9feff' : '#849495', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>{v ? '🆓 Free' : '💎 Premium'}</button>))}
-										</div>
-									</div>
+								<div>
+									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Est. Calories Burned</span>
+									<input type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} style={inputStyle} />
 								</div>
 								<button onClick={createWorkoutHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Workout</button>
 							</div>

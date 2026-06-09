@@ -85,7 +85,8 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			if (!user?._id) throw new Error(Messages.error2);
 			setLikeLoading(true);
 			await likeTargetBoardArticle({ variables: { input: articleId } });
-			await articleRefetch({ input: articleId });
+			const { data: rd } = await articleRefetch({ input: articleId });
+			if (rd?.getBoardArticle) setBoardArticle(rd.getBoardArticle);
 			await sweetTopSmallSuccessAlert('Success!', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
@@ -100,8 +101,10 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			if (!user?._id) throw new Error(Messages.error2);
 			const commentInput: CommentInput = { commentGroup: CommentGroup.ARTICLE, commentRefId: articleId, commentContent: comment };
 			await createComment({ variables: { input: commentInput } });
-			await commentsRefetch({ input: searchFilter });
-			await articleRefetch({ input: articleId });
+			const { data: cd } = await commentsRefetch({ input: searchFilter });
+			if (cd?.getComments) { setComments(cd.getComments.list ?? []); setTotal(cd.getComments.metaCounter?.[0]?.total ?? 0); }
+			const { data: ad } = await articleRefetch({ input: articleId });
+			if (ad?.getBoardArticle) setBoardArticle(ad.getBoardArticle);
 			setComment('');
 			await sweetMixinSuccessAlert('Comment posted!');
 		} catch (err: any) {
@@ -115,7 +118,8 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			if (await sweetConfirmAlert('Delete this comment?')) {
 				const updateData: CommentUpdate = { _id: commentId, commentStatus: CommentStatus.DELETE };
 				await updateComment({ variables: { input: updateData } });
-				await commentsRefetch({ input: searchFilter });
+				const { data: cd } = await commentsRefetch({ input: searchFilter });
+				if (cd?.getComments) { setComments(cd.getComments.list ?? []); setTotal(cd.getComments.metaCounter?.[0]?.total ?? 0); }
 				await sweetMixinSuccessAlert('Deleted!');
 			}
 		} catch (err: any) {

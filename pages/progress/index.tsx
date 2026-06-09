@@ -48,7 +48,8 @@ const ProgressPage: NextPage = () => {
 					},
 				},
 			});
-			await refetch();
+			const { data: rd } = await refetch();
+			if (rd?.getProgressTimeline) setTimeline(rd.getProgressTimeline);
 			setShowAdd(false);
 			setNewEntry({ progressDate: new Date().toISOString(), weight: '', chest: '', waist: '', hips: '', bodyFat: '', progressNote: '' });
 			await sweetMixinSuccessAlert('Progress logged!');

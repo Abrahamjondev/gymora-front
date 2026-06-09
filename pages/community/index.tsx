@@ -81,7 +81,8 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			if (!id) return;
 			if (!user?._id) throw new Error(Messages.error2);
 			await likeTargetBoardArticle({ variables: { input: id } });
-			await boardArticlesRefetch({ input: searchCommunity });
+			const { data: rd } = await boardArticlesRefetch({ input: searchCommunity });
+			if (rd?.getBoardArticles?.list) { setBoardArticles(rd.getBoardArticles.list); setTotalCount(rd.getBoardArticles.metaCounter?.[0]?.total ?? 0); }
 			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();

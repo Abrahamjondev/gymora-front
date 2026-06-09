@@ -37,6 +37,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 		search: {},
 	});
 	const [activeFilter, setActiveFilter] = useState<string>('ALL');
+	const [searchText, setSearchText] = useState<string>('');
+	const [activeMuscle, setActiveMuscle] = useState<string>('');
+	
+	const [activeSort, setActiveSort] = useState<string>('createdAt');
 
 	/** APOLLO REQUESTS **/
 	const {
@@ -73,17 +77,42 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 		}
 	};
 
+	const buildSearch = (overrides: any = {}) => {
+		const diff = overrides.difficulty ?? activeFilter;
+		const muscle = overrides.muscle ?? activeMuscle;
+		
+		const text = overrides.text ?? searchText;
+		const sort = overrides.sort ?? activeSort;
+
+		const search: any = {};
+		if (diff !== 'ALL') search.workoutDifficulty = diff;
+		if (muscle) search.targetMuscle = muscle;
+		
+		if (text) search.text = text;
+
+		setSearchFilter({ ...searchFilter, page: 1, sort, search });
+	};
+
 	const filterHandler = (difficulty: string) => {
 		setActiveFilter(difficulty);
-		if (difficulty === 'ALL') {
-			setSearchFilter({ ...searchFilter, page: 1, search: {} });
-		} else {
-			setSearchFilter({
-				...searchFilter,
-				page: 1,
-				search: { workoutDifficulty: difficulty as WorkoutDifficulty },
-			});
-		}
+		buildSearch({ difficulty });
+	};
+
+	const muscleHandler = (muscle: string) => {
+		const val = activeMuscle === muscle ? '' : muscle;
+		setActiveMuscle(val);
+		buildSearch({ muscle: val });
+	};
+
+	
+
+	const sortHandler = (sort: string) => {
+		setActiveSort(sort);
+		buildSearch({ sort });
+	};
+
+	const searchHandler = () => {
+		buildSearch({ text: searchText });
 	};
 
 	const paginationHandler = (e: any, value: number) => {
@@ -95,6 +124,14 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const filters = ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+	const muscles = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'];
+	const sortOptions = [
+		{ value: 'createdAt', label: 'Newest' },
+		{ value: 'workoutLikes', label: 'Most Liked' },
+		{ value: 'workoutViews', label: 'Most Viewed' },
+		{ value: 'workoutRank', label: 'Top Ranked' },
+		{ value: 'estimatedCaloriesBurned', label: 'Highest Burn' },
+	];
 
 	if (device === 'mobile') {
 		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA WORKOUTS MOBILE</div>;
@@ -145,29 +182,61 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 					</p>
 				</div>
 
-				{/* Filters */}
-				<div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+				{/* Search Bar */}
+				<div style={{ display: 'flex', gap: '12px', marginBottom: '20px' }}>
+					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
+						<span style={{ color: '#849495', marginRight: '8px' }}>🔍</span>
+						<input
+							value={searchText}
+							onChange={(e) => setSearchText(e.target.value)}
+							onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
+							placeholder="Search workouts..."
+							style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', color: '#e5e2e3', padding: '14px 0' }}
+						/>
+						{searchText && (
+							<span onClick={() => { setSearchText(''); buildSearch({ text: '' }); }} style={{ color: '#849495', cursor: 'pointer', fontSize: '16px' }}>✕</span>
+						)}
+					</div>
+					{/* Sort */}
+					<select
+						value={activeSort}
+						onChange={(e) => sortHandler(e.target.value)}
+						style={{ padding: '12px 16px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', outline: 'none', cursor: 'pointer' }}
+					>
+						{sortOptions.map((s) => <option key={s.value} value={s.value}>{s.label}</option>)}
+					</select>
+				</div>
+
+				{/* Difficulty Filters */}
+				<div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
 					{filters.map((f) => (
-						<button
-							key={f}
-							onClick={() => filterHandler(f)}
-							style={{
-								padding: '8px 24px',
-								borderRadius: '9999px',
-								fontFamily: 'Hanken Grotesk, sans-serif',
-								fontSize: '14px',
-								fontWeight: activeFilter === f ? 700 : 400,
-								cursor: 'pointer',
-								transition: 'all 0.2s',
-								border: activeFilter === f ? 'none' : '1px solid #3a494a',
-								background: activeFilter === f ? '#e9feff' : '#353436',
-								color: activeFilter === f ? '#003739' : '#b9caca',
-							}}
-						>
-							{f === 'ALL' ? 'All Workouts' : f.charAt(0) + f.slice(1).toLowerCase()}
+						<button key={f} onClick={() => filterHandler(f)} style={{ padding: '8px 20px', borderRadius: '9999px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '13px', fontWeight: activeFilter === f ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', border: activeFilter === f ? 'none' : '1px solid #3a494a', background: activeFilter === f ? '#e9feff' : '#353436', color: activeFilter === f ? '#003739' : '#b9caca' }}>
+							{f === 'ALL' ? 'All Levels' : f.charAt(0) + f.slice(1).toLowerCase()}
+						</button>
+					))}
+					</div>
+
+				{/* Muscle Group Filters */}
+				<div style={{ display: 'flex', gap: '8px', marginBottom: '32px', flexWrap: 'wrap' }}>
+					<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'flex', alignItems: 'center', marginRight: '4px' }}>MUSCLE:</span>
+					{muscles.map((m) => (
+						<button key={m} onClick={() => muscleHandler(m)} style={{ padding: '6px 14px', borderRadius: '6px', fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', border: activeMuscle === m ? '1px solid #00dce5' : '1px solid #3a494a', background: activeMuscle === m ? 'rgba(0,220,229,0.15)' : 'transparent', color: activeMuscle === m ? '#00dce5' : '#849495' }}>
+							{m}
 						</button>
 					))}
 				</div>
+
+				{/* Active filters summary */}
+				{(activeFilter !== 'ALL' || activeMuscle || searchText) && (
+					<div style={{ display: 'flex', gap: '8px', marginBottom: '20px', alignItems: 'center', flexWrap: 'wrap' }}>
+						<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#849495' }}>ACTIVE:</span>
+						{activeFilter !== 'ALL' && <span style={{ padding: '4px 10px', background: 'rgba(233,254,255,0.1)', border: '1px solid rgba(233,254,255,0.2)', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#e9feff' }}>{activeFilter}</span>}
+						{activeMuscle && <span style={{ padding: '4px 10px', background: 'rgba(0,220,229,0.1)', border: '1px solid rgba(0,220,229,0.2)', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#00dce5' }}>{activeMuscle}</span>}
+
+						{searchText && <span style={{ padding: '4px 10px', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#b9caca' }}>"{searchText}"</span>}
+						<button onClick={() => { setActiveFilter('ALL'); setActiveMuscle(''); setSearchText(''); setActiveSort('createdAt'); setSearchFilter({ ...searchFilter, page: 1, sort: 'createdAt', search: {} }); }} style={{ padding: '4px 10px', background: 'transparent', border: '1px solid #3a494a', borderRadius: '4px', fontFamily: 'JetBrains Mono, monospace', fontSize: '10px', color: '#849495', cursor: 'pointer' }}>✕ Clear all</button>
+					</div>
+				)}
 
 				{/* Workout Grid */}
 				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>

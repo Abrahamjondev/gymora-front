@@ -82,7 +82,7 @@ const AdminWorkouts: NextPage = ({ initialInquiry, ...props }: any) => {
 								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{w.workoutDifficulty}</td>
 								<td style={{ padding: '8px', fontFamily: 'Hanken Grotesk', fontSize: '13px' }}>{w.targetMuscle}</td>
 								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{w.estimatedCaloriesBurned}</td>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{w.isFree ? '✅' : '💎'}</td>
+								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>'✅ Free'</td>
 								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{w.workoutViews ?? 0}</td>
 								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{w.workoutLikes ?? 0}</td>
 								<td style={{ padding: '8px' }}>

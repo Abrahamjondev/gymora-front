@@ -190,7 +190,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 							{workout.targetMuscle}
 						</span>
 						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#b9caca' }}>
-							{workout.estimatedCaloriesBurned} KCAL • {workout.isFree ? 'FREE' : 'PREMIUM'}
+							{workout.estimatedCaloriesBurned} KCAL
 						</span>
 					</div>
 					<h1 style={{ fontFamily: 'Hanken Grotesk', fontSize: '40px', lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: 800, color: '#ffffff' }}>

@@ -41,6 +41,9 @@ const CourseList: NextPage = () => {
 		search: {},
 	});
 	const [activeCategory, setActiveCategory] = useState<string>('ALL');
+	const [activeDifficulty, setActiveDifficulty] = useState<string>('ALL');
+	const [searchText, setSearchText] = useState<string>('');
+	const [activeSort, setActiveSort] = useState<string>('courseRank');
 
 	/** APOLLO REQUESTS **/
 	const { loading, refetch } = useQuery(GET_COURSES, {
@@ -58,13 +61,37 @@ const CourseList: NextPage = () => {
 	}, [searchFilter]);
 
 	/** HANDLERS **/
+	const buildCourseSearch = (overrides: any = {}) => {
+		const cat = overrides.category ?? activeCategory;
+		const diff = overrides.difficulty ?? activeDifficulty;
+		const text = overrides.text ?? searchText;
+		const sort = overrides.sort ?? activeSort;
+
+		const search: any = {};
+		if (cat !== 'ALL') search.courseCategory = cat;
+		if (diff !== 'ALL') search.courseDifficulty = diff;
+		if (text) search.text = text;
+
+		setSearchFilter({ ...searchFilter, page: 1, sort, search });
+	};
+
 	const categoryFilterHandler = (cat: string) => {
 		setActiveCategory(cat);
-		if (cat === 'ALL') {
-			setSearchFilter({ ...searchFilter, page: 1, search: {} });
-		} else {
-			setSearchFilter({ ...searchFilter, page: 1, search: { courseCategory: cat as CourseCategory } });
-		}
+		buildCourseSearch({ category: cat });
+	};
+
+	const difficultyFilterHandler = (diff: string) => {
+		setActiveDifficulty(diff);
+		buildCourseSearch({ difficulty: diff });
+	};
+
+	const courseSortHandler = (sort: string) => {
+		setActiveSort(sort);
+		buildCourseSearch({ sort });
+	};
+
+	const courseSearchHandler = () => {
+		buildCourseSearch({ text: searchText });
 	};
 
 	const paginationHandler = (e: any, value: number) => {
@@ -105,26 +132,36 @@ const CourseList: NextPage = () => {
 					</p>
 				</div>
 
+				{/* Search + Sort */}
+				<div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
+					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
+						<span style={{ color: '#849495', marginRight: '8px' }}>🔍</span>
+						<input value={searchText} onChange={(e) => setSearchText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()} placeholder="Search programs..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', padding: '14px 0' }} />
+						{searchText && <span onClick={() => { setSearchText(''); buildCourseSearch({ text: '' }); }} style={{ color: '#849495', cursor: 'pointer' }}>✕</span>}
+					</div>
+					<select value={activeSort} onChange={(e) => courseSortHandler(e.target.value)} style={{ padding: '12px 16px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk', fontSize: '14px', outline: 'none', cursor: 'pointer' }}>
+						<option value="courseRank">Top Ranked</option>
+						<option value="courseRating">Highest Rated</option>
+						<option value="coursePrice">Price</option>
+						<option value="createdAt">Newest</option>
+					</select>
+				</div>
+
 				{/* Category filters */}
-				<div style={{ display: 'flex', gap: '12px', marginBottom: '32px', flexWrap: 'wrap' }}>
+				<div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
 					{categories.map((cat) => (
-						<button
-							key={cat}
-							onClick={() => categoryFilterHandler(cat)}
-							style={{
-								padding: '8px 24px',
-								borderRadius: '9999px',
-								fontFamily: 'Hanken Grotesk',
-								fontSize: '14px',
-								fontWeight: activeCategory === cat ? 700 : 400,
-								cursor: 'pointer',
-								transition: 'all 0.2s',
-								border: activeCategory === cat ? 'none' : '1px solid #3a494a',
-								background: activeCategory === cat ? '#e9feff' : '#353436',
-								color: activeCategory === cat ? '#003739' : '#b9caca',
-							}}
-						>
+						<button key={cat} onClick={() => categoryFilterHandler(cat)} style={{ padding: '8px 20px', borderRadius: '9999px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: activeCategory === cat ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', border: activeCategory === cat ? 'none' : '1px solid #3a494a', background: activeCategory === cat ? '#e9feff' : '#353436', color: activeCategory === cat ? '#003739' : '#b9caca' }}>
 							{cat === 'ALL' ? 'All Goals' : cat.charAt(0) + cat.slice(1).toLowerCase()}
+						</button>
+					))}
+				</div>
+
+				{/* Difficulty filters */}
+				<div style={{ display: 'flex', gap: '8px', marginBottom: '32px', flexWrap: 'wrap' }}>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'flex', alignItems: 'center', marginRight: '4px' }}>LEVEL:</span>
+					{['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
+						<button key={d} onClick={() => difficultyFilterHandler(d)} style={{ padding: '6px 14px', borderRadius: '6px', fontFamily: 'JetBrains Mono', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', border: activeDifficulty === d ? '1px solid #ff8a00' : '1px solid #3a494a', background: activeDifficulty === d ? 'rgba(255,138,0,0.15)' : 'transparent', color: activeDifficulty === d ? '#ff8a00' : '#849495' }}>
+							{d === 'ALL' ? 'Any' : d.charAt(0) + d.slice(1).toLowerCase()}
 						</button>
 					))}
 				</div>
