@@ -7,6 +7,10 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import MyProfile from '../../libs/components/mypage/MyProfile';
 import MyArticles from '../../libs/components/mypage/MyArticles';
 import WriteArticle from '../../libs/components/mypage/WriteArticle';
+import ChatContent from '../../libs/components/mypage/ChatContent';
+import NutritionContent from '../../libs/components/mypage/NutritionContent';
+import ProgressContent from '../../libs/components/mypage/ProgressContent';
+import SubscriptionContent from '../../libs/components/mypage/SubscriptionContent';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -26,22 +30,47 @@ export const getStaticProps = async ({ locale }: any) => ({
 	props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
-const menuItems = [
-	{ key: 'dashboard', label: 'Dashboard' },
-	{ key: 'myProfile', label: 'My Profile' },
-	{ key: 'myWorkouts', label: 'My Workouts', trainerOnly: true },
-	{ key: 'createWorkout', label: 'Create Workout', trainerOnly: true },
-	{ key: 'myCourses', label: 'My Courses' },
-	{ key: 'trainerCourses', label: 'Trainer Courses', trainerOnly: true },
-	{ key: 'createCourse', label: 'Create Course', trainerOnly: true },
-	{ key: 'myArticles', label: 'My Articles', trainerOrAdmin: true },
-	{ key: 'writeArticle', label: 'Write Article', trainerOrAdmin: true },
-	{ key: 'notifications', label: 'Notifications' },
-	{ key: 'chat', label: 'Messages', isLink: '/chat' },
-	{ key: 'nutrition', label: 'Nutrition', isLink: '/nutrition' },
-	{ key: 'progress', label: 'Progress', isLink: '/progress' },
-	{ key: 'subscription', label: 'Subscription', isLink: '/subscription' },
-	{ key: 'becomeTrainer', label: 'Become Trainer', userOnly: true },
+const menuSections: { title: string | null; items: { key: string; label: string; icon: string; trainerOnly?: boolean; trainerOrAdmin?: boolean; userOnly?: boolean }[] }[] = [
+	{
+		title: null,
+		items: [
+			{ key: 'dashboard', label: 'Dashboard', icon: '◫' },
+			{ key: 'myProfile', label: 'My Profile', icon: '○' },
+		],
+	},
+	{
+		title: 'Content',
+		items: [
+			{ key: 'myWorkouts', label: 'My Workouts', icon: '◈', trainerOnly: true },
+			{ key: 'createWorkout', label: 'Create Workout', icon: '＋', trainerOnly: true },
+			{ key: 'myCourses', label: 'My Courses', icon: '▦' },
+			{ key: 'trainerCourses', label: 'Trainer Courses', icon: '◧', trainerOnly: true },
+			{ key: 'createCourse', label: 'Create Course', icon: '＋', trainerOnly: true },
+			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOrAdmin: true },
+			{ key: 'writeArticle', label: 'Write Article', icon: '✎', trainerOrAdmin: true },
+		],
+	},
+	{
+		title: 'Activity',
+		items: [
+			{ key: 'notifications', label: 'Notifications', icon: '◉' },
+			{ key: 'chat', label: 'Messages', icon: '◬' },
+		],
+	},
+	{
+		title: 'Health',
+		items: [
+			{ key: 'nutrition', label: 'Nutrition', icon: '◑' },
+			{ key: 'progress', label: 'Progress', icon: '△' },
+		],
+	},
+	{
+		title: null,
+		items: [
+			{ key: 'subscription', label: 'Subscription', icon: '◇' },
+			{ key: 'becomeTrainer', label: 'Become Trainer', icon: '→', userOnly: true },
+		],
+	},
 ];
 
 const MyPage: NextPage = () => {
@@ -80,9 +109,8 @@ const MyPage: NextPage = () => {
 		router.push('/').then();
 	}, [user._id, router]);
 
-	const menuHandler = (key: string, isLink?: string) => {
-		if (isLink) router.push(isLink);
-		else router.push({ pathname: '/mypage', query: { category: key } }, undefined, { shallow: true });
+	const menuHandler = (key: string) => {
+		router.push({ pathname: '/mypage', query: { category: key } }, undefined, { shallow: true });
 	};
 
 	const markNotifRead = async (id: string) => {
@@ -130,39 +158,131 @@ const MyPage: NextPage = () => {
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
 			<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '240px 1fr', gap: '24px' }}>
 				{/* Sidebar */}
-				<div>
-					<div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', padding: '24px', textAlign: 'center', marginBottom: '16px' }}>
-						<div style={{ width: '72px', height: '72px', borderRadius: '12px', overflow: 'hidden', margin: '0 auto 12px', border: '1.5px solid rgba(255,255,255,0.1)' }}>
-							<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+				<div style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
+					<div style={{
+						background: 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)',
+						border: '1px solid rgba(255,255,255,0.06)',
+						borderRadius: '16px', padding: '0', overflow: 'hidden',
+						backdropFilter: 'blur(20px)',
+					}}>
+						{/* Profile card */}
+						<div style={{
+							padding: '28px 20px 20px',
+							background: 'linear-gradient(135deg, rgba(0,220,229,0.06) 0%, rgba(0,220,229,0.01) 100%)',
+							borderBottom: '1px solid rgba(255,255,255,0.05)',
+							textAlign: 'center',
+						}}>
+							<div style={{
+								width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden',
+								margin: '0 auto 14px',
+								border: '2px solid rgba(0,220,229,0.25)',
+								boxShadow: '0 0 20px rgba(0,220,229,0.1)',
+							}}>
+								<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+							</div>
+							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#e9feff', marginBottom: '6px', letterSpacing: '-0.01em' }}>
+								{user?.memberFullName || user?.memberNick || 'User'}
+							</h3>
+							<span style={{
+								fontFamily: 'JetBrains Mono', fontSize: '9px',
+								color: '#003739', textTransform: 'uppercase', letterSpacing: '0.08em',
+								background: 'linear-gradient(135deg, #00dce5, #66daba)',
+								padding: '3px 10px', borderRadius: '4px', fontWeight: 700,
+							}}>
+								{user?.memberType || 'USER'}
+							</span>
 						</div>
-						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3', marginBottom: '2px' }}>{user?.memberFullName || user?.memberNick || 'User'}</h3>
-						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(0,220,229,0.7)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{user?.memberType || 'USER'}</span>
+
+						{/* Nav sections */}
+						<nav style={{ padding: '8px 8px 12px' }}>
+							{menuSections.map((section, sIdx) => {
+								const visibleItems = section.items.filter((item) => {
+									if ((item as any).trainerOnly) return user?.memberType === 'TRAINER';
+									if ((item as any).trainerOrAdmin) return user?.memberType === 'TRAINER' || user?.memberType === 'ADMIN';
+									if ((item as any).userOnly) return user?.memberType === 'USER';
+									return true;
+								});
+								if (visibleItems.length === 0) return null;
+
+								return (
+									<div key={sIdx}>
+										{section.title && (
+											<div style={{
+												fontFamily: 'JetBrains Mono', fontSize: '9px', fontWeight: 600,
+												color: '#c8d6d6', textTransform: 'uppercase',
+												letterSpacing: '0.1em', padding: '14px 12px 6px',
+											}}>
+												{section.title}
+											</div>
+										)}
+										{!section.title && sIdx > 0 && (
+											<div style={{ height: '1px', background: 'rgba(255,255,255,0.04)', margin: '8px 12px' }} />
+										)}
+										{visibleItems.map((item) => {
+											const isActive = category === item.key;
+											const isBecomeTrainer = item.key === 'becomeTrainer';
+											return (
+												<button key={item.key} onClick={() => menuHandler(item.key)} style={{
+													width: '100%', padding: '9px 12px', borderRadius: '10px',
+													border: 'none', textAlign: 'left',
+													fontFamily: 'Hanken Grotesk', fontSize: '13px',
+													fontWeight: isActive ? 600 : 500,
+													cursor: 'pointer',
+													transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)',
+													background: isActive
+														? 'linear-gradient(135deg, rgba(0,220,229,0.12), rgba(0,220,229,0.04))'
+														: isBecomeTrainer
+															? 'rgba(102,218,186,0.08)'
+															: 'transparent',
+													color: isActive ? '#e9feff'
+														: isBecomeTrainer ? '#7ae8c8'
+														: '#c8d6d6',
+													display: 'flex', alignItems: 'center', gap: '10px',
+													position: 'relative',
+													boxShadow: isActive ? '0 2px 8px rgba(0,220,229,0.08)' : 'none',
+												}}>
+													<span style={{
+														width: '24px', height: '24px',
+														display: 'flex', alignItems: 'center', justifyContent: 'center',
+														fontSize: '13px',
+														borderRadius: '7px',
+														background: isActive ? 'rgba(0,220,229,0.15)' : 'rgba(255,255,255,0.06)',
+														color: isActive ? '#00dce5'
+															: isBecomeTrainer ? '#7ae8c8'
+															: '#9aabab',
+														transition: 'all 0.25s ease',
+														flexShrink: 0,
+													}}>
+														{item.icon}
+													</span>
+													<span style={{ flex: 1 }}>{item.label}</span>
+													{item.key === 'notifications' && unreadCount > 0 && (
+														<span style={{
+															background: 'linear-gradient(135deg, #00dce5, #66daba)',
+															color: '#003739', fontSize: '9px', fontWeight: 700,
+															padding: '2px 7px', borderRadius: '9999px',
+															fontFamily: 'JetBrains Mono',
+															boxShadow: '0 0 8px rgba(0,220,229,0.3)',
+														}}>
+															{unreadCount}
+														</span>
+													)}
+													{isActive && (
+														<div style={{
+															position: 'absolute', left: '0', top: '50%',
+															transform: 'translateY(-50%)',
+															width: '3px', height: '16px',
+															background: '#00dce5', borderRadius: '0 3px 3px 0',
+														}} />
+													)}
+												</button>
+											);
+										})}
+									</div>
+								);
+							})}
+						</nav>
 					</div>
-					<nav style={{ display: 'flex', flexDirection: 'column', gap: '2px' }}>
-						{menuItems
-							.filter((item) => {
-								if ((item as any).trainerOnly) return user?.memberType === 'TRAINER';
-								if ((item as any).trainerOrAdmin) return user?.memberType === 'TRAINER' || user?.memberType === 'ADMIN';
-								if ((item as any).userOnly) return user?.memberType === 'USER';
-								return true;
-							})
-							.map((item) => (
-								<button key={item.key} onClick={() => menuHandler(item.key, (item as any).isLink)} style={{
-									padding: '10px 14px', borderRadius: '8px', border: 'none', textAlign: 'left',
-									fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: category === item.key ? 600 : 400,
-									cursor: 'pointer', transition: 'all 0.2s ease',
-									background: category === item.key ? 'rgba(0,220,229,0.08)' : 'transparent',
-									color: category === item.key ? '#e9feff' : 'rgba(185,202,202,0.6)',
-									borderLeft: category === item.key ? '2px solid #00dce5' : '2px solid transparent',
-									display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-								}}>
-									{item.label}
-									{item.key === 'notifications' && unreadCount > 0 && (
-										<span style={{ background: '#00dce5', color: '#003739', fontSize: '10px', fontWeight: 700, padding: '2px 6px', borderRadius: '9999px', fontFamily: 'JetBrains Mono' }}>{unreadCount}</span>
-									)}
-								</button>
-							))}
-					</nav>
 				</div>
 
 				{/* Content */}
@@ -340,6 +460,11 @@ const MyPage: NextPage = () => {
 
 					{category === 'myArticles' && <MyArticles />}
 					{category === 'writeArticle' && <WriteArticle />}
+
+					{category === 'chat' && <ChatContent />}
+					{category === 'nutrition' && <NutritionContent />}
+					{category === 'progress' && <ProgressContent />}
+					{category === 'subscription' && <SubscriptionContent />}
 
 					{category === 'notifications' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
