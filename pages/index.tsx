@@ -4,11 +4,10 @@ import withLayoutMain from '../libs/components/layout/LayoutHome';
 import { Stack } from '@mui/material';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import HeroSection from '../libs/components/homepage/HeroSection';
-import FeaturedWorkouts from '../libs/components/homepage/FeaturedWorkouts';
+import HotWorkouts from '../libs/components/homepage/HotWorkouts';
+import TopCourses from '../libs/components/homepage/TopCourses';
 import EliteTrainers from '../libs/components/homepage/EliteTrainers';
-import SubscriptionPlans from '../libs/components/homepage/SubscriptionPlans';
 import LandingFooter from '../libs/components/homepage/LandingFooter';
-import CommunityBoards from '../libs/components/homepage/CommunityBoards';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -20,12 +19,11 @@ const Home: NextPage = () => {
 	const device = useDeviceDetect();
 
 	return (
-		<Stack className={'home-page'} sx={{ background: '#131314', minHeight: '100vh' }}>
+		<Stack sx={{ background: '#0d0d0e', minHeight: '100vh' }}>
 			<HeroSection />
-			<FeaturedWorkouts />
+			<HotWorkouts />
+			<TopCourses />
 			<EliteTrainers />
-			<SubscriptionPlans />
-			<CommunityBoards />
 			<LandingFooter />
 		</Stack>
 	);

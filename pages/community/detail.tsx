@@ -244,7 +244,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 								</div>
 								{c.memberId === user?._id && (
 									<button onClick={() => deleteCommentHandler(c._id)} style={{ background: 'transparent', border: 'none', color: '#849495', cursor: 'pointer', fontSize: '16px' }}>
-										🗑
+										×
 									</button>
 								)}
 							</div>

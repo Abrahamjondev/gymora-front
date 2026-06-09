@@ -160,7 +160,7 @@ const NutritionPage: NextPage = () => {
 												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{meal.protein}g P • {meal.calories} kcal</span>
 											</div>
 										</div>
-										<button onClick={() => deleteMealHandler(meal._id)} style={{ background: 'transparent', border: 'none', color: '#849495', cursor: 'pointer', fontSize: '16px' }}>🗑</button>
+										<button onClick={() => deleteMealHandler(meal._id)} style={{ background: 'transparent', border: 'none', color: '#849495', cursor: 'pointer', fontSize: '16px' }}>×</button>
 									</div>
 								))}
 							</div>

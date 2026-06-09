@@ -50,6 +50,63 @@ hr {
 	margin: auto;
 }
 
+/** ANIMATIONS **/
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(24px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from { opacity: 0; }
+	to { opacity: 1; }
+}
+
+@keyframes pulse {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0.4; }
+}
+
+@keyframes shimmer {
+	0% { background-position: -200% 0; }
+	100% { background-position: 200% 0; }
+}
+
+@keyframes glowPulse {
+	0%, 100% { box-shadow: 0 0 20px rgba(0,220,229,0.15); }
+	50% { box-shadow: 0 0 40px rgba(0,220,229,0.3); }
+}
+
+@keyframes borderGlow {
+	0%, 100% { border-color: rgba(0,220,229,0.15); }
+	50% { border-color: rgba(0,220,229,0.4); }
+}
+
+@keyframes float {
+	0%, 100% { transform: translateY(0); }
+	50% { transform: translateY(-6px); }
+}
+
+@keyframes scaleIn {
+	from { opacity: 0; transform: scale(0.95); }
+	to { opacity: 1; transform: scale(1); }
+}
+
+@keyframes slideUp {
+	from { opacity: 0; transform: translateY(12px); }
+	to { opacity: 1; transform: translateY(0); }
+}
+
+/** SMOOTH SCROLL **/
+html {
+	scroll-behavior: smooth;
+}
+
 /** VERSION: PC **/
 #pc-wrap {
 	width: 100%;

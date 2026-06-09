@@ -30,20 +30,20 @@ export const getStaticProps = async ({ locale }: any) => ({
 });
 
 const menuItems = [
-	{ key: 'dashboard', label: 'Dashboard', icon: '📊' },
-	{ key: 'myProfile', label: 'My Profile', icon: '👤' },
-	{ key: 'myWorkouts', label: 'My Workouts', icon: '💪', trainerOnly: true },
-	{ key: 'createWorkout', label: 'Create Workout', icon: '➕', trainerOnly: true },
-	{ key: 'myCourses', label: 'My Courses', icon: '📚' },
-	{ key: 'trainerCourses', label: 'Trainer Courses', icon: '🎓', trainerOnly: true },
-	{ key: 'myArticles', label: 'My Articles', icon: '📝', trainerOrAdmin: true },
-	{ key: 'writeArticle', label: 'Write Article', icon: '✍️', trainerOrAdmin: true },
-	{ key: 'notifications', label: 'Notifications', icon: '🔔' },
-	{ key: 'chat', label: 'Messages', icon: '💬', isLink: '/chat' },
-	{ key: 'nutrition', label: 'Nutrition', icon: '🥗', isLink: '/nutrition' },
-	{ key: 'progress', label: 'Progress', icon: '📈', isLink: '/progress' },
-	{ key: 'subscription', label: 'Subscription', icon: '💎', isLink: '/subscription' },
-	{ key: 'becomeTrainer', label: 'Become Trainer', icon: '🎯', userOnly: true },
+	{ key: 'dashboard', label: 'Dashboard', icon: '•' },
+	{ key: 'myProfile', label: 'My Profile', icon: '•' },
+	{ key: 'myWorkouts', label: 'My Workouts', icon: '•', trainerOnly: true },
+	{ key: 'createWorkout', label: 'Create Workout', icon: '•', trainerOnly: true },
+	{ key: 'myCourses', label: 'My Courses', icon: '•' },
+	{ key: 'trainerCourses', label: 'Trainer Courses', icon: '•', trainerOnly: true },
+	{ key: 'myArticles', label: 'My Articles', icon: '•', trainerOrAdmin: true },
+	{ key: 'writeArticle', label: 'Write Article', icon: '•', trainerOrAdmin: true },
+	{ key: 'notifications', label: 'Notifications', icon: '•' },
+	{ key: 'chat', label: 'Messages', icon: '•', isLink: '/chat' },
+	{ key: 'nutrition', label: 'Nutrition', icon: '•', isLink: '/nutrition' },
+	{ key: 'progress', label: 'Progress', icon: '•', isLink: '/progress' },
+	{ key: 'subscription', label: 'Subscription', icon: '•', isLink: '/subscription' },
+	{ key: 'becomeTrainer', label: 'Become Trainer', icon: '•', userOnly: true },
 ];
 
 const MyPage: NextPage = () => {
@@ -167,11 +167,11 @@ const MyPage: NextPage = () => {
 							)}
 							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
 								<button onClick={() => menuHandler('nutrition', '/nutrition')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', textAlign: 'left' }}>
-									<span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>🥗</span>
+									
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>Nutrition Dashboard</span>
 								</button>
 								<button onClick={() => menuHandler('progress', '/progress')} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', cursor: 'pointer', textAlign: 'left' }}>
-									<span style={{ fontSize: '24px', display: 'block', marginBottom: '8px' }}>📈</span>
+									
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>Progress Tracker</span>
 								</button>
 							</div>

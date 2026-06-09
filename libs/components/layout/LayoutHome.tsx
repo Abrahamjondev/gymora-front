@@ -31,7 +31,7 @@ const withLayoutMain = (Component: any) => {
 					</Head>
 					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar />
-						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
+						<Stack id={'main'} >
 							<Component {...props} />
 						</Stack>
 					</Stack>
@@ -47,7 +47,7 @@ const withLayoutMain = (Component: any) => {
 					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar />
 
-						<Stack id={'main'} sx={{ paddingTop: '64px' }}>
+						<Stack id={'main'} >
 							<Component {...props} />
 						</Stack>
 

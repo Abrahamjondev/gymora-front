@@ -135,7 +135,7 @@ const CourseList: NextPage = () => {
 				{/* Search + Sort */}
 				<div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
 					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
-						<span style={{ color: '#849495', marginRight: '8px' }}>🔍</span>
+						<span style={{ color: '#849495', marginRight: '8px' }}></span>
 						<input value={searchText} onChange={(e) => setSearchText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()} placeholder="Search programs..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', padding: '14px 0' }} />
 						{searchText && <span onClick={() => { setSearchText(''); buildCourseSearch({ text: '' }); }} style={{ color: '#849495', cursor: 'pointer' }}>✕</span>}
 					</div>
@@ -222,8 +222,8 @@ const CourseList: NextPage = () => {
 									{course.courseTitle}
 								</h3>
 								<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', color: '#b9caca' }}>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>⏱ {course.courseDuration} Weeks</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>📊 {course.courseDifficulty}</span>
+									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{course.courseDuration} Weeks</span>
+									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{course.courseDifficulty}</span>
 								</div>
 								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '20px', color: '#849495', marginBottom: '16px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
 									{course.courseDesc || 'Professional training program'}

@@ -131,7 +131,7 @@ const TrainerList: NextPage = () => {
 				{/* Search */}
 				<div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
 					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
-						<span style={{ color: '#849495', marginRight: '8px' }}>🔍</span>
+						<span style={{ color: '#849495', marginRight: '8px' }}></span>
 						<input
 							value={searchText}
 							onChange={(e) => setSearchText(e.target.value)}
