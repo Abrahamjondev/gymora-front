@@ -20,6 +20,7 @@ import { Direction, Message } from '../../libs/enums/common.enum';
 import { userVar } from '../../apollo/store';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { notifyMember } from '../../libs/notify';
+import CreatorCard from '../../libs/components/common/CreatorCard';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -301,6 +302,9 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 						variant="full"
 						label="Like this workout"
 					/>
+
+					{/* Creator profile */}
+					<CreatorCard memberId={(workout as any)?.memberId} title="Coach" />
 				</div>
 
 				{/* Main content */}

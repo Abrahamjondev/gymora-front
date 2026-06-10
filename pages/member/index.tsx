@@ -236,6 +236,23 @@ const MemberPage: NextPage = () => {
 							{/* Actions */}
 							{user?._id && !isOwnProfile && (
 								<div className="td-actions">
+									<button
+										onClick={() => router.push({ pathname: '/mypage', query: { category: 'chat', partner: member._id } })}
+										style={{
+											width: '100%',
+											padding: '12px 16px',
+											borderRadius: '10px',
+											border: '1px solid rgba(0,220,229,0.4)',
+											background: 'rgba(0,220,229,0.1)',
+											color: '#00dce5',
+											fontFamily: 'Hanken Grotesk, sans-serif',
+											fontSize: '14px',
+											fontWeight: 700,
+											cursor: 'pointer',
+										}}
+									>
+										Message
+									</button>
 									<button className={`td-follow${isFollowing ? ' is-following' : ''}`} onClick={followHandler} disabled={followBusy}>
 										{isFollowing ? 'Following' : 'Follow'}
 									</button>

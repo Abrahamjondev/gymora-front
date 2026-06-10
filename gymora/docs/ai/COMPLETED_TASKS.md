@@ -39,6 +39,8 @@
 
 - My Articles gained owner Edit/Delete wired to backend updateBoardArticle (edit mode in Teditor with prefilled content, category locked per backend DTO; delete via DELETE status with confirm) — E2E verified. Final cleanup: 8 dead legacy components and 8 unused apollo exports removed; calculateAnalytics confirmed redundant (nutrition recommendation already returns BMI/BMR/TDEE); chat persistence over socket verified so SEND_MESSAGE dropped.
 
+- Trainer messaging entry point + creator cards: Message buttons on trainer/member profiles deep-link into mypage chat (?partner= auto-opens or starts the conversation with a stub row); new reusable CreatorCard shows the workout's coach (workout.memberId) and the program's trainer (trainerId → restored GET_TRAINER → member) in detail sidebars with role-aware View Profile + Message. Like persistence re-verified end-to-end (could not reproduce revert; meLiked + auth header confirmed on reload).
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

@@ -8,7 +8,8 @@ import { Course, Lesson } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
-import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS } from '../../apollo/user/query';
+import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS, GET_TRAINER } from '../../apollo/user/query';
+import CreatorCard from '../../libs/components/common/CreatorCard';
 import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION, CONFIRM_COURSE_PAYMENT } from '../../apollo/user/mutation';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { userVar } from '../../apollo/store';
@@ -68,6 +69,14 @@ const CourseDetail: NextPage = () => {
 	});
 
 	const [purchaseCourse] = useMutation(PURCHASE_COURSE);
+	// Creator (trainer entity -> member) for the sidebar profile card
+	const { data: trainerData } = useQuery(GET_TRAINER, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: course?.trainerId },
+		skip: !course?.trainerId,
+	});
+	const courseTrainer: any = trainerData?.getTrainer;
+
 	const [createReview] = useMutation(CREATE_REVIEW);
 	const [completeLesson] = useMutation(COMPLETE_LESSON);
 	const [createCheckoutSession] = useMutation(CREATE_COURSE_CHECKOUT_SESSION);
@@ -305,6 +314,15 @@ const CourseDetail: NextPage = () => {
 							</div>
 						</div>
 					</div>
+
+					{/* Trainer profile */}
+					<CreatorCard
+						memberId={courseTrainer?.memberId}
+						title="Your Trainer"
+						trainerRating={courseTrainer?.trainerRating}
+						trainerRatingCount={courseTrainer?.trainerRatingCount}
+						trainerExperience={courseTrainer?.trainerExperience}
+					/>
 				</div>
 
 				{/* Main content */}

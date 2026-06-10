@@ -1,15 +1,18 @@
 import React, { useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/router';
 import { CircularProgress, Stack } from '@mui/material';
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY, GET_PARTNER_ONLINE_STATUS } from '../../../apollo/user/query';
+import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY, GET_MEMBER, GET_PARTNER_ONLINE_STATUS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import { REACT_APP_API_URL, Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import useSocket from '../../hooks/useSocket';
 
 const ChatContent = () => {
+	const router = useRouter();
 	const user = useReactiveVar(userVar);
+	const partnerParam = router.query?.partner as string | undefined;
 	const { socket, connected } = useSocket();
 	const [conversations, setConversations] = useState<any[]>([]);
 	const [activePartner, setActivePartner] = useState<string | null>(null);
@@ -34,6 +37,43 @@ const ChatContent = () => {
 			setConversations((prev) => prev.map((c: any) => (c.partnerId === st.memberId ? { ...c, isOnline: st.isOnline } : c)));
 		},
 	});
+
+	// Deep link: /mypage?category=chat&partner=<memberId> opens (or starts) that conversation
+	const [fetchPartnerMember] = useLazyQuery(GET_MEMBER, {
+		fetchPolicy: 'cache-and-network',
+		onCompleted: (d: T) => {
+			const m = d?.getMember;
+			if (!m?._id) return;
+			setConversations((prev) =>
+				prev.some((c: any) => c.partnerId === m._id)
+					? prev
+					: [
+							{
+								partnerId: m._id,
+								partnerNick: m.memberNick,
+								partnerImage: m.memberImage,
+								lastMessage: '',
+								lastMessageAt: null,
+								isRead: true,
+								isOnline: false,
+							},
+							...prev,
+					  ],
+			);
+		},
+	});
+
+	useEffect(() => {
+		if (!partnerParam || !user?._id || partnerParam === user._id) return;
+		setActivePartner(partnerParam);
+	}, [partnerParam, user?._id]);
+
+	useEffect(() => {
+		if (!partnerParam || convsLoading || partnerParam === user?._id) return;
+		if (!conversations.some((c: any) => c.partnerId === partnerParam)) {
+			fetchPartnerMember({ variables: { input: partnerParam } });
+		}
+	}, [partnerParam, convsLoading, conversations.length]);
 
 	const { loading: msgsLoading, refetch: msgsRefetch } = useQuery(GET_MESSAGE_HISTORY, {
 		fetchPolicy: 'network-only',
@@ -169,7 +209,7 @@ const ChatContent = () => {
 											<span className="ct-conv-nick">{conv.partnerNick || 'User'}</span>
 											<span className="ct-conv-time">{formatConvTime(conv.lastMessageAt)}</span>
 										</div>
-										<p className="ct-conv-last">{conv.lastMessage}</p>
+										<p className="ct-conv-last">{conv.lastMessage || 'Start the conversation'}</p>
 									</div>
 									{!conv.isRead && conv.lastMessage && <span className="ct-unread" />}
 								</div>

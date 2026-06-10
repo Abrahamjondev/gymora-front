@@ -695,6 +695,21 @@ export const GET_MEMBER_PURCHASED_COURSES = gql`
  *    TRAINER DETAIL      *
  *************************/
 
+export const GET_TRAINER = gql`
+	query GetTrainer($input: String!) {
+		getTrainer(trainerId: $input) {
+			_id
+			memberId
+			trainerBio
+			trainerSpecializations
+			trainerExperience
+			trainerRating
+			trainerRatingCount
+			trainerVerificationStatus
+		}
+	}
+`;
+
 export const GET_TRAINER_BY_MEMBER_ID = gql`
 	query GetTrainerByMemberId($input: String!) {
 		getTrainerByMemberId(memberId: $input) {
