@@ -36,6 +36,7 @@ const TrainerList: NextPage = () => {
 		search: {} as { text?: string },
 	});
 	const [searchText, setSearchText] = useState<string>('');
+	const [activeSort, setActiveSort] = useState<string>('memberRank');
 
 	/** APOLLO REQUESTS **/
 	const {
@@ -84,153 +85,125 @@ const TrainerList: NextPage = () => {
 		});
 	};
 
+	const sortHandler = (sort: string) => {
+		setActiveSort(sort);
+		setSearchFilter({ ...searchFilter, page: 1, sort });
+	};
+
 	const paginationHandler = (e: any, value: number) => {
 		setSearchFilter({ ...searchFilter, page: value });
 	};
 
 	const pushDetailHandler = (memberId: string) => {
-		router.push({ pathname: '/member', query: { memberId } });
+		router.push({ pathname: '/trainer/detail', query: { id: memberId } });
 	};
+
+	const sortOptions = [
+		{ value: 'memberRank', label: 'Top Ranked' },
+		{ value: 'memberLikes', label: 'Most Liked' },
+		{ value: 'memberViews', label: 'Most Viewed' },
+		{ value: 'createdAt', label: 'Newest' },
+	];
 
 	/** LOADING STATE **/
 	if (loading && !trainers.length) {
 		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
+			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
 			</Stack>
 		);
 	}
 
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA TRAINERS MOBILE</div>;
-	}
-
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-				{/* Header */}
-				<div style={{ marginBottom: '32px' }}>
-					<h2
-						style={{
-							fontFamily: 'Hanken Grotesk, sans-serif',
-							fontSize: '40px',
-							lineHeight: '48px',
-							letterSpacing: '-0.02em',
-							fontWeight: 800,
-							color: '#e5e2e3',
-							textTransform: 'uppercase',
-						}}
-					>
-						Elite Performance
-						<br />
-						Trainers
-					</h2>
-					<p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '16px', lineHeight: '24px', color: '#b9caca', maxWidth: '480px', marginTop: '12px' }}>
+		<div className="wl-page">
+			<div className="lp-container">
+				{/* Hero */}
+				<div className="wl-hero">
+					<div className="wl-hero-glow" />
+					<span className="lp-eyebrow lp-eyebrow--green">Verified professionals</span>
+					<h1 className="wl-title">
+						Elite <span className="lp-grad">Trainers</span>
+					</h1>
+					<p className="lp-sub" style={{ margin: 0 }}>
 						Work with world-class athletes and certified professionals dedicated to pushing your limits.
 					</p>
+					<div className="wl-badge">
+						<span className="wl-badge-dot" />
+						<span>{total > 0 ? `${total} trainers on the roster` : 'Loading roster'}</span>
+					</div>
 				</div>
 
-				{/* Search */}
-				<div style={{ display: 'flex', gap: '12px', marginBottom: '32px' }}>
-					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
-						<span style={{ color: '#849495', marginRight: '8px' }}></span>
-						<input
-							value={searchText}
-							onChange={(e) => setSearchText(e.target.value)}
-							onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
-							placeholder="Search by name or keyword..."
-							style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', color: '#e5e2e3', padding: '14px 0' }}
-						/>
+				{/* Search console */}
+				<div className="wl-console">
+					<div className="wl-console-row">
+						<div className="wl-search">
+							<input
+								value={searchText}
+								onChange={(e) => setSearchText(e.target.value)}
+								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
+								placeholder="Search by name or keyword..."
+							/>
+							{searchText && (
+								<span
+									className="wl-search-clear"
+									onClick={() => {
+										setSearchText('');
+										setSearchFilter({ ...searchFilter, page: 1, search: {} });
+									}}
+								>
+									✕
+								</span>
+							)}
+						</div>
+						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
+							{sortOptions.map((s) => (
+								<option key={s.value} value={s.value}>
+									{s.label}
+								</option>
+							))}
+						</select>
 					</div>
-					<button
-						onClick={searchHandler}
-						style={{ background: '#353436', border: '1px solid #3a494a', borderRadius: '8px', padding: '14px 24px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', fontWeight: 600, color: '#e5e2e3', cursor: 'pointer' }}
-					>
-						Search
-					</button>
 				</div>
 
 				{/* Trainer Grid */}
-				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
+				<div className="tr-grid">
 					{trainers.map((trainer) => (
-						<div
-							key={trainer._id}
-							onClick={() => pushDetailHandler(trainer._id)}
-							style={{
-								background: 'rgba(255,255,255,0.03)',
-								border: '1px solid rgba(255,255,255,0.08)',
-								borderRadius: '12px',
-								overflow: 'hidden',
-								cursor: 'pointer',
-								transition: 'all 0.3s',
-							}}
-							onMouseOver={(e) => {
-								(e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.3)';
-								(e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
-							}}
-							onMouseOut={(e) => {
-								(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)';
-								(e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-							}}
-						>
-							{/* Image */}
-							<div style={{ aspectRatio: '4/3', overflow: 'hidden', position: 'relative' }}>
+						<div key={trainer._id} className="tr-card" onClick={() => pushDetailHandler(trainer._id)}>
+							<div className="tr-card-img">
 								<img
-									src={
-										trainer.memberImage
-											? `${REACT_APP_API_URL}/${trainer.memberImage}`
-											: '/img/profile/defaultUser.svg'
-									}
+									src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
 									alt={trainer.memberNick}
-									style={{
-										width: '100%',
-										height: '100%',
-										objectFit: 'cover',
-										filter: 'grayscale(0.5)',
-										transition: 'filter 0.5s, transform 0.5s',
-									}}
-									onMouseOver={(e) => {
-										(e.target as HTMLImageElement).style.filter = 'grayscale(0)';
-										(e.target as HTMLImageElement).style.transform = 'scale(1.05)';
-									}}
-									onMouseOut={(e) => {
-										(e.target as HTMLImageElement).style.filter = 'grayscale(0.5)';
-										(e.target as HTMLImageElement).style.transform = 'scale(1)';
-									}}
+									loading="lazy"
 								/>
-								{/* Rank badge */}
+								<div className="tr-card-shade" />
 								{trainer.memberRank > 0 && (
-									<div style={{ position: 'absolute', top: '12px', right: '12px', padding: '4px 8px', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-										<span style={{ color: '#ff8a00', fontSize: '12px' }}>★</span>
-										<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#e5e2e3', fontWeight: 700 }}>
-											{trainer.memberRank}
-										</span>
+									<div className="tr-card-rank">
+										<span className="tr-card-star">★</span>
+										{trainer.memberRank}
 									</div>
 								)}
+								<div className="tr-card-overlay">
+									<h3>{trainer.memberFullName || trainer.memberNick}</h3>
+									<p>{trainer.memberDesc || 'Professional fitness trainer'}</p>
+								</div>
 							</div>
 
-							{/* Info */}
-							<div style={{ padding: '20px' }}>
-								<h3 style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '20px', lineHeight: '28px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>
-									{trainer.memberFullName || trainer.memberNick}
-								</h3>
-								<p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', lineHeight: '20px', color: '#b9caca', marginBottom: '12px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-									{trainer.memberDesc || 'Professional fitness trainer'}
-								</p>
-								<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(58,73,74,0.5)' }}>
-									<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-										<LikeButton
-											liked={!!trainer.meLiked?.[0]?.myFavorite}
-											count={trainer.memberLikes ?? 0}
-											onClick={(e) => likeHandler(e, trainer._id)}
-										/>
-										<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#849495' }}>
-											{trainer.memberWorkouts} workouts
-										</span>
-									</div>
-									<span style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '13px', fontWeight: 600, color: '#e9feff' }}>
-										View Profile →
+							<div className="tr-card-foot">
+								<div className="tr-card-meta">
+									<span>
+										<b>{trainer.memberWorkouts}</b> workouts
 									</span>
+									<span>
+										<b>{trainer.memberFollowers}</b> followers
+									</span>
+								</div>
+								<div className="tr-card-side">
+									<LikeButton
+										liked={!!trainer.meLiked?.[0]?.myFavorite}
+										count={trainer.memberLikes ?? 0}
+										onClick={(e) => likeHandler(e, trainer._id)}
+									/>
+									<span className="tr-card-arrow">→</span>
 								</div>
 							</div>
 						</div>
@@ -239,23 +212,25 @@ const TrainerList: NextPage = () => {
 
 				{/* No results */}
 				{!loading && trainers.length === 0 && (
-					<div style={{ textAlign: 'center', padding: '80px 0', color: '#b9caca', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '18px' }}>
-						No trainers found.
+					<div className="wl-empty">
+						<span className="wl-empty-label">No results</span>
+						<h3>No trainers match this search.</h3>
+						<p>Try a different name or keyword.</p>
 					</div>
 				)}
 
 				{/* Stats bar */}
 				{total > 0 && (
-					<div style={{ marginTop: '40px', paddingTop: '32px', borderTop: '1px solid #3a494a', display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '20px' }}>
+					<div className="tr-stats">
 						{[
-							{ label: 'TOTAL TRAINERS', value: `${total}` },
-							{ label: 'TOTAL WORKOUTS', value: `${trainers.reduce((a, t) => a + (t.memberWorkouts || 0), 0)}` },
-							{ label: 'TOTAL FOLLOWERS', value: `${trainers.reduce((a, t) => a + (t.memberFollowers || 0), 0)}` },
-							{ label: 'COMMUNITY', value: 'Active' },
+							{ label: 'Total Trainers', value: `${total}` },
+							{ label: 'Workouts Published', value: `${trainers.reduce((a, t) => a + (t.memberWorkouts || 0), 0)}` },
+							{ label: 'Followers', value: `${trainers.reduce((a, t) => a + (t.memberFollowers || 0), 0)}` },
+							{ label: 'Likes', value: `${trainers.reduce((a, t) => a + (t.memberLikes || 0), 0)}` },
 						].map((stat) => (
 							<div key={stat.label}>
-								<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>{stat.label}</span>
-								<span style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '32px', fontWeight: 800, color: '#e5e2e3' }}>{stat.value}</span>
+								<span className="tr-stat-label">{stat.label}</span>
+								<span className="tr-stat-value">{stat.value}</span>
 							</div>
 						))}
 					</div>
@@ -263,14 +238,14 @@ const TrainerList: NextPage = () => {
 
 				{/* Pagination */}
 				{total > searchFilter.limit && (
-					<Stack alignItems="center" style={{ marginTop: '40px' }}>
+					<Stack alignItems="center" style={{ marginTop: '48px' }}>
 						<Pagination
 							count={Math.ceil(total / searchFilter.limit)}
 							page={searchFilter.page}
 							onChange={paginationHandler}
 							shape="rounded"
 							sx={{
-								'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a' },
+								'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a', fontFamily: 'JetBrains Mono, monospace' },
 								'& .Mui-selected': { backgroundColor: '#e9feff !important', color: '#003739' },
 							}}
 						/>

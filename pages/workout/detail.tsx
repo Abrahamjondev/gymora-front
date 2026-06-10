@@ -195,10 +195,6 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		);
 	}
 
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA WORKOUT DETAIL MOBILE</div>;
-	}
-
 	if (!workout) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
@@ -207,57 +203,88 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		);
 	}
 
+	const difficultyColor: Record<string, string> = {
+		BEGINNER: '#66daba',
+		INTERMEDIATE: '#ffb77f',
+		ADVANCED: '#ff8a8a',
+	};
+
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh' }}>
+		<div className="wd-page">
 			{/* Hero */}
-			<div
-				style={{
-					position: 'relative',
-					width: '100%',
-					height: '400px',
-					backgroundImage: workout.workoutThumbnail
-						? `url(${REACT_APP_API_URL}/${workout.workoutThumbnail})`
-						: 'url(/img/banner/header1.svg)',
-					backgroundSize: 'cover',
-					backgroundPosition: 'center',
-				}}
-			>
-				<div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, #131314 0%, rgba(19,19,20,0.4) 50%, rgba(19,19,20,0.2) 100%)' }} />
-				<div style={{ position: 'absolute', bottom: '40px', width: '100%', maxWidth: '1200px', padding: '0 24px', left: '50%', transform: 'translateX(-50%)' }}>
-					<div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-						<span style={{ padding: '2px 8px', background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(8px)', borderRadius: '4px', border: '1px solid rgba(255,255,255,0.1)', fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#ff8a00', textTransform: 'uppercase' }}>
-							{workout.targetMuscle}
-						</span>
-						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#b9caca' }}>
-							{workout.estimatedCaloriesBurned} KCAL
-						</span>
+			<div className="wd-hero">
+				<img
+					className="wd-hero-img"
+					src={workout.workoutThumbnail ? `${REACT_APP_API_URL}/${workout.workoutThumbnail}` : '/img/banner/header1.svg'}
+					alt={workout.workoutTitle}
+				/>
+				<div className="wd-hero-tint" />
+				<div className="wd-hero-tint-side" />
+				<div className="lp-hero-grain" />
+				<div className="lp-container wd-hero-inner">
+					<button className="wd-back" onClick={() => router.push('/workout')}>
+						← Library
+					</button>
+					<div>
+						<div className="wd-chips">
+							{workout.targetMuscle && <span className="lp-chip lp-chip--cyan">{workout.targetMuscle}</span>}
+							<span className="lp-chip" style={{ color: difficultyColor[workout.workoutDifficulty] || '#00dce5' }}>
+								{workout.workoutDifficulty}
+							</span>
+							<span className="lp-chip" style={{ color: '#ffc08f', borderColor: 'rgba(255,138,0,0.3)' }}>
+								{workout.estimatedCaloriesBurned} KCAL
+							</span>
+						</div>
+						<h1 className="wd-title">{workout.workoutTitle}</h1>
+						<div className="wd-meta">
+							<span>
+								<b>{workout.workoutViews ?? 0}</b> views
+							</span>
+							<span>
+								<b>{workout.workoutLikes ?? 0}</b> likes
+							</span>
+							<span>
+								<b>{workout.exercises?.length ?? 0}</b> exercises
+							</span>
+						</div>
 					</div>
-					<h1 style={{ fontFamily: 'Hanken Grotesk', fontSize: '40px', lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: 800, color: '#ffffff' }}>
-						{workout.workoutTitle}
-					</h1>
 				</div>
 			</div>
 
 			{/* Content */}
-			<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '40px 24px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: '40px' }}>
-				{/* Left sidebar */}
-				<div>
-					<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
-						<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px', textTransform: 'uppercase' }}>
-							Workout Summary
-						</h4>
-						<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-							{[
-								{ label: 'EST. CAL', value: `${workout.estimatedCaloriesBurned}` },
-								{ label: 'DIFFICULTY', value: workout.workoutDifficulty },
-								{ label: 'VIEWS', value: `${workout.workoutViews ?? 0}` },
-								{ label: 'LIKES', value: `${workout.workoutLikes ?? 0}` },
-							].map((s) => (
-								<div key={s.label}>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>{s.label}</span>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e5e2e3' }}>{s.value}</span>
-								</div>
-							))}
+			<div className="lp-container wd-layout">
+				{/* Sticky sidebar */}
+				<div className="wd-side">
+					<div className="wd-stats">
+						<h4>Workout Summary</h4>
+						<div className="wd-stats-grid">
+							<div>
+								<span className="wd-stat-label">Est. Cal</span>
+								<span className="wd-stat-value">{workout.estimatedCaloriesBurned}</span>
+							</div>
+							<div>
+								<span className="wd-stat-label">Difficulty</span>
+								<span className="wd-stat-value" style={{ fontSize: '14px' }}>
+									<span
+										style={{
+											width: '7px',
+											height: '7px',
+											borderRadius: '50%',
+											flex: 'none',
+											background: difficultyColor[workout.workoutDifficulty] || '#00dce5',
+										}}
+									/>
+									{workout.workoutDifficulty}
+								</span>
+							</div>
+							<div>
+								<span className="wd-stat-label">Views</span>
+								<span className="wd-stat-value">{workout.workoutViews ?? 0}</span>
+							</div>
+							<div>
+								<span className="wd-stat-label">Likes</span>
+								<span className="wd-stat-value">{workout.workoutLikes ?? 0}</span>
+							</div>
 						</div>
 					</div>
 
@@ -271,32 +298,34 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					/>
 				</div>
 
-				{/* Right content */}
-				<div>
+				{/* Main content */}
+				<div className="wd-main">
 					{/* Description */}
 					{workout.workoutDesc && (
-						<div style={{ marginBottom: '32px' }}>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '12px' }}>About</h3>
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '24px', color: '#b9caca' }}>{workout.workoutDesc}</p>
+						<div className="wd-section">
+							<div className="wd-section-head">
+								<h3>About</h3>
+							</div>
+							<p>{workout.workoutDesc}</p>
 						</div>
 					)}
 
 					{/* Exercises */}
 					{workout.exercises && workout.exercises.length > 0 && (
-						<div style={{ marginBottom: '32px' }}>
-							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-								<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3' }}>Training Plan</h3>
-								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{workout.exercises.length} EXERCISES</span>
+						<div className="wd-section">
+							<div className="wd-section-head">
+								<h3>Training Plan</h3>
+								<span className="wd-section-count">{workout.exercises.length} exercises</span>
 							</div>
 							{workout.exercises.map((ex, idx) => (
-								<div key={idx} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '16px 0', borderBottom: '1px solid rgba(58,73,74,0.5)' }}>
-									<div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: '#849495', width: '24px' }}>{String(idx + 1).padStart(2, '0')}</span>
-										<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3' }}>{ex.exerciseName}</h4>
+								<div key={idx} className="wd-ex-row">
+									<div className="wd-ex-left">
+										<span className="wd-ex-idx">{String(idx + 1).padStart(2, '0')}</span>
+										<h4>{ex.exerciseName}</h4>
 									</div>
-									<div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-										<span style={{ padding: '4px 10px', background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.2)', borderRadius: '4px', fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#00f5ff' }}>{ex.sets} SETS</span>
-										<span style={{ padding: '4px 10px', background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.2)', borderRadius: '4px', fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#00f5ff' }}>{ex.reps} REPS</span>
+									<div className="wd-ex-chips">
+										<span>{ex.sets} SETS</span>
+										<span>{ex.reps} REPS</span>
 									</div>
 								</div>
 							))}
@@ -305,77 +334,57 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 
 					{/* Video */}
 					{workout.videoUrl && (
-						<div style={{ marginBottom: '32px' }}>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '12px' }}>Video</h3>
-							<video src={`${REACT_APP_API_URL}/${workout.videoUrl}`} controls style={{ width: '100%', borderRadius: '12px', background: '#0e0e0f' }} />
+						<div className="wd-section">
+							<div className="wd-section-head">
+								<h3>Video</h3>
+							</div>
+							<video className="wd-video" src={`${REACT_APP_API_URL}/${workout.videoUrl}`} controls />
 						</div>
 					)}
 
 					{/* Comments */}
-					<div>
-						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '16px' }}>
-							Reviews ({commentTotal})
-						</h3>
+					<div className="wd-section">
+						<div className="wd-section-head">
+							<h3>Comments</h3>
+							<span className="wd-section-count">{commentTotal} total</span>
+						</div>
 
-						{/* Leave a review */}
-						<div style={{ marginBottom: '24px' }}>
+						{/* Leave a comment */}
+						<div className="wd-form-card">
 							<textarea
+								className="wd-textarea"
 								onChange={({ target: { value } }) => setInsertCommentData({ ...insertCommentData, commentContent: value })}
 								value={insertCommentData.commentContent}
-								placeholder="Leave a review..."
-								style={{
-									width: '100%',
-									minHeight: '80px',
-									background: 'rgba(255,255,255,0.03)',
-									border: '1px solid #3a494a',
-									borderRadius: '8px',
-									padding: '12px 16px',
-									fontFamily: 'Hanken Grotesk',
-									fontSize: '14px',
-									color: '#e5e2e3',
-									outline: 'none',
-									resize: 'vertical',
-									marginBottom: '12px',
-								}}
+								placeholder="Share your experience..."
 							/>
 							<button
+								className="wd-btn"
 								onClick={createCommentHandler}
 								disabled={insertCommentData.commentContent === '' || user?._id === ''}
-								style={{
-									background: insertCommentData.commentContent && user?._id ? '#e9feff' : '#353436',
-									color: insertCommentData.commentContent && user?._id ? '#003739' : '#849495',
-									border: 'none',
-									borderRadius: '8px',
-									padding: '12px 32px',
-									fontFamily: 'Hanken Grotesk',
-									fontSize: '14px',
-									fontWeight: 700,
-									cursor: insertCommentData.commentContent && user?._id ? 'pointer' : 'not-allowed',
-								}}
 							>
-								Submit Review
+								Post Comment
 							</button>
 						</div>
 
 						{/* Comment list */}
 						{workoutComments.map((comment: Comment) => (
-							<div key={comment._id} style={{ padding: '16px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-									<div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#2a2a2b' }}>
-										<img
-											src={comment.memberData?.memberImage ? `${REACT_APP_API_URL}/${comment.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
-											alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-										/>
+							<div key={comment._id} className="wd-comment">
+								<img
+									src={comment.memberData?.memberImage ? `${REACT_APP_API_URL}/${comment.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
+									alt=""
+								/>
+								<div className="wd-comment-body">
+									<div className="wd-comment-head">
+										<span className="wd-comment-nick">{comment.memberData?.memberNick ?? 'Anonymous'}</span>
+										<span className="wd-comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
 									</div>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3' }}>{comment.memberData?.memberNick ?? 'Anonymous'}</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{new Date(comment.createdAt).toLocaleDateString()}</span>
+									<p>{comment.commentContent}</p>
 								</div>
-								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '20px', color: '#b9caca', marginLeft: '44px' }}>{comment.commentContent}</p>
 							</div>
 						))}
 
 						{workoutComments.length === 0 && !getCommentsLoading && (
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', textAlign: 'center', padding: '24px 0' }}>No reviews yet. Be the first!</p>
+							<p className="wd-empty-line">No comments yet. Be the first!</p>
 						)}
 
 						{commentTotal > 5 && (
@@ -395,29 +404,53 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					</div>
 
 					{/* Star Reviews */}
-					<div style={{ marginTop: '32px' }}>
-						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '16px' }}>Star Reviews ({workoutReviews.length})</h3>
+					<div className="wd-section">
+						<div className="wd-section-head">
+							<h3>Athlete Reviews</h3>
+							<span className="wd-section-count">{workoutReviews.length} reviews</span>
+						</div>
 						{user?._id && (
-							<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', marginBottom: '16px' }}>
-								<div style={{ display: 'flex', gap: '8px', marginBottom: '12px' }}>
-									{[1,2,3,4,5].map((n) => <span key={n} onClick={() => setReviewRating(n)} style={{ fontSize: '24px', cursor: 'pointer', color: n <= reviewRating ? '#ff8a00' : '#3a494a' }}>★</span>)}
+							<div className="wd-form-card">
+								<div className="wd-stars">
+									{[1, 2, 3, 4, 5].map((n) => (
+										<span key={n} onClick={() => setReviewRating(n)} style={{ color: n <= reviewRating ? '#ff8a00' : '#3a494a' }}>
+											★
+										</span>
+									))}
 								</div>
 								<div style={{ display: 'flex', gap: '12px' }}>
-									<input value={reviewText} onChange={(e) => setReviewText(e.target.value)} placeholder="Write a review..." style={{ flex: 1, padding: '12px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk', fontSize: '14px', outline: 'none' }} />
-									<button onClick={reviewHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '12px 24px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>Post</button>
+									<input
+										className="wd-input"
+										style={{ flex: 1 }}
+										value={reviewText}
+										onChange={(e) => setReviewText(e.target.value)}
+										placeholder="Write a review..."
+									/>
+									<button className="wd-btn" onClick={reviewHandler}>
+										Post
+									</button>
 								</div>
 							</div>
 						)}
 						{workoutReviews.map((r: any) => (
-							<div key={r._id} style={{ padding: '16px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px' }}>
-									<div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#2a2a2b' }}><img src={r.memberData?.memberImage ? `${REACT_APP_API_URL}/${r.memberData.memberImage}` : '/img/profile/defaultUser.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3' }}>{r.memberData?.memberNick ?? 'User'}</span>
-									<span style={{ color: '#ff8a00', fontSize: '13px' }}>{'★'.repeat(r.reviewRating)}{'☆'.repeat(5 - r.reviewRating)}</span>
+							<div key={r._id} className="wd-comment">
+								<img
+									src={r.memberData?.memberImage ? `${REACT_APP_API_URL}/${r.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
+									alt=""
+								/>
+								<div className="wd-comment-body">
+									<div className="wd-comment-head">
+										<span className="wd-comment-nick">{r.memberData?.memberNick ?? 'User'}</span>
+										<span className="wd-comment-stars">
+											{'★'.repeat(r.reviewRating)}
+											{'☆'.repeat(5 - r.reviewRating)}
+										</span>
+									</div>
+									<p>{r.reviewText}</p>
 								</div>
-								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#b9caca', marginLeft: '44px' }}>{r.reviewText}</p>
 							</div>
 						))}
+						{workoutReviews.length === 0 && <p className="wd-empty-line">No star reviews yet.</p>}
 					</div>
 				</div>
 			</div>

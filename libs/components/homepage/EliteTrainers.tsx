@@ -45,7 +45,7 @@ const EliteTrainers = () => {
 								key={trainer._id}
 								className={`lp-trainer-row${i === activeIdx ? ' is-active' : ''}`}
 								onMouseEnter={() => setActiveIdx(i)}
-								onClick={() => router.push({ pathname: '/member', query: { memberId: trainer._id } })}
+								onClick={() => router.push({ pathname: '/trainer/detail', query: { id: trainer._id } })}
 							>
 								<span className="lp-trainer-name">
 									<span className="lp-trainer-idx">0{i + 1}</span>
@@ -73,7 +73,7 @@ const EliteTrainers = () => {
 					{/* Portrait panel follows the hovered name */}
 					<div
 						className="lp-trainer-portrait"
-						onClick={() => router.push({ pathname: '/member', query: { memberId: active._id } })}
+						onClick={() => router.push({ pathname: '/trainer/detail', query: { id: active._id } })}
 						style={{ cursor: 'pointer' }}
 					>
 						<img key={active._id} src={portraitSrc} alt={active.memberNick} loading="lazy" style={{ animation: 'fadeIn 0.45s ease both' }} />

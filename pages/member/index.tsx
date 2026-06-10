@@ -8,7 +8,13 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
-import { GET_MEMBER, GET_WORKOUTS_BY_MEMBER_ID } from '../../apollo/user/query';
+import {
+	GET_MEMBER,
+	GET_WORKOUTS_BY_MEMBER_ID,
+	GET_MEMBER_FOLLOWERS,
+	GET_MEMBER_FOLLOWINGS,
+	GET_BOARD_ARTICLES,
+} from '../../apollo/user/query';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { Member } from '../../libs/types/member/member';
 import { Workout } from '../../libs/types/workout/workout';
@@ -22,6 +28,12 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
+const difficultyColor: Record<string, string> = {
+	BEGINNER: '#66daba',
+	INTERMEDIATE: '#ffb77f',
+	ADVANCED: '#ff8a8a',
+};
+
 const MemberPage: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
@@ -30,6 +42,10 @@ const MemberPage: NextPage = () => {
 	const [activeTab, setActiveTab] = useState<string>('workouts');
 	const [member, setMember] = useState<Member | null>(null);
 	const [memberWorkouts, setMemberWorkouts] = useState<Workout[]>([]);
+	const [followers, setFollowers] = useState<any[]>([]);
+	const [followings, setFollowings] = useState<any[]>([]);
+	const [articles, setArticles] = useState<any[]>([]);
+	const [followBusy, setFollowBusy] = useState(false);
 
 	/** APOLLO REQUESTS **/
 	const [subscribeMutation] = useMutation(SUBSCRIBE);
@@ -55,28 +71,52 @@ const MemberPage: NextPage = () => {
 		},
 	});
 
-	/** HANDLERS **/
-	const subscribeHandler = async () => {
-		try {
-			if (!memberId || !user?._id) throw new Error(Messages.error2);
-			await subscribeMutation({ variables: { input: memberId } });
-			const { data } = await memberRefetch({ input: memberId });
-			if (data?.getMember) setMember(data.getMember);
-			await sweetTopSmallSuccessAlert('Followed!', 800);
-		} catch (err: any) {
-			sweetErrorHandling(err).then();
-		}
-	};
+	useQuery(GET_MEMBER_FOLLOWERS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 20, search: { followingId: memberId } } },
+		skip: !memberId,
+		onCompleted: (d: T) => setFollowers(d?.getMemberFollowers?.list ?? []),
+	});
 
-	const unsubscribeHandler = async () => {
+	useQuery(GET_MEMBER_FOLLOWINGS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 20, search: { followerId: memberId } } },
+		skip: !memberId,
+		onCompleted: (d: T) => setFollowings(d?.getMemberFollowings?.list ?? []),
+	});
+
+	useQuery(GET_BOARD_ARTICLES, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 10, sort: 'createdAt', direction: 'DESC', search: { memberId } } },
+		skip: !memberId,
+		onCompleted: (d: T) => setArticles(d?.getBoardArticles?.list ?? []),
+	});
+
+	// Trainers have a much richer dedicated profile — send visitors there
+	useEffect(() => {
+		if (member?.memberType === 'TRAINER') {
+			router.replace({ pathname: '/trainer/detail', query: { id: member._id } });
+		}
+	}, [member?._id, member?.memberType]);
+
+	/** HANDLERS **/
+	const followHandler = async () => {
+		if (followBusy) return;
 		try {
 			if (!memberId || !user?._id) throw new Error(Messages.error2);
-			await unsubscribeMutation({ variables: { input: memberId } });
+			setFollowBusy(true);
+			if (member?.meFollowed?.[0]?.myFollowing) {
+				await unsubscribeMutation({ variables: { input: memberId } });
+			} else {
+				await subscribeMutation({ variables: { input: memberId } });
+			}
 			const { data } = await memberRefetch({ input: memberId });
 			if (data?.getMember) setMember(data.getMember);
-			await sweetTopSmallSuccessAlert('Unfollowed!', 800);
+			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
+		} finally {
+			setFollowBusy(false);
 		}
 	};
 
@@ -84,193 +124,203 @@ const MemberPage: NextPage = () => {
 		try {
 			if (!memberId || !user?._id) throw new Error(Messages.error2);
 			const wasLiked = !!member?.meLiked?.[0]?.myFavorite;
-			setMember((prev: any) => prev ? { ...prev, memberLikes: (prev.memberLikes ?? 0) + (wasLiked ? -1 : 1), meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: memberId, myFavorite: true }] } : prev);
+			setMember((prev: any) =>
+				prev
+					? {
+							...prev,
+							memberLikes: (prev.memberLikes ?? 0) + (wasLiked ? -1 : 1),
+							meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: memberId, myFavorite: true }],
+					  }
+					: prev,
+			);
 			await likeTargetMember({ variables: { input: memberId } });
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
 	};
 
-	const tabs = ['workouts', 'followers', 'followings', 'articles'];
+	const personClickHandler = (p: any) => {
+		if (!p?._id) return;
+		if (p.memberType === 'TRAINER') router.push({ pathname: '/trainer/detail', query: { id: p._id } });
+		else router.push({ pathname: '/member', query: { memberId: p._id } });
+	};
+
+	const tabs = [
+		{ key: 'workouts', label: `Workouts (${memberWorkouts.length})` },
+		{ key: 'followers', label: `Followers (${member?.memberFollowers ?? 0})` },
+		{ key: 'followings', label: `Following (${member?.memberFollowings ?? 0})` },
+		{ key: 'articles', label: `Articles (${member?.memberArticles ?? 0})` },
+	];
 
 	if (memberLoading) {
 		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
+			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
 			</Stack>
 		);
 	}
 
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA MEMBER MOBILE</div>;
-	}
-
 	if (!member) {
 		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
+			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>Member not found.</p>
 			</Stack>
 		);
 	}
 
 	const isFollowing = member.meFollowed?.[0]?.myFollowing;
+	const isOwnProfile = user?._id === member._id;
+	const memberName = member.memberFullName || member.memberNick;
+
+	const renderPeople = (list: any[], dataKey: 'followerData' | 'followingData', emptyText: string) => {
+		const people = list.map((f: any) => f[dataKey]).filter(Boolean);
+		if (!people.length) return <p className="wd-empty-line">{emptyText}</p>;
+		return (
+			<div className="td-grid2">
+				{people.map((p: any) => (
+					<div key={p._id} className="td-person" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)', padding: '12px 14px' }} onClick={() => personClickHandler(p)}>
+						<img src={p.memberImage ? `${REACT_APP_API_URL}/${p.memberImage}` : '/img/profile/defaultUser.svg'} alt={p.memberNick} />
+						<span className="td-person-nick">{p.memberFullName || p.memberNick}</span>
+						<span className={`td-person-type${p.memberType === 'TRAINER' ? ' is-trainer' : ''}`}>{p.memberType}</span>
+					</div>
+				))}
+			</div>
+		);
+	};
 
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px', display: 'grid', gridTemplateColumns: '300px 1fr', gap: '40px' }}>
-				{/* Left sidebar — Profile */}
-				<div>
-					<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '32px', textAlign: 'center' }}>
-						<div style={{ width: '120px', height: '120px', borderRadius: '50%', overflow: 'hidden', margin: '0 auto 16px', border: '3px solid #3a494a' }}>
-							<img
-								src={member.memberImage ? `${REACT_APP_API_URL}/${member.memberImage}` : '/img/profile/defaultUser.svg'}
-								alt={member.memberNick}
-								style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-							/>
-						</div>
-						<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '22px', fontWeight: 700, color: '#e5e2e3', marginBottom: '4px' }}>
-							{member.memberFullName || member.memberNick}
-						</h2>
-						<p style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#00dce5', textTransform: 'uppercase', marginBottom: '8px' }}>
-							{member.memberType}
-						</p>
-						{member.memberDesc && (
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', lineHeight: '20px', marginBottom: '16px' }}>
-								{member.memberDesc}
-							</p>
-						)}
+		<div className="wl-page">
+			<div className="lp-container">
+				<div className="td-layout" style={{ paddingTop: '8px' }}>
+					{/* Profile card */}
+					<div className="td-profile-col">
+						<div className="td-sticky">
+						<div className="td-profile">
+							<div className="td-avatar">
+								<img src={member.memberImage ? `${REACT_APP_API_URL}/${member.memberImage}` : '/img/profile/defaultUser.svg'} alt={memberName} />
+							</div>
+							<h2 className="td-name">{memberName}</h2>
+							<div className="td-verified is-pending">{member.memberType}</div>
+							{member.memberDesc && <p className="td-bio">{member.memberDesc}</p>}
 
-						{/* Stats */}
-						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '8px', marginBottom: '20px', paddingTop: '16px', borderTop: '1px solid #3a494a' }}>
-							{[
-								{ label: 'Workouts', value: member.memberWorkouts },
-								{ label: 'Followers', value: member.memberFollowers },
-								{ label: 'Articles', value: member.memberArticles },
-							].map((s) => (
-								<div key={s.label}>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 800, color: '#e5e2e3', display: 'block' }}>{s.value}</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase' }}>{s.label}</span>
+							{/* Stats */}
+							<div className="td-stats">
+								<div>
+									<span className="td-stat-value">{member.memberWorkouts ?? 0}</span>
+									<span className="td-stat-label">Workouts</span>
 								</div>
+								<div>
+									<span className="td-stat-value">{member.memberFollowers ?? 0}</span>
+									<span className="td-stat-label">Followers</span>
+								</div>
+								<div>
+									<span className="td-stat-value">{member.memberFollowings ?? 0}</span>
+									<span className="td-stat-label">Following</span>
+								</div>
+								<div>
+									<span className="td-stat-value">{member.memberArticles ?? 0}</span>
+									<span className="td-stat-label">Articles</span>
+								</div>
+								<div>
+									<span className="td-stat-value">{member.memberLikes ?? 0}</span>
+									<span className="td-stat-label">Likes</span>
+								</div>
+								<div>
+									<span className="td-stat-value">{member.memberViews ?? 0}</span>
+									<span className="td-stat-label">Views</span>
+								</div>
+							</div>
+
+							{/* Actions */}
+							{user?._id && !isOwnProfile && (
+								<div className="td-actions">
+									<button className={`td-follow${isFollowing ? ' is-following' : ''}`} onClick={followHandler} disabled={followBusy}>
+										{isFollowing ? 'Following' : 'Follow'}
+									</button>
+									<LikeButton liked={!!member.meLiked?.[0]?.myFavorite} count={member.memberLikes ?? 0} onClick={likeMemberHandler} variant="full" />
+								</div>
+							)}
+						</div>
+						</div>
+					</div>
+
+					{/* Main content */}
+					<div className="td-main">
+						{/* Tabs */}
+						<div className="wl-seg" style={{ marginBottom: '24px' }}>
+							{tabs.map((tab) => (
+								<button key={tab.key} className={activeTab === tab.key ? 'is-active' : ''} onClick={() => setActiveTab(tab.key)}>
+									{tab.label}
+								</button>
 							))}
 						</div>
 
-						{/* Actions */}
-						{user?._id && user._id !== member._id && (
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-								{isFollowing ? (
-									<button onClick={unsubscribeHandler} style={{ width: '100%', padding: '12px', background: '#353436', color: '#849495', border: '1px solid #3a494a', borderRadius: '8px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-										Unfollow
-									</button>
-								) : (
-									<button onClick={subscribeHandler} style={{ width: '100%', padding: '12px', background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
-										Follow
-									</button>
-								)}
-								<LikeButton
-									liked={!!member.meLiked?.[0]?.myFavorite}
-									count={member.memberLikes ?? 0}
-									onClick={likeMemberHandler}
-									variant="full"
-								/>
-							</div>
-						)}
-					</div>
-
-					{/* Tab navigation */}
-					<div style={{ marginTop: '20px', display: 'flex', flexDirection: 'column', gap: '4px' }}>
-						{tabs.map((tab) => (
-							<button
-								key={tab}
-								onClick={() => setActiveTab(tab)}
-								style={{
-									padding: '12px 16px',
-									borderRadius: '8px',
-									border: 'none',
-									textAlign: 'left',
-									fontFamily: 'Hanken Grotesk',
-									fontSize: '14px',
-									fontWeight: activeTab === tab ? 700 : 400,
-									cursor: 'pointer',
-									background: activeTab === tab ? 'rgba(0,220,229,0.1)' : 'transparent',
-									color: activeTab === tab ? '#e9feff' : '#849495',
-									borderLeft: activeTab === tab ? '3px solid #00dce5' : '3px solid transparent',
-								}}
-							>
-								{tab.charAt(0).toUpperCase() + tab.slice(1)}
-							</button>
-						))}
-					</div>
-				</div>
-
-				{/* Right content */}
-				<div>
-					{/* Workouts tab */}
-					{activeTab === 'workouts' && (
-						<div>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '20px' }}>
-								Workouts ({memberWorkouts.length})
-							</h3>
-							{memberWorkouts.length === 0 ? (
-								<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '16px' }}>No workouts yet.</p>
+						{/* Workouts tab */}
+						{activeTab === 'workouts' &&
+							(memberWorkouts.length === 0 && !workoutsLoading ? (
+								<p className="wd-empty-line">No workouts yet.</p>
 							) : (
-								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px' }}>
+								<div className="td-grid2">
 									{memberWorkouts.map((w) => (
-										<div
-											key={w._id}
-											onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })}
-											style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.3s' }}
-											onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.3)')}
-											onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)')}
-										>
-											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}>
-												<img src={w.workoutThumbnail ? `${REACT_APP_API_URL}/${w.workoutThumbnail}` : '/img/banner/header1.svg'} alt={w.workoutTitle} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+										<div key={w._id} className="wl-card" onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })}>
+											<div className="wl-card-img">
+												<img
+													src={w.workoutThumbnail ? `${REACT_APP_API_URL}/${w.workoutThumbnail}` : '/img/banner/header1.svg'}
+													alt={w.workoutTitle}
+													loading="lazy"
+												/>
+												<div className="wl-card-shade" />
+												<div className="wl-card-chips">
+													{w.targetMuscle && <span className="lp-chip lp-chip--cyan">{w.targetMuscle}</span>}
+												</div>
+												<span className="wl-kcal">{w.estimatedCaloriesBurned} KCAL</span>
 											</div>
-											<div style={{ padding: '16px' }}>
-												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{w.workoutTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>{w.workoutDifficulty} • {w.estimatedCaloriesBurned} cal</span>
+											<div className="wl-card-body">
+												<h3>{w.workoutTitle}</h3>
+												<div className="wl-card-foot">
+													<span className="wl-diff">
+														<span className="wl-diff-dot" style={{ background: difficultyColor[w.workoutDifficulty] || '#00dce5' }} />
+														{w.workoutDifficulty}
+													</span>
+													<span className="wl-card-arrow">→</span>
+												</div>
 											</div>
 										</div>
 									))}
 								</div>
-							)}
-						</div>
-					)}
+							))}
 
-					{/* Followers tab */}
-					{activeTab === 'followers' && (
-						<div>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '20px' }}>
-								Followers ({member.memberFollowers})
-							</h3>
-							<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>
-								Followers list will be implemented with the follow components migration.
-							</p>
-						</div>
-					)}
+						{/* Followers tab */}
+						{activeTab === 'followers' && renderPeople(followers, 'followerData', 'No followers yet.')}
 
-					{/* Followings tab */}
-					{activeTab === 'followings' && (
-						<div>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '20px' }}>
-								Following ({member.memberFollowings})
-							</h3>
-							<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>
-								Followings list will be implemented with the follow components migration.
-							</p>
-						</div>
-					)}
+						{/* Followings tab */}
+						{activeTab === 'followings' && renderPeople(followings, 'followingData', 'Not following anyone yet.')}
 
-					{/* Articles tab */}
-					{activeTab === 'articles' && (
-						<div>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '20px' }}>
-								Articles ({member.memberArticles})
-							</h3>
-							<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>
-								Articles list will be implemented with the community components migration.
-							</p>
-						</div>
-					)}
+						{/* Articles tab */}
+						{activeTab === 'articles' &&
+							(articles.length === 0 ? (
+								<p className="wd-empty-line">No articles yet.</p>
+							) : (
+								<div className="td-grid2">
+									{articles.map((article: any) => (
+										<div
+											key={article._id}
+											className="lp-article-card"
+											onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
+										>
+											<span className="lp-article-cat">{article.articleCategory?.replace(/_/g, ' ')}</span>
+											<h3>{article.articleTitle}</h3>
+											<div className="lp-article-meta">
+												<span>{new Date(article.createdAt).toLocaleDateString()}</span>
+												<span>
+													{article.articleViews} views · ♥ {article.articleLikes}
+												</span>
+											</div>
+										</div>
+									))}
+								</div>
+							))}
+					</div>
 				</div>
 			</div>
 		</div>
