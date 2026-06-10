@@ -34,6 +34,9 @@
 
 - Cross-member social notifications wired end-to-end: new libs/notify.ts fire-and-forget helper (self/missing-id guarded) called from workout like/comment/review, community article like/comment, trainer profile like/review, and member profile like — content owners now get real notifications; backend createNotification receiver fix + socket invalid-token crash fix applied with explicit permission and verified live. Privacy Policy and Terms of Service pages added (honest static content) and linked from both footers.
 
+- Admin panel made mobile-responsive: permanent 280px drawer becomes a burger-toggled temporary drawer ≤768px (full-width AppBar, auto-close on navigation), desktop unchanged; trainer-role mypage categories and all admin pages verified clean on iPhone viewport.
+- Mobile readiness verified and fixed: Playwright sweep of all 22 routes at iPhone viewport (authenticated, real IDs) found 0 overflows; the one critical gap — nav links hidden ≤768px with no replacement — fixed with a premium animated hamburger menu in GymNavbar (slide-down panel, active states, guest/user footers, auto-close on navigation); desktop navbar unchanged; production build clean.
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

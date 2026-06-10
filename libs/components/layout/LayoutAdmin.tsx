@@ -13,6 +13,8 @@ import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
 import Tooltip from '@mui/material/Tooltip';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import MenuIcon from '@mui/icons-material/Menu';
 import { getJwtToken, logOut, updateUserInfo } from '../../auth';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
@@ -30,6 +32,8 @@ const withAdminLayout = (Component: ComponentType) => {
 		const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 		const [title, setTitle] = useState('admin');
 		const [loading, setLoading] = useState(true);
+		const isMobile = useMediaQuery('(max-width:768px)');
+		const [drawerOpen, setDrawerOpen] = useState(false);
 
 		/** LIFECYCLES **/
 		useEffect(() => {
@@ -43,6 +47,10 @@ const withAdminLayout = (Component: ComponentType) => {
 				router.push('/').then();
 			}
 		}, [loading, user, router]);
+
+		useEffect(() => {
+			setDrawerOpen(false);
+		}, [router.asPath]);
 
 		/** HANDLERS **/
 		const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => {
@@ -66,8 +74,8 @@ const withAdminLayout = (Component: ComponentType) => {
 					<AppBar
 						position="fixed"
 						sx={{
-							width: `calc(100% - ${drawerWidth}px)`,
-							ml: `${drawerWidth}px`,
+							width: isMobile ? '100%' : `calc(100% - ${drawerWidth}px)`,
+							ml: isMobile ? 0 : `${drawerWidth}px`,
 							boxShadow: 'none',
 							background: 'rgba(13,13,14,0.85)',
 							backdropFilter: 'blur(16px)',
@@ -75,6 +83,11 @@ const withAdminLayout = (Component: ComponentType) => {
 						}}
 					>
 						<Toolbar>
+							{isMobile && (
+								<IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#e9feff', mr: 'auto' }} aria-label="Open menu">
+									<MenuIcon />
+								</IconButton>
+							)}
 							<Tooltip title="Open settings">
 								<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
 									<Avatar
@@ -150,7 +163,10 @@ const withAdminLayout = (Component: ComponentType) => {
 								color: '#e5e2e3',
 							},
 						}}
-						variant="permanent"
+						variant={isMobile ? 'temporary' : 'permanent'}
+						open={isMobile ? drawerOpen : true}
+						onClose={() => setDrawerOpen(false)}
+						ModalProps={{ keepMounted: true }}
 						anchor="left"
 						className="aside"
 					>
@@ -201,7 +217,7 @@ const withAdminLayout = (Component: ComponentType) => {
 						<MenuList />
 					</Drawer>
 
-					<Box component={'div'} id="bunker" sx={{ flexGrow: 1 }}>
+					<Box component={'div'} id="bunker" sx={{ flexGrow: 1, pt: isMobile ? '64px' : 0, minWidth: 0 }}>
 						{/*@ts-ignore*/}
 						<Component {...props} setSnackbar={setSnackbar} setTitle={setTitle} />
 					</Box>

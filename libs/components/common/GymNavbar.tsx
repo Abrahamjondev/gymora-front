@@ -15,12 +15,18 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [scrolled, setScrolled] = useState(false);
+	const [menuOpen, setMenuOpen] = useState(false);
 
 	useEffect(() => {
 		const handleScroll = () => setScrolled(window.scrollY > 20);
 		window.addEventListener('scroll', handleScroll);
 		return () => window.removeEventListener('scroll', handleScroll);
 	}, []);
+
+	// Close the mobile menu on navigation
+	useEffect(() => {
+		setMenuOpen(false);
+	}, [router.asPath]);
 
 	const navLinks = [
 		{ href: '/workout', label: 'Workouts' },
@@ -30,7 +36,7 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 	];
 
 	const isActive = (href: string) => router.pathname.startsWith(href);
-	const navClass = `gnav${scrolled ? ' is-scrolled' : overlay ? ' is-clear' : ''}`;
+	const navClass = `gnav${scrolled || menuOpen ? ' is-scrolled' : overlay ? ' is-clear' : ''}`;
 
 	return (
 		<>
@@ -69,6 +75,56 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 									Log out
 								</button>
 							</div>
+						) : (
+							<>
+								<button className="gnav-login" onClick={() => router.push('/account/join')}>
+									Log in
+								</button>
+								<button className="gnav-cta" onClick={() => router.push('/account/join')}>
+									Get Started
+								</button>
+							</>
+						)}
+						<button
+							className={`gnav-burger${menuOpen ? ' is-open' : ''}`}
+							aria-label="Menu"
+							onClick={() => setMenuOpen((v) => !v)}
+						>
+							<span />
+							<span />
+							<span />
+						</button>
+					</div>
+				</div>
+
+				{/* Mobile menu */}
+				<div className={`gnav-mobile${menuOpen ? ' is-open' : ''}`}>
+					<nav className="gnav-mobile-links">
+						{navLinks.map((link) => (
+							<Link
+								key={link.href}
+								href={link.href}
+								className={`gnav-mobile-link${isActive(link.href) ? ' is-active' : ''}`}
+							>
+								{link.label}
+								<span className="gnav-mobile-arrow">→</span>
+							</Link>
+						))}
+					</nav>
+					<div className="gnav-mobile-foot">
+						{user?._id ? (
+							<>
+								<Link href="/mypage" className="gnav-mobile-account">
+									<img
+										src={user.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'}
+										alt="profile"
+									/>
+									<span>My Page</span>
+								</Link>
+								<button className="gnav-mobile-logout" onClick={() => logOut()}>
+									Log out
+								</button>
+							</>
 						) : (
 							<>
 								<button className="gnav-login" onClick={() => router.push('/account/join')}>
