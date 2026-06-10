@@ -9,7 +9,7 @@ import { REACT_APP_API_URL, Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import useSocket from '../../hooks/useSocket';
 
-const ChatContent = () => {
+const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void }) => {
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const partnerParam = router.query?.partner as string | undefined;
@@ -84,14 +84,35 @@ const ChatContent = () => {
 
 	useEffect(() => {
 		if (activePartner) {
-			msgsRefetch({ input: activePartner });
+			// Opening a conversation marks its incoming messages read on the backend.
+			// Optimistically clear the local unread flag and tell the parent so the
+			// sidebar badge updates without waiting for a refresh/poll.
+			setConversations((prev) => prev.map((c: any) => (c.partnerId === activePartner ? { ...c, isRead: true } : c)));
+			msgsRefetch({ input: activePartner }).then(() => onConversationsRead?.());
 			checkPartnerOnline({ variables: { input: activePartner } });
 		}
 	}, [activePartner]);
 
-	// Scroll to bottom on new messages
+	// Light polling while a conversation is open so read receipts (✓ → ✓✓) and
+	// the partner's presence stay fresh without any backend changes. Pauses when
+	// the tab is hidden.
 	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+		if (!activePartner) return;
+		const tick = async () => {
+			if (typeof document !== 'undefined' && document.hidden) return;
+			const { data } = await msgsRefetch({ input: activePartner });
+			if (data?.getMessageHistory) setMessages(data.getMessageHistory);
+			checkPartnerOnline({ variables: { input: activePartner } });
+		};
+		const id = setInterval(tick, 6000);
+		return () => clearInterval(id);
+	}, [activePartner]);
+
+	// Scroll the messages panel (not the whole page) to the latest message
+	const msgsBoxRef = useRef<HTMLDivElement>(null);
+	useEffect(() => {
+		const box = msgsBoxRef.current;
+		if (box) box.scrollTop = box.scrollHeight;
 	}, [messages]);
 
 	// Socket.IO real-time listener
@@ -226,18 +247,19 @@ const ChatContent = () => {
 							<div className="ct-room-head">
 								<div className="ct-room-ava">
 									<img src={activeConv?.partnerImage ? `${REACT_APP_API_URL}/${activeConv.partnerImage}` : '/img/profile/defaultUser.svg'} alt="" />
+									{activeConv?.isOnline && <span className="ct-online" />}
 								</div>
-								<span className="ct-room-name">{activeConv?.partnerNick || 'User'}</span>
-								{activeConv?.isOnline && (
-									<span className="ct-live">
-										<span className="ct-live-dot" />
-										Online
+								<div className="ct-room-id">
+									<span className="ct-room-name">{activeConv?.partnerNick || 'User'}</span>
+									<span className={`ct-presence${activeConv?.isOnline ? ' is-online' : ''}`}>
+										<span className="ct-presence-dot" />
+										{activeConv?.isOnline ? 'Active now' : 'Offline'}
 									</span>
-								)}
+								</div>
 							</div>
 
 							{/* Messages with day separators */}
-							<div className="ct-msgs">
+							<div className="ct-msgs" ref={msgsBoxRef}>
 								{msgsLoading ? (
 									<Stack sx={{ alignItems: 'center', py: 4 }}>
 										<CircularProgress sx={{ color: '#00dce5' }} size={'2rem'} />
@@ -257,6 +279,11 @@ const ChatContent = () => {
 													</div>
 													<span className="ct-time">
 														{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+														{isMine && (
+															<span className={`ct-receipt${msg.isRead ? ' is-read' : ''}`} title={msg.isRead ? 'Read' : 'Sent'}>
+																{msg.isRead ? '✓✓' : '✓'}
+															</span>
+														)}
 													</span>
 												</div>
 											</React.Fragment>

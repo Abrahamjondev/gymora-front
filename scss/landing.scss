@@ -1039,6 +1039,18 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	align-items: center;
 	gap: 16px;
 }
+@keyframes gnavLetterFlip {
+	0% {
+		transform: rotateY(0deg) scale(1);
+	}
+	50% {
+		transform: rotateY(360deg) scale(1.35);
+	}
+	100% {
+		transform: rotateY(720deg) scale(1);
+	}
+}
+
 @keyframes gnavShine {
 	to {
 		transform: translateX(340%) skewX(-18deg);
@@ -1060,6 +1072,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		justify-content: center;
 		box-shadow: 0 0 18px rgba(0, 220, 229, 0.3);
 		overflow: hidden;
+		perspective: 120px;
 		transition: transform 0.4s $lp-ease, box-shadow 0.4s ease, border-radius 0.4s $lp-ease;
 		span {
 			position: relative;
@@ -1068,6 +1081,8 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			font-weight: 900;
 			color: #003739;
 			font-family: 'Hanken Grotesk', sans-serif;
+			transform-style: preserve-3d;
+			backface-visibility: hidden;
 		}
 		&::after {
 			content: '';
@@ -1095,6 +1110,9 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			box-shadow: 0 0 34px rgba(0, 220, 229, 0.55), 0 0 60px rgba(0, 220, 229, 0.2);
 			&::after {
 				animation: gnavShine 0.7s $lp-ease forwards;
+			}
+			span {
+				animation: gnavLetterFlip 0.9s $lp-ease;
 			}
 		}
 		.gnav-logo-word {

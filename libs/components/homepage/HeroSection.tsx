@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useReactiveVar } from '@apollo/client';
-import { GET_WORKOUTS, GET_TRAINER_MEMBERS } from '../../../apollo/user/query';
+import { GET_WORKOUTS, GET_TRAINER_MEMBERS, GET_COURSES } from '../../../apollo/user/query';
 import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import useCountUp from '../../hooks/useCountUp';
@@ -13,8 +13,10 @@ const HeroSection = () => {
 	const user = useReactiveVar(userVar);
 	const [workoutTotal, setWorkoutTotal] = useState<number>(0);
 	const [trainerTotal, setTrainerTotal] = useState<number>(0);
+	const [courseTotal, setCourseTotal] = useState<number>(0);
 	const workoutCount = useCountUp(workoutTotal);
 	const trainerCount = useCountUp(trainerTotal);
+	const courseCount = useCountUp(courseTotal);
 
 	// Role-aware hero CTAs — a logged-in member never sees "Get Started Free"
 	const heroCta = !user?._id
@@ -51,6 +53,12 @@ const HeroSection = () => {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: { page: 1, limit: 1, search: {} } },
 		onCompleted: (d: T) => setTrainerTotal(d?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0),
+	});
+
+	useQuery(GET_COURSES, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 1, sort: 'createdAt', direction: 'DESC', search: {} } },
+		onCompleted: (d: T) => setCourseTotal(d?.getCourses?.metaCounter?.[0]?.total ?? 0),
 	});
 
 	return (
@@ -107,7 +115,7 @@ const HeroSection = () => {
 							{[
 								{ value: workoutTotal > 0 ? `${workoutCount}+` : '—', label: 'Workouts' },
 								{ value: trainerTotal > 0 ? `${trainerCount}+` : '—', label: 'Trainers' },
-								{ value: '100%', label: 'Free Workouts' },
+								{ value: courseTotal > 0 ? `${courseCount}+` : '—', label: 'Programs' },
 								{ value: '24/7', label: 'Access' },
 							].map((stat) => (
 								<div key={stat.label}>

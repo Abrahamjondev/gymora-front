@@ -21,6 +21,7 @@ import {
 	GET_MEMBER_PURCHASED_COURSES, GET_TRAINER_COURSES, GET_RECOMMENDATIONS,
 	GET_TRAINER_BY_MEMBER_ID,
 	GET_FREE_WORKOUT_COUNT,
+	GET_CONVERSATIONS,
 } from '../../apollo/user/query';
 import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ, UPDATE_WORKOUT, UPDATE_COURSE } from '../../apollo/user/mutation';
 import LessonManager from '../../libs/components/mypage/LessonManager';
@@ -60,13 +61,13 @@ const menuSections: { title: string | null; items: MenuItem[] }[] = [
 			{ key: 'createWorkout', label: 'Create Workout', icon: '＋', trainerOnly: true },
 			{ key: 'trainerCourses', label: 'My Programs', icon: '◧', trainerOnly: true },
 			{ key: 'createCourse', label: 'Create Program', icon: '＋', trainerOnly: true },
-			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOrAdmin: true },
-			{ key: 'writeArticle', label: 'Write Article', icon: '✎', trainerOrAdmin: true },
+			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOnly: true },
+			{ key: 'writeArticle', label: 'Write Article', icon: '✎', trainerOnly: true },
 		],
 	},
 	{
 		title: 'Training',
-		items: [{ key: 'myCourses', label: 'My Programs', icon: '▦', hideForTrainer: true }],
+		items: [{ key: 'myCourses', label: 'My Programs', icon: '▦', userOnly: true }],
 	},
 	{
 		title: 'Activity',
@@ -78,14 +79,14 @@ const menuSections: { title: string | null; items: MenuItem[] }[] = [
 	{
 		title: 'Health',
 		items: [
-			{ key: 'nutrition', label: 'Nutrition', icon: '◑', hideForTrainer: true },
-			{ key: 'progress', label: 'Progress', icon: '△', hideForTrainer: true },
+			{ key: 'nutrition', label: 'Nutrition', icon: '◑', userOnly: true },
+			{ key: 'progress', label: 'Progress', icon: '△', userOnly: true },
 		],
 	},
 	{
 		title: null,
 		items: [
-			{ key: 'subscription', label: 'Subscription', icon: '◇', hideForTrainer: true },
+			{ key: 'subscription', label: 'Subscription', icon: '◇', userOnly: true },
 			{ key: 'becomeTrainer', label: 'Become Trainer', icon: '→', userOnly: true },
 		],
 	},
@@ -176,6 +177,14 @@ const MyPage: NextPage = () => {
 	const { refetch: myWorkoutsRefetch } = useQuery(GET_MEMBER_WORKOUTS, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setMyWorkouts(d?.getMemberWorkouts ?? []) });
 	useQuery(GET_DASHBOARD_STATS, { fetchPolicy: 'cache-and-network', skip: !user?._id, onCompleted: (d: T) => setDashboardStats(d?.getDashboardStats) });
 	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
+	const [conversations, setConversations] = useState<any[]>([]);
+	const { refetch: convsRefetch } = useQuery(GET_CONVERSATIONS, { fetchPolicy: 'network-only', skip: !user?._id, pollInterval: 15000, onCompleted: (d: T) => setConversations(d?.getConversations ?? []) });
+	// Called by ChatContent when a conversation is opened/read so the sidebar
+	// unread badge clears immediately (instead of waiting for the next poll).
+	const refreshConversations = async () => {
+		const { data } = await convsRefetch();
+		if (data?.getConversations) setConversations(data.getConversations);
+	};
 	useQuery(GET_MEMBER_PURCHASED_COURSES, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setPurchasedCourses(d?.getMemberPurchasedCourses ?? []) });
 	const { refetch: trainerCoursesRefetch } = useQuery(GET_TRAINER_COURSES, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setTrainerCourses(d?.getTrainerCourses ?? []) });
 	useQuery(GET_TRAINER_BY_MEMBER_ID, {
@@ -404,6 +413,7 @@ const MyPage: NextPage = () => {
 	const cardStyle: React.CSSProperties = { background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '14px', overflow: 'hidden', cursor: 'pointer', transition: 'all 0.35s cubic-bezier(0.22,1,0.36,1)' };
 	const labelStyle: React.CSSProperties = { fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px', letterSpacing: '0.04em' };
 	const unreadCount = notifications.filter((n: any) => !n.isRead).length;
+	const unreadChatCount = conversations.filter((c: any) => !c.isRead && c.lastMessage).length;
 
 	return (
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
@@ -505,6 +515,7 @@ const MyPage: NextPage = () => {
 													<span className="mp-item-ic">{item.icon}</span>
 													<span className="mp-item-label">{item.label}</span>
 													{item.key === 'notifications' && unreadCount > 0 && <span className="mp-unread">{unreadCount}</span>}
+												{item.key === 'chat' && unreadChatCount > 0 && <span className="mp-unread">{unreadChatCount}</span>}
 												</button>
 											);
 										})}
@@ -565,8 +576,8 @@ const MyPage: NextPage = () => {
 								</div>
 							)}
 
-							{/* Subscription summary — consumer feature */}
-							{user?.memberType !== 'TRAINER' && dashboardStats?.subscriptionSummary && (
+							{/* Subscription summary — consumer (USER) feature only */}
+							{user?.memberType === 'USER' && dashboardStats?.subscriptionSummary && (
 								<div style={{ background: 'rgba(255,138,0,0.04)', border: '1px solid rgba(255,138,0,0.12)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(255,183,127,0.9)' }}>{dashboardStats.subscriptionSummary}</span>
 								</div>
@@ -934,7 +945,7 @@ const MyPage: NextPage = () => {
 					{cat === 'myArticles' && <MyArticles />}
 					{cat === 'writeArticle' && <WriteArticle />}
 
-					{cat === 'chat' && <ChatContent />}
+					{cat === 'chat' && <ChatContent onConversationsRead={refreshConversations} />}
 					{cat === 'nutrition' && <NutritionContent />}
 					{cat === 'progress' && <ProgressContent />}
 					{cat === 'subscription' && <SubscriptionContent />}

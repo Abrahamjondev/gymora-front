@@ -2339,6 +2339,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
+	min-height: 0;
 	background: radial-gradient(90% 60% at 85% 0%, rgba(0, 220, 229, 0.04) 0%, transparent 60%), #0f0f10;
 }
 .ct-room-head {
@@ -2361,16 +2362,58 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			display: block;
 		}
 	}
+	.ct-room-id {
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		min-width: 0;
+	}
 	.ct-room-name {
 		font-family: 'Hanken Grotesk', sans-serif;
 		font-size: 16px;
 		font-weight: 800;
 		color: #ffffff;
 	}
+	.ct-presence {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10.5px;
+		letter-spacing: 0.02em;
+		color: rgba(185, 202, 202, 0.5);
+		.ct-presence-dot {
+			width: 7px;
+			height: 7px;
+			border-radius: 50%;
+			background: rgba(185, 202, 202, 0.4);
+		}
+		&.is-online {
+			color: #66daba;
+			.ct-presence-dot {
+				background: #66daba;
+				box-shadow: 0 0 0 0 rgba(102, 218, 186, 0.6);
+				animation: ctPresencePulse 1.8s ease-out infinite;
+			}
+		}
+	}
+}
+@keyframes ctPresencePulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(102, 218, 186, 0.55);
+	}
+	70% {
+		box-shadow: 0 0 0 7px rgba(102, 218, 186, 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(102, 218, 186, 0);
+	}
 }
 .ct-msgs {
 	flex: 1;
+	min-height: 0;
 	overflow-y: auto;
+	overscroll-behavior: contain;
 	padding: 22px 22px 12px;
 	display: flex;
 	flex-direction: column;
@@ -2429,6 +2472,16 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		color: rgba(185, 202, 202, 0.4);
 		margin-top: 4px;
 		display: block;
+	}
+	.ct-receipt {
+		margin-left: 5px;
+		font-size: 10px;
+		letter-spacing: -1px;
+		color: rgba(185, 202, 202, 0.45);
+		transition: color 0.2s ease;
+		&.is-read {
+			color: #00dce5;
+		}
 	}
 }
 .ct-input-bar {
@@ -3284,6 +3337,15 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 				color: #ffffff;
 				margin: 0 0 5px;
 				line-height: 1.15;
+			}
+			.tr-card-nick {
+				display: block;
+				font-family: 'JetBrains Mono', monospace;
+				font-size: 11.5px;
+				font-weight: 500;
+				letter-spacing: 0.02em;
+				color: rgba(0, 220, 229, 0.85);
+				margin-top: 3px;
 			}
 			p {
 				font-family: 'Hanken Grotesk', sans-serif;

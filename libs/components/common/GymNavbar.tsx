@@ -4,6 +4,7 @@ import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { logOut } from '../../auth';
 import { REACT_APP_API_URL } from '../../config';
+import { sweetConfirmAlert } from '../../sweetAlert';
 import Link from 'next/link';
 
 interface GymNavbarProps {
@@ -27,6 +28,10 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 	useEffect(() => {
 		setMenuOpen(false);
 	}, [router.asPath]);
+
+	const logoutHandler = async () => {
+		if (await sweetConfirmAlert('Do you want to log out?')) logOut();
+	};
 
 	const navLinks = [
 		{ href: '/workout', label: 'Workouts' },
@@ -71,7 +76,7 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 									<span>{user.memberNick}</span>
 								</Link>
 								<span className="gnav-user-divider" />
-								<button className="gnav-logout" onClick={() => logOut()}>
+								<button className="gnav-logout" onClick={logoutHandler}>
 									Log out
 								</button>
 							</div>
@@ -121,7 +126,7 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 									/>
 									<span>My Page</span>
 								</Link>
-								<button className="gnav-mobile-logout" onClick={() => logOut()}>
+								<button className="gnav-mobile-logout" onClick={logoutHandler}>
 									Log out
 								</button>
 							</>

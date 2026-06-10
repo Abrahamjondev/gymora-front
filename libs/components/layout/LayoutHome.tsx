@@ -26,8 +26,8 @@ const withLayoutMain = (Component: any) => {
 			return (
 				<>
 					<Head>
-						<title>Gymora</title>
-						<meta name={'title'} content={`Gymora`} />
+						<title>Gymora — Elite Training Platform</title>
+						<meta name={'title'} content={'Gymora — Elite Training Platform'} />
 					</Head>
 					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />
@@ -41,8 +41,8 @@ const withLayoutMain = (Component: any) => {
 			return (
 				<>
 					<Head>
-						<title>Gymora</title>
-						<meta name={'title'} content={`Gymora`} />
+						<title>Gymora — Elite Training Platform</title>
+						<meta name={'title'} content={'Gymora — Elite Training Platform'} />
 					</Head>
 					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />

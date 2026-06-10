@@ -41,6 +41,20 @@
 
 - Trainer messaging entry point + creator cards: Message buttons on trainer/member profiles deep-link into mypage chat (?partner= auto-opens or starts the conversation with a stub row); new reusable CreatorCard shows the workout's coach (workout.memberId) and the program's trainer (trainerId → restored GET_TRAINER → member) in detail sidebars with role-aware View Profile + Message. Like persistence re-verified end-to-end (could not reproduce revert; meLiked + auth header confirmed on reload).
 
+- Production polish: branded dark 404/500 error pages (replacing Next white defaults), per-page browser titles via layout route map, README rewritten from stock template to a real project document (features, stack, env table, structure).
+
+- Hardcoded-data audit: verified all landing components and the trainer roster render live DB data (side-by-side GraphQL vs rendered comparison); replaced the one false hero metric ("100% Free Workouts") with a real live Programs counter.
+
+- Trainer cards show @nickname under full name; chat gained read receipts (✓ sent → ✓✓ read via existing isRead field) with light 6s polling so they update live without backend changes. Both verified end-to-end with real accounts.
+
+- Admin mypage menu trimmed to Dashboard/Profile/Notifications/Messages (removed Programs/Articles/Write/Nutrition/Progress/Subscription for admins); chat no longer scrolls the whole page (scoped panel scroll + flexbox min-height fix); Messages nav shows a live unread badge like Notifications (GET_CONVERSATIONS poll). Removed orphaned property type files.
+
+- Chat: unread message badge now clears instantly on opening a conversation (optimistic + parent refetch callback, no refresh needed); chat room header shows live presence ("● Active now" pulsing green / "Offline" gray) via the existing socket presence backend. Verified live with two connected accounts. (True "last seen" timestamp would need a backend field — not stored today.)
+
+- Navbar logo "G" gains a 3D coin-flip spin on hover (alongside the square→circle morph); Log out now shows a "Do you want to log out?" confirmation on both desktop and mobile buttons.
+
+- Subscription is now strictly USER-only: removed 3 stray admin/trainer subscriptions from the DB (and any PENDING), and tightened the dashboard subscription summary to USER-only (admins no longer see it); menu item + route guard already exclude trainers/admins (verified live).
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

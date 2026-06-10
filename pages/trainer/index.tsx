@@ -183,7 +183,10 @@ const TrainerList: NextPage = () => {
 									</div>
 								)}
 								<div className="tr-card-overlay">
-									<h3>{trainer.memberFullName || trainer.memberNick}</h3>
+									<h3>
+										{trainer.memberFullName || trainer.memberNick}
+										{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
+									</h3>
 									<p>{trainer.memberDesc || 'Professional fitness trainer'}</p>
 								</div>
 							</div>
