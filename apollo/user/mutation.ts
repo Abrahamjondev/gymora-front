@@ -444,19 +444,6 @@ export const PURCHASE_COURSE = gql`
  *         CHAT           *
  *************************/
 
-export const SEND_MESSAGE = gql`
-	mutation SendMessage($input: ChatInput!) {
-		sendMessage(input: $input) {
-			_id
-			senderId
-			receiverId
-			message
-			isRead
-			createdAt
-		}
-	}
-`;
-
 /**************************
  *       LESSONS          *
  *************************/
@@ -618,24 +605,6 @@ export const ANALYZE_FOOD_IMAGE = gql`
 /**************************
  *       UPLOADS          *
  *************************/
-
-export const IMAGE_UPLOADER = gql`
-	mutation ImageUploader($file: Upload!, $target: String!) {
-		imageUploader(file: $file, target: $target)
-	}
-`;
-
-export const VIDEO_UPLOADER = gql`
-	mutation VideoUploader($file: Upload!) {
-		videoUploader(file: $file)
-	}
-`;
-
-export const IMAGES_UPLOADER = gql`
-	mutation ImagesUploader($files: [Upload!]!, $target: String!) {
-		imagesUploader(files: $files, target: $target)
-	}
-`;
 
 export const CREATE_NOTIFICATION = gql`
 	mutation CreateNotification($input: NotificationInput!) {

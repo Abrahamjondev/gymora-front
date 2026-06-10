@@ -37,6 +37,8 @@
 - Admin panel made mobile-responsive: permanent 280px drawer becomes a burger-toggled temporary drawer ≤768px (full-width AppBar, auto-close on navigation), desktop unchanged; trainer-role mypage categories and all admin pages verified clean on iPhone viewport.
 - Mobile readiness verified and fixed: Playwright sweep of all 22 routes at iPhone viewport (authenticated, real IDs) found 0 overflows; the one critical gap — nav links hidden ≤768px with no replacement — fixed with a premium animated hamburger menu in GymNavbar (slide-down panel, active states, guest/user footers, auto-close on navigation); desktop navbar unchanged; production build clean.
 
+- My Articles gained owner Edit/Delete wired to backend updateBoardArticle (edit mode in Teditor with prefilled content, category locked per backend DTO; delete via DELETE status with confirm) — E2E verified. Final cleanup: 8 dead legacy components and 8 unused apollo exports removed; calculateAnalytics confirmed redundant (nutrition recommendation already returns BMI/BMR/TDEE); chat persistence over socket verified so SEND_MESSAGE dropped.
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

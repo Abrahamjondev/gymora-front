@@ -6,9 +6,9 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import { BoardArticle } from '../../types/board-article/board-article';
-import { LIKE_TARGET_BOARD_ARTICLE } from '../../../apollo/user/mutation';
+import { LIKE_TARGET_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
-import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
+import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Messages, REACT_APP_API_URL } from '../../config';
 import { useRouter } from 'next/router';
 
@@ -29,6 +29,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const [totalCount, setTotalCount] = useState<number>(0);
 
 	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
+	const [updateBoardArticle] = useMutation(UPDATE_BOARD_ARTICLE);
 
 	const { loading, refetch } = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
@@ -42,6 +43,26 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 
 	const paginationHandler = (e: T, value: number) => {
 		setSearchCommunity({ ...searchCommunity, page: value });
+	};
+
+	const editHandler = (e: any, id: string) => {
+		e.stopPropagation();
+		router.push({ pathname: '/mypage', query: { category: 'writeArticle', articleId: id } }, undefined, { shallow: true });
+	};
+
+	const deleteHandler = async (e: any, id: string) => {
+		e.stopPropagation();
+		try {
+			if (!id || !user?._id) throw new Error(Messages.error2);
+			if (!(await sweetConfirmAlert('Delete this article permanently?'))) return;
+			await updateBoardArticle({ variables: { input: { _id: id, articleStatus: 'DELETE' } } });
+			const { data } = await refetch({ input: searchCommunity });
+			setBoardArticles(data?.getBoardArticles?.list ?? []);
+			setTotalCount(data?.getBoardArticles?.metaCounter?.[0]?.total ?? 0);
+			await sweetTopSmallSuccessAlert('Deleted', 750);
+		} catch (err: any) {
+			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
+		}
 	};
 
 	const likeHandler = async (e: any, id: string) => {
@@ -108,6 +129,12 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 										</span>
 										<span className="cm-stat">{article.articleViews ?? 0} views</span>
 										<span className="cm-stat">{article.articleComments ?? 0} comments</span>
+										<button className="wl-active-chip" style={{ cursor: 'pointer', border: '1px solid rgba(0,220,229,0.35)', background: 'rgba(0,220,229,0.08)', color: '#00dce5' }} onClick={(e) => editHandler(e, article._id)}>
+											Edit
+										</button>
+										<button className="wl-active-chip" style={{ cursor: 'pointer', border: '1px solid rgba(255,138,138,0.35)', background: 'rgba(255,138,138,0.07)', color: '#ff8a8a' }} onClick={(e) => deleteHandler(e, article._id)}>
+											Delete
+										</button>
 										<span className="cm-arrow">→</span>
 									</div>
 								</div>

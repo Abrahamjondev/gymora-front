@@ -89,59 +89,6 @@ query GetMember($input: String!) {
  *        TRAINER        *
  *************************/
 
-export const GET_TRAINERS = gql`
-	query GetTrainers($input: TrainersListInquiry!) {
-		getTrainers(input: $input) {
-			list {
-				_id
-				memberId
-				trainerBio
-				trainerSpecializations
-				trainerExperience
-				trainerRating
-				trainerRatingCount
-				trainerSocialLinks
-				trainerVerificationStatus
-				trainerRank
-				meLiked {
-					memberId
-					likeRefId
-					myFavorite
-				}
-				createdAt
-				updatedAt
-			}
-			metaCounter {
-				total
-			}
-		}
-	}
-`;
-
-export const GET_TRAINER = gql`
-	query GetTrainer($input: String!) {
-		getTrainer(trainerId: $input) {
-			_id
-			memberId
-			trainerBio
-			trainerSpecializations
-			trainerExperience
-			trainerRating
-			trainerRatingCount
-			trainerSocialLinks
-			trainerVerificationStatus
-			trainerRank
-			meLiked {
-				memberId
-				likeRefId
-				myFavorite
-			}
-			createdAt
-			updatedAt
-		}
-	}
-`;
-
 /**************************
  *        COURSE         *
  *************************/
@@ -681,17 +628,6 @@ export const GET_PROGRESS_TIMELINE = gql`
 	}
 `;
 
-export const CALCULATE_ANALYTICS = gql`
-	query CalculateAnalytics($input: AnalyticsInput!) {
-		calculateAnalytics(input: $input) {
-			bmi
-			bmr
-			dailyCalories
-			summary
-		}
-	}
-`;
-
 /**************************
  *     NOTIFICATIONS      *
  *************************/
@@ -994,15 +930,6 @@ export const GET_RECOMMENDATIONS = gql`
 /**************************
  *     ONLINE STATUS      *
  *************************/
-
-export const GET_ONLINE_STATUS = gql`
-	query GetOnlineStatus {
-		getOnlineStatus {
-			memberId
-			isOnline
-		}
-	}
-`;
 
 export const GET_PARTNER_ONLINE_STATUS = gql`
 	query GetPartnerOnlineStatus($input: String!) {
