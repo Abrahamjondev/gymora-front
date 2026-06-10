@@ -297,6 +297,8 @@ const MyPage: NextPage = () => {
 				},
 			});
 			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, workoutThumbnail: '', videoUrl: '', exercises: [] });
+			const { data: wd } = await myWorkoutsRefetch();
+			if (wd?.getMemberWorkouts) setMyWorkouts(wd.getMemberWorkouts);
 			await sweetMixinSuccessAlert('Workout created!');
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
@@ -305,9 +307,14 @@ const MyPage: NextPage = () => {
 	const createCourseHandler = async () => {
 		try {
 			if (!newCourse.courseTitle) throw new Error('Course title required');
-			await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration), courseThumbnail: newCourse.courseThumbnail || undefined } } });
+			const { data: created } = await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration), courseThumbnail: newCourse.courseThumbnail || undefined } } });
 			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4, courseThumbnail: '' });
-			await sweetMixinSuccessAlert('Course created!');
+			const { data: rd } = await trainerCoursesRefetch();
+			if (rd?.getTrainerCourses) setTrainerCourses(rd.getTrainerCourses);
+			// jump straight into the Lesson Manager so videos can be added now
+			const newId = created?.createCourse?._id;
+			if (newId) setLessonCourse({ id: newId, title: created.createCourse.courseTitle });
+			await sweetMixinSuccessAlert('Program created! Now add your lessons and videos below.');
 			router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
@@ -398,11 +405,9 @@ const MyPage: NextPage = () => {
 	const labelStyle: React.CSSProperties = { fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px', letterSpacing: '0.04em' };
 	const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 
-	if (device === 'mobile') return <div style={{ padding: '24px', color: '#e5e2e3', background: '#0d0d0e' }}>GYMORA MY PAGE MOBILE</div>;
-
 	return (
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '292px 1fr', gap: '28px' }}>
+			<div className="mp-layout">
 				{/* Sidebar */}
 				<div className="mp-side">
 					{/* Identity card */}
@@ -850,6 +855,9 @@ const MyPage: NextPage = () => {
 								<div>
 									<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>Studio</span>
 									<h2>Create Program</h2>
+									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: 'rgba(185,202,202,0.6)', display: 'block', marginTop: '6px' }}>
+										Lesson videos are added right after publishing — the Lesson Manager opens automatically.
+									</span>
 								</div>
 							</div>
 							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
@@ -1017,8 +1025,6 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{cat === 'followers' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Followers</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
-					{cat === 'followings' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Following</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
 				</div>
 			</div>
 		</div>

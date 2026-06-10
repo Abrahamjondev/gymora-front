@@ -266,7 +266,6 @@ const SubscriptionPage: NextPage = () => {
 	};
 
 	if (!user?._id) return <div style={{ background: '#0d0d0e', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: 'rgba(185,202,202,0.5)', fontFamily: 'Hanken Grotesk' }}>Please login to manage subscription.</p></div>;
-	if (device === 'mobile') return <div style={{ padding: '24px', color: '#e5e2e3', background: '#0d0d0e' }}>SUBSCRIPTION MOBILE</div>;
 
 	return (
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
@@ -292,7 +291,7 @@ const SubscriptionPage: NextPage = () => {
 				)}
 
 				{/* Plan cards */}
-				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px', animation: 'fadeInUp 0.5s ease 0.15s both' }}>
+				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px', animation: 'fadeInUp 0.5s ease 0.15s both' }}>
 					{plans.map((plan) => {
 						const isSelected = selectedPlan === plan.key;
 						return (

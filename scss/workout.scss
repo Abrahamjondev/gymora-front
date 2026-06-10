@@ -1412,6 +1412,25 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 /* MYPAGE SIDEBAR                                          */
 /* ====================================================== */
 
+.mp-layout {
+	max-width: 1280px;
+	margin: 0 auto;
+	padding: 0 32px;
+	display: grid;
+	grid-template-columns: 292px minmax(0, 1fr);
+	gap: 28px;
+}
+@media (max-width: 1024px) {
+	.mp-layout {
+		grid-template-columns: minmax(0, 1fr);
+		padding: 0 20px;
+	}
+	.mp-side {
+		position: static;
+		max-height: none;
+		overflow: visible;
+	}
+}
 .mp-side {
 	position: sticky;
 	top: 24px;
