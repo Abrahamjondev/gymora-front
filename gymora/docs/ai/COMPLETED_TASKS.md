@@ -13,6 +13,7 @@
 - Trainer Detail redesigned + logic gaps fixed: routing corrected (list/landing now reach /trainer/detail instead of /member), review form now mirrors backend permissions (purchase-required via GET_MEMBER_PURCHASED_COURSES + already-reviewed detection), social links / rating count / rank / views now displayed, course rows with thumbnails, all workouts shown, sticky profile card design, follow busy-guard. Backend evidence: review.service.ts permission checks.
 - Trainer Detail follow-up: Articles section (GET_BOARD_ARTICLES search.memberId), tabbed Followers/Following panel in sidebar (GET_MEMBER_FOLLOWERS/GET_MEMBER_FOLLOWINGS — guards and FollowSearch fields verified), person rows route by memberType.
 - /member page placeholders ("will be implemented with migration") replaced with real Followers/Following/Articles tabs using the same public queries; page redesigned to td-* system; TRAINER profiles auto-redirect to /trainer/detail.
+- Naming unified to "Programs" across UI (backend stays `course`): landing "Top Courses" → "Top Programs", trainer detail and copy updated. /course page redesigned: editorial hero with live count, glass console (difficulty seg + category buttons with colored dots), category-accent cards (CSS vars drive hover glow/border/CTA color), shimmer skeletons, fully responsive, mobile placeholder removed.
 
 ## 2026-06-09
 

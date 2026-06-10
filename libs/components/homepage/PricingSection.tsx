@@ -18,7 +18,7 @@ const PricingSection = () => {
 						<span className="lp-eyebrow">Membership</span>
 						<h2 className="lp-h2">Simple, honest pricing</h2>
 						<p className="lp-sub" style={{ margin: '14px auto 0' }}>
-							All workouts are free forever. Go premium to unlock structured courses and full progression tracking.
+							All workouts are free forever. Go premium to unlock structured programs and full progression tracking.
 						</p>
 					</div>
 				</div>
@@ -31,7 +31,7 @@ const PricingSection = () => {
 						</span>
 						<p className="lp-price-note">Billed monthly. Cancel anytime.</p>
 						<ul>
-							<li>Full course library access</li>
+							<li>Full program library access</li>
 							<li>Lesson-by-lesson progression</li>
 							<li>AI nutrition tools</li>
 							<li>Progress analytics</li>

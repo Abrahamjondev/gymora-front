@@ -10,7 +10,7 @@ const steps = [
 	{
 		num: '02',
 		title: 'Train with elite programs',
-		desc: 'Follow trainer-built workouts, then go deeper with structured multi-week courses. Secure checkout, instant access to your first lesson.',
+		desc: 'Follow trainer-built workouts, then go deeper with structured multi-week programs. Secure checkout, instant access to your first lesson.',
 	},
 	{
 		num: '03',

@@ -815,6 +815,168 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 /* ====================================================== */
+/* PROGRAMS (courses on the backend)                       */
+/* ====================================================== */
+
+.cl-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 18px;
+}
+.cl-card {
+	position: relative;
+	border-radius: 16px;
+	overflow: hidden;
+	cursor: pointer;
+	background: rgba(255, 255, 255, 0.015);
+	border: 1px solid rgba(255, 255, 255, 0.05);
+	transition: transform 0.45s $wl-ease, border-color 0.45s ease, box-shadow 0.45s ease;
+	display: flex;
+	flex-direction: column;
+	&:hover {
+		transform: translateY(-5px);
+		border-color: var(--accent-soft, rgba(0, 220, 229, 0.35));
+		box-shadow: 0 18px 50px rgba(0, 0, 0, 0.5), 0 6px 24px var(--accent-glow, rgba(0, 220, 229, 0.08));
+		.cl-card-img img {
+			transform: scale(1.06);
+		}
+		.cl-card-cta {
+			background: var(--accent, #00dce5);
+			color: #0d0d0e;
+		}
+	}
+	.cl-card-img {
+		aspect-ratio: 16/10;
+		overflow: hidden;
+		position: relative;
+		img {
+			width: 100%;
+			height: 100%;
+			object-fit: cover;
+			transition: transform 0.6s $wl-ease;
+		}
+		.cl-card-shade {
+			position: absolute;
+			inset: 0;
+			background: linear-gradient(to top, rgba(0, 0, 0, 0.72) 0%, rgba(0, 0, 0, 0.08) 50%, transparent 100%);
+		}
+		.cl-card-price {
+			position: absolute;
+			bottom: 12px;
+			right: 12px;
+			padding: 5px 13px;
+			border-radius: 8px;
+			background: rgba(0, 0, 0, 0.6);
+			backdrop-filter: blur(8px);
+			border: 1px solid rgba(255, 255, 255, 0.12);
+			font-family: 'Hanken Grotesk', sans-serif;
+			font-size: 16px;
+			font-weight: 800;
+			color: #ffffff;
+		}
+		.cl-card-rating {
+			position: absolute;
+			top: 12px;
+			right: 12px;
+			padding: 4px 10px;
+			border-radius: 7px;
+			background: rgba(0, 0, 0, 0.55);
+			backdrop-filter: blur(8px);
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 11.5px;
+			font-weight: 700;
+			color: #ffb77f;
+		}
+	}
+	.cl-card-body {
+		padding: 18px;
+		display: flex;
+		flex-direction: column;
+		flex: 1;
+		h3 {
+			font-family: 'Hanken Grotesk', sans-serif;
+			font-size: 17.5px;
+			font-weight: 700;
+			color: #eef4f4;
+			line-height: 1.3;
+			margin: 0 0 8px;
+			letter-spacing: -0.01em;
+			overflow: hidden;
+			text-overflow: ellipsis;
+			white-space: nowrap;
+		}
+		.cl-card-desc {
+			font-family: 'Hanken Grotesk', sans-serif;
+			font-size: 13.5px;
+			line-height: 1.6;
+			color: rgba(185, 202, 202, 0.6);
+			margin: 0 0 16px;
+			display: -webkit-box;
+			-webkit-line-clamp: 2;
+			line-clamp: 2;
+			-webkit-box-orient: vertical;
+			overflow: hidden;
+			flex: 1;
+		}
+	}
+	.cl-card-foot {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		.cl-card-meta {
+			display: flex;
+			gap: 12px;
+			font-family: 'Hanken Grotesk', sans-serif;
+			font-size: 12.5px;
+			font-weight: 700;
+			text-transform: uppercase;
+			letter-spacing: 0.03em;
+			color: rgba(220, 232, 232, 0.8);
+		}
+		.cl-card-cta {
+			font-family: 'Hanken Grotesk', sans-serif;
+			font-size: 12.5px;
+			font-weight: 700;
+			padding: 8px 16px;
+			border-radius: 8px;
+			border: none;
+			background: rgba(255, 255, 255, 0.07);
+			color: rgba(233, 254, 255, 0.9);
+			cursor: pointer;
+			transition: all 0.3s ease;
+			white-space: nowrap;
+		}
+	}
+}
+.cl-cat-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-family: 'Hanken Grotesk', sans-serif;
+	font-size: 13.5px;
+	font-weight: 700;
+	letter-spacing: 0.01em;
+	padding: 8px 15px;
+	border-radius: 9px;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	background: rgba(255, 255, 255, 0.02);
+	color: rgba(222, 234, 234, 0.88);
+	cursor: pointer;
+	transition: all 0.25s ease;
+	.cl-cat-dot {
+		width: 7px;
+		height: 7px;
+		border-radius: 50%;
+		flex: none;
+	}
+	&:hover {
+		color: #ffffff;
+		border-color: rgba(255, 255, 255, 0.25);
+	}
+}
+
+/* ====================================================== */
 /* TRAINER DETAIL                                          */
 /* ====================================================== */
 
@@ -1265,7 +1427,8 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 
 /* ---------- responsive ---------- */
 @media (max-width: 1024px) {
-	.tr-grid {
+	.tr-grid,
+	.cl-grid {
 		grid-template-columns: repeat(2, 1fr);
 	}
 	.tr-stats {
@@ -1312,7 +1475,8 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	.wl-page {
 		padding: 28px 0 72px;
 	}
-	.wl-grid {
+	.wl-grid,
+	.cl-grid {
 		grid-template-columns: 1fr;
 	}
 	.wl-sort {

@@ -37,8 +37,8 @@ const TopCourses = () => {
 			<div className="lp-container">
 				<div className="lp-section-head">
 					<div>
-						<span className="lp-eyebrow lp-eyebrow--orange">Structured programs</span>
-						<h2 className="lp-h2">Top Courses</h2>
+						<span className="lp-eyebrow lp-eyebrow--orange">Structured training</span>
+						<h2 className="lp-h2">Top Programs</h2>
 					</div>
 					<button className="lp-view-btn" onClick={() => router.push('/course')}>
 						Browse all →

@@ -386,7 +386,7 @@ const TrainerDetail: NextPage = () => {
 						{courses.length > 0 && (
 							<div className="wd-section">
 								<div className="wd-section-head">
-									<h3>Courses</h3>
+									<h3>Programs</h3>
 									<span className="wd-section-count">
 										{courses.length} program{courses.length > 1 ? 's' : ''}
 									</span>

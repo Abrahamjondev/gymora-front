@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { CircularProgress, Pagination, Stack } from '@mui/material';
+import { Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Course } from '../../libs/types/course/course';
@@ -102,163 +102,201 @@ const CourseList: NextPage = () => {
 		router.push({ pathname: '/course/detail', query: { id: courseId } });
 	};
 
+	const clearAllHandler = () => {
+		setActiveCategory('ALL');
+		setActiveDifficulty('ALL');
+		setSearchText('');
+		setActiveSort('courseRank');
+		setSearchFilter({ ...searchFilter, page: 1, sort: 'courseRank', search: {} });
+	};
+
 	const categories = ['ALL', 'STRENGTH', 'CARDIO', 'YOGA', 'MOBILITY', 'NUTRITION'];
+	const difficulties = ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
+	const sortOptions = [
+		{ value: 'courseRank', label: 'Top Ranked' },
+		{ value: 'courseRating', label: 'Highest Rated' },
+		{ value: 'coursePrice', label: 'Price' },
+		{ value: 'createdAt', label: 'Newest' },
+	];
 
-	if (loading && !courses.length) {
-		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
-				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
-			</Stack>
-		);
-	}
-
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA COURSES MOBILE</div>;
-	}
+	const hasActiveFilters = activeCategory !== 'ALL' || activeDifficulty !== 'ALL' || searchText;
 
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1200px', margin: '0 auto', padding: '0 24px' }}>
-				{/* Header */}
-				<div style={{ marginBottom: '32px' }}>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.2em', color: '#ff8a00', fontWeight: 500, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-						Elite Performance
-					</span>
-					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '40px', lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: 800, color: '#e9feff' }}>
-						Programs Library
-					</h2>
-					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '24px', color: '#b9caca', maxWidth: '560px', marginTop: '12px' }}>
-						Structured multi-week programs designed by elite trainers. From strength to mobility — find your path.
+		<div className="wl-page">
+			<div className="lp-container">
+				{/* Hero */}
+				<div className="wl-hero">
+					<div className="wl-hero-glow" />
+					<span className="lp-eyebrow lp-eyebrow--orange">Structured training</span>
+					<h1 className="wl-title">
+						Training <span className="lp-grad">Programs</span>
+					</h1>
+					<p className="lp-sub" style={{ margin: 0 }}>
+						Multi-week programs designed by elite trainers. From strength to mobility — find your path.
 					</p>
-				</div>
-
-				{/* Search + Sort */}
-				<div style={{ display: 'flex', gap: '12px', marginBottom: '16px' }}>
-					<div style={{ flex: 1, display: 'flex', alignItems: 'center', background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '0 16px' }}>
-						<span style={{ color: '#849495', marginRight: '8px' }}></span>
-						<input value={searchText} onChange={(e) => setSearchText(e.target.value)} onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()} placeholder="Search programs..." style={{ flex: 1, background: 'transparent', border: 'none', outline: 'none', fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', padding: '14px 0' }} />
-						{searchText && <span onClick={() => { setSearchText(''); buildCourseSearch({ text: '' }); }} style={{ color: '#849495', cursor: 'pointer' }}>✕</span>}
+					<div className="wl-badge">
+						<span className="wl-badge-dot" />
+						<span>{total > 0 ? `${total} programs available` : 'Loading programs'}</span>
 					</div>
-					<select value={activeSort} onChange={(e) => courseSortHandler(e.target.value)} style={{ padding: '12px 16px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk', fontSize: '14px', outline: 'none', cursor: 'pointer' }}>
-						<option value="courseRank">Top Ranked</option>
-						<option value="courseRating">Highest Rated</option>
-						<option value="coursePrice">Price</option>
-						<option value="createdAt">Newest</option>
-					</select>
 				</div>
 
-				{/* Category filters */}
-				<div style={{ display: 'flex', gap: '8px', marginBottom: '12px', flexWrap: 'wrap' }}>
-					{categories.map((cat) => (
-						<button key={cat} onClick={() => categoryFilterHandler(cat)} style={{ padding: '8px 20px', borderRadius: '9999px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: activeCategory === cat ? 700 : 400, cursor: 'pointer', transition: 'all 0.2s', border: activeCategory === cat ? 'none' : '1px solid #3a494a', background: activeCategory === cat ? '#e9feff' : '#353436', color: activeCategory === cat ? '#003739' : '#b9caca' }}>
-							{cat === 'ALL' ? 'All Goals' : cat.charAt(0) + cat.slice(1).toLowerCase()}
-						</button>
-					))}
-				</div>
-
-				{/* Difficulty filters */}
-				<div style={{ display: 'flex', gap: '8px', marginBottom: '32px', flexWrap: 'wrap' }}>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'flex', alignItems: 'center', marginRight: '4px' }}>LEVEL:</span>
-					{['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
-						<button key={d} onClick={() => difficultyFilterHandler(d)} style={{ padding: '6px 14px', borderRadius: '6px', fontFamily: 'JetBrains Mono', fontSize: '11px', cursor: 'pointer', transition: 'all 0.2s', border: activeDifficulty === d ? '1px solid #ff8a00' : '1px solid #3a494a', background: activeDifficulty === d ? 'rgba(255,138,0,0.15)' : 'transparent', color: activeDifficulty === d ? '#ff8a00' : '#849495' }}>
-							{d === 'ALL' ? 'Any' : d.charAt(0) + d.slice(1).toLowerCase()}
-						</button>
-					))}
-				</div>
-
-				{/* Course Grid */}
-				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '20px' }}>
-					{courses.map((course) => (
-						<div
-							key={course._id}
-							onClick={() => pushDetailHandler(course._id)}
-							style={{
-								background: 'rgba(255,255,255,0.03)',
-								border: '1px solid rgba(255,255,255,0.08)',
-								borderRadius: '12px',
-								overflow: 'hidden',
-								cursor: 'pointer',
-								transition: 'all 0.3s',
-							}}
-							onMouseOver={(e) => {
-								(e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.3)';
-								(e.currentTarget as HTMLElement).style.transform = 'scale(1.02)';
-							}}
-							onMouseOut={(e) => {
-								(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)';
-								(e.currentTarget as HTMLElement).style.transform = 'scale(1)';
-							}}
-						>
-							{/* Image */}
-							<div style={{ aspectRatio: '16/9', overflow: 'hidden', position: 'relative' }}>
-								<img
-									src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
-									alt={course.courseTitle}
-									style={{ width: '100%', height: '100%', objectFit: 'cover', transition: 'transform 0.5s' }}
-									onMouseOver={(e) => ((e.target as HTMLImageElement).style.transform = 'scale(1.1)')}
-									onMouseOut={(e) => ((e.target as HTMLImageElement).style.transform = 'scale(1)')}
-								/>
-								<div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(to top, rgba(19,19,20,0.6), transparent)' }} />
-								<span style={{
-									position: 'absolute', top: '12px', left: '12px',
-									padding: '4px 10px', borderRadius: '4px',
-									background: categoryColors[course.courseCategory] || '#ff8a00',
-									fontFamily: 'JetBrains Mono', fontSize: '10px', fontWeight: 700,
-									color: '#131314', textTransform: 'uppercase', letterSpacing: '0.05em',
-								}}>
-									{course.courseCategory}
+				{/* Filter console */}
+				<div className="wl-console">
+					<div className="wl-console-row">
+						<div className="wl-search">
+							<input
+								value={searchText}
+								onChange={(e) => setSearchText(e.target.value)}
+								onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()}
+								placeholder="Search programs..."
+							/>
+							{searchText && (
+								<span
+									className="wl-search-clear"
+									onClick={() => {
+										setSearchText('');
+										buildCourseSearch({ text: '' });
+									}}
+								>
+									✕
 								</span>
-								{course.courseRating && course.courseRating > 0 && (
-									<div style={{ position: 'absolute', top: '12px', right: '12px', padding: '4px 8px', background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)', borderRadius: '4px', display: 'flex', alignItems: 'center', gap: '4px' }}>
-										<span style={{ color: '#ff8a00', fontSize: '12px' }}>★</span>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#e5e2e3', fontWeight: 700 }}>{course.courseRating.toFixed(1)}</span>
-									</div>
-								)}
-							</div>
-
-							{/* Info */}
-							<div style={{ padding: '20px' }}>
-								<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', lineHeight: '28px', fontWeight: 600, color: '#e5e2e3', marginBottom: '8px' }}>
-									{course.courseTitle}
-								</h3>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '8px', color: '#b9caca' }}>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{course.courseDuration} Weeks</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{course.courseDifficulty}</span>
-								</div>
-								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '20px', color: '#849495', marginBottom: '16px', overflow: 'hidden', textOverflow: 'ellipsis', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical' }}>
-									{course.courseDesc || 'Professional training program'}
-								</p>
-								<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(58,73,74,0.5)' }}>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e9feff' }}>
-										{course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}
-									</span>
-									<button style={{
-										background: '#e9feff', color: '#003739', border: 'none', borderRadius: '6px',
-										padding: '8px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer',
-									}}>
-										View Program
-									</button>
-								</div>
-							</div>
+							)}
 						</div>
-					))}
+						<select className="wl-sort" value={activeSort} onChange={(e) => courseSortHandler(e.target.value)}>
+							{sortOptions.map((s) => (
+								<option key={s.value} value={s.value}>
+									{s.label}
+								</option>
+							))}
+						</select>
+					</div>
+
+					<div className="wl-console-row">
+						<div className="wl-seg">
+							{difficulties.map((d) => (
+								<button key={d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
+									{d === 'ALL' ? 'All Levels' : d.charAt(0) + d.slice(1).toLowerCase()}
+								</button>
+							))}
+						</div>
+						<div className="wl-muscles" style={{ gap: '6px' }}>
+							{categories.map((cat) => {
+								const accent = categoryColors[cat];
+								const isActive = activeCategory === cat;
+								return (
+									<button
+										key={cat}
+										className="cl-cat-btn"
+										style={
+											isActive
+												? { borderColor: accent ? `${accent}80` : 'rgba(0,220,229,0.5)', background: accent ? `${accent}1c` : 'rgba(0,220,229,0.14)', color: accent || '#00eaf4' }
+												: undefined
+										}
+										onClick={() => categoryFilterHandler(cat)}
+									>
+										{accent && <span className="cl-cat-dot" style={{ background: accent }} />}
+										{cat === 'ALL' ? 'All Goals' : cat.charAt(0) + cat.slice(1).toLowerCase()}
+									</button>
+								);
+							})}
+						</div>
+					</div>
 				</div>
 
-				{!loading && courses.length === 0 && (
-					<div style={{ textAlign: 'center', padding: '80px 0', color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>
-						No programs found. Try a different category.
+				{/* Active filters summary */}
+				{hasActiveFilters && (
+					<div className="wl-active-row">
+						<span className="wl-active-label">ACTIVE:</span>
+						{activeCategory !== 'ALL' && <span className="wl-active-chip">{activeCategory}</span>}
+						{activeDifficulty !== 'ALL' && <span className="wl-active-chip">{activeDifficulty}</span>}
+						{searchText && <span className="wl-active-chip">"{searchText}"</span>}
+						<button className="wl-active-clear" onClick={clearAllHandler}>
+							✕ Clear all
+						</button>
 					</div>
 				)}
 
+				{/* Program Grid */}
+				<div className="cl-grid">
+					{loading && !courses.length
+						? [1, 2, 3, 4, 5, 6].map((i) => (
+								<div key={i} className="wl-skel">
+									<div className="wl-skel-img" />
+									<div className="wl-skel-body">
+										<div className="wl-skel-line" />
+										<div className="wl-skel-line" />
+									</div>
+								</div>
+						  ))
+						: courses.map((course) => {
+								const accent = categoryColors[course.courseCategory] || '#00dce5';
+								return (
+									<div
+										key={course._id}
+										className="cl-card"
+										style={
+											{
+												'--accent': accent,
+												'--accent-soft': `${accent}59`,
+												'--accent-glow': `${accent}14`,
+											} as React.CSSProperties
+										}
+										onClick={() => pushDetailHandler(course._id)}
+									>
+										<div className="cl-card-img">
+											<img
+												src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
+												alt={course.courseTitle}
+												loading="lazy"
+											/>
+											<div className="cl-card-shade" />
+											<span
+												className="lp-chip"
+												style={{ position: 'absolute', top: '12px', left: '12px', background: `${accent}20`, borderColor: `${accent}35`, color: accent }}
+											>
+												{course.courseCategory}
+											</span>
+											{course.courseRating && course.courseRating > 0 ? (
+												<span className="cl-card-rating">★ {course.courseRating.toFixed(1)}</span>
+											) : null}
+											<span className="cl-card-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}</span>
+										</div>
+
+										<div className="cl-card-body">
+											<h3>{course.courseTitle}</h3>
+											<p className="cl-card-desc">{course.courseDesc || 'Professional training program'}</p>
+											<div className="cl-card-foot">
+												<div className="cl-card-meta">
+													<span>{course.courseDuration}W</span>
+													<span>{course.courseDifficulty}</span>
+												</div>
+												<button className="cl-card-cta">View Program →</button>
+											</div>
+										</div>
+									</div>
+								);
+						  })}
+				</div>
+
+				{/* No results */}
+				{!loading && courses.length === 0 && (
+					<div className="wl-empty">
+						<span className="wl-empty-label">No results</span>
+						<h3>No programs match these filters.</h3>
+						<p>Try a different goal, level or search term.</p>
+					</div>
+				)}
+
+				{/* Pagination */}
 				{total > searchFilter.limit && (
-					<Stack alignItems="center" style={{ marginTop: '40px' }}>
+					<Stack alignItems="center" style={{ marginTop: '48px' }}>
 						<Pagination
 							count={Math.ceil(total / searchFilter.limit)}
 							page={searchFilter.page}
 							onChange={paginationHandler}
 							shape="rounded"
 							sx={{
-								'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a' },
+								'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a', fontFamily: 'JetBrains Mono, monospace' },
 								'& .Mui-selected': { backgroundColor: '#e9feff !important', color: '#003739' },
 							}}
 						/>
