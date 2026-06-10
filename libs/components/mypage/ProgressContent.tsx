@@ -8,6 +8,46 @@ import { T } from '../../types/common';
 import { Messages } from '../../config';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
+const labelStyle: React.CSSProperties = {
+	fontFamily: 'JetBrains Mono',
+	fontSize: '10px',
+	color: '#9aabab',
+	textTransform: 'uppercase',
+	display: 'block',
+	marginBottom: '6px',
+	letterSpacing: '0.06em',
+};
+
+/** Weight trend as a pure-SVG sparkline (oldest → newest, real entries only). */
+const WeightSparkline = ({ weights }: { weights: number[] }) => {
+	if (weights.length < 2) return null;
+	const w = 600;
+	const h = 64;
+	const pad = 6;
+	const min = Math.min(...weights);
+	const max = Math.max(...weights);
+	const range = max - min || 1;
+	const pts = weights.map((v, i) => {
+		const x = pad + (i / (weights.length - 1)) * (w - pad * 2);
+		const y = pad + (1 - (v - min) / range) * (h - pad * 2);
+		return `${x.toFixed(1)},${y.toFixed(1)}`;
+	});
+	const last = pts[pts.length - 1].split(',');
+	return (
+		<svg viewBox={`0 0 ${w} ${h}`} preserveAspectRatio="none">
+			<defs>
+				<linearGradient id="pgFill" x1="0" y1="0" x2="0" y2="1">
+					<stop offset="0%" stopColor="rgba(0,220,229,0.25)" />
+					<stop offset="100%" stopColor="rgba(0,220,229,0)" />
+				</linearGradient>
+			</defs>
+			<polygon points={`${pad},${h - pad} ${pts.join(' ')} ${w - pad},${h - pad}`} fill="url(#pgFill)" />
+			<polyline points={pts.join(' ')} fill="none" stroke="#00dce5" strokeWidth="2" strokeLinejoin="round" strokeLinecap="round" />
+			<circle cx={last[0]} cy={last[1]} r="3.5" fill="#00dce5" />
+		</svg>
+	);
+};
+
 const ProgressContent = () => {
 	const user = useReactiveVar(userVar);
 	const [timeline, setTimeline] = useState<any[]>([]);
@@ -49,102 +89,179 @@ const ProgressContent = () => {
 		}
 	};
 
-	const inputStyle = { padding: '12px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'JetBrains Mono, monospace', fontSize: '13px', outline: 'none', width: '100%' };
+	// Timeline arrives newest-first (backend sorts progressDate: -1)
+	const latest = timeline[0];
+	const oldest = timeline[timeline.length - 1];
+	const totalChange = latest && oldest && timeline.length > 1 ? latest.weight - oldest.weight : null;
+	const latestFat = timeline.find((e: any) => e.bodyFat != null)?.bodyFat;
+	const chartWeights = [...timeline].reverse().map((e: any) => e.weight);
+
+	const deltaChip = (delta: number | null, unit: string = 'kg') => {
+		if (delta === null || delta === 0) return null;
+		const down = delta < 0;
+		return (
+			<span className={`pg-delta ${down ? 'is-down' : 'is-up'}`}>
+				{down ? '▼' : '▲'} {Math.abs(delta).toFixed(1)} {unit}
+			</span>
+		);
+	};
 
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 			{/* Header */}
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+			<div className="nt-head">
 				<div>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.2em', color: '#00dce5', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>Body Metrics</span>
-					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#e5e2e3' }}>Progress Tracker</h2>
+					<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>
+						Body metrics
+					</span>
+					<h2>Progress Tracker</h2>
 				</div>
-				<button onClick={() => setShowAdd(!showAdd)} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '12px 24px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
-					+ Log Progress
+				<button className="wd-btn" onClick={() => setShowAdd(!showAdd)}>
+					{showAdd ? 'Close' : '+ Log Progress'}
 				</button>
 			</div>
 
 			{/* Add form */}
 			{showAdd && (
-				<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(0,220,229,0.3)', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-					<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 600, color: '#e5e2e3', marginBottom: '16px' }}>New Entry</h4>
-					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '12px' }}>
+				<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)' }}>
+					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Weight (kg)*</span>
-							<input type="number" value={newEntry.weight} onChange={(e) => setNewEntry({ ...newEntry, weight: e.target.value })} style={inputStyle} />
+							<span style={labelStyle}>Weight (kg)*</span>
+							<input className="wd-input" type="number" value={newEntry.weight} onChange={(e) => setNewEntry({ ...newEntry, weight: e.target.value })} />
 						</div>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Chest (cm)</span>
-							<input type="number" value={newEntry.chest} onChange={(e) => setNewEntry({ ...newEntry, chest: e.target.value })} style={inputStyle} />
+							<span style={labelStyle}>Chest (cm)</span>
+							<input className="wd-input" type="number" value={newEntry.chest} onChange={(e) => setNewEntry({ ...newEntry, chest: e.target.value })} />
 						</div>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Waist (cm)</span>
-							<input type="number" value={newEntry.waist} onChange={(e) => setNewEntry({ ...newEntry, waist: e.target.value })} style={inputStyle} />
+							<span style={labelStyle}>Waist (cm)</span>
+							<input className="wd-input" type="number" value={newEntry.waist} onChange={(e) => setNewEntry({ ...newEntry, waist: e.target.value })} />
 						</div>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Hips (cm)</span>
-							<input type="number" value={newEntry.hips} onChange={(e) => setNewEntry({ ...newEntry, hips: e.target.value })} style={inputStyle} />
+							<span style={labelStyle}>Hips (cm)</span>
+							<input className="wd-input" type="number" value={newEntry.hips} onChange={(e) => setNewEntry({ ...newEntry, hips: e.target.value })} />
 						</div>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Body Fat %</span>
-							<input type="number" value={newEntry.bodyFat} onChange={(e) => setNewEntry({ ...newEntry, bodyFat: e.target.value })} style={inputStyle} />
+							<span style={labelStyle}>Body Fat %</span>
+							<input className="wd-input" type="number" value={newEntry.bodyFat} onChange={(e) => setNewEntry({ ...newEntry, bodyFat: e.target.value })} />
 						</div>
 						<div>
-							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>Note</span>
-							<input type="text" value={newEntry.progressNote} onChange={(e) => setNewEntry({ ...newEntry, progressNote: e.target.value })} placeholder="Optional note..." style={inputStyle} />
+							<span style={labelStyle}>Note</span>
+							<input
+								className="wd-input"
+								type="text"
+								value={newEntry.progressNote}
+								onChange={(e) => setNewEntry({ ...newEntry, progressNote: e.target.value })}
+								placeholder="Optional note..."
+							/>
 						</div>
 					</div>
-					<button onClick={addHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '12px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>Save Entry</button>
+					<button className="wd-btn" onClick={addHandler}>
+						Save Entry
+					</button>
 				</div>
 			)}
 
-			{/* Timeline */}
 			{loading ? (
-				<Stack sx={{ py: 4, alignItems: 'center' }}><CircularProgress sx={{ color: '#00dce5' }} /></Stack>
+				<Stack sx={{ py: 4, alignItems: 'center' }}>
+					<CircularProgress sx={{ color: '#00dce5' }} />
+				</Stack>
 			) : timeline.length === 0 ? (
-				<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '60px', textAlign: 'center' }}>
-					<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '18px', marginBottom: '8px' }}>No progress entries yet</p>
-					<p style={{ color: '#849495', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>Start logging to see your transformation</p>
+				<div className="nt-empty">
+					<div className="nt-empty-ic">△</div>
+					<h4>No progress entries yet</h4>
+					<p>Log your first measurement to start tracking your transformation.</p>
 				</div>
 			) : (
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-					{timeline.map((entry: any, idx: number) => (
-						<div key={entry._id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-							<div style={{ display: 'flex', alignItems: 'center', gap: '20px' }}>
-								<div style={{ width: '48px', height: '48px', borderRadius: '50%', background: 'rgba(0,220,229,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#00dce5' }}>{idx + 1}</span>
-								</div>
-								<div>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495', display: 'block', marginBottom: '4px' }}>
-										{new Date(entry.progressDate).toLocaleDateString()}
-									</span>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 800, color: '#e9feff' }}>{entry.weight} kg</span>
-									{entry.progressNote && <p style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: '#849495', marginTop: '4px' }}>{entry.progressNote}</p>}
-								</div>
-							</div>
-							<div style={{ display: 'flex', gap: '24px' }}>
-								{entry.chest && (
-									<div style={{ textAlign: 'center' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', display: 'block' }}>CHEST</span>
-										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3' }}>{entry.chest}cm</span>
-									</div>
-								)}
-								{entry.waist && (
-									<div style={{ textAlign: 'center' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', display: 'block' }}>WAIST</span>
-										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3' }}>{entry.waist}cm</span>
-									</div>
-								)}
-								{entry.bodyFat && (
-									<div style={{ textAlign: 'center' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', display: 'block' }}>FAT %</span>
-										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3' }}>{entry.bodyFat}%</span>
-									</div>
-								)}
-							</div>
+				<>
+					{/* Summary — computed from real entries */}
+					<div className="pg-summary">
+						<div className="pg-stat">
+							<span className="pg-stat-label">Current Weight</span>
+							<span className="pg-stat-value">
+								{latest.weight} <small>kg</small>
+							</span>
 						</div>
-					))}
-				</div>
+						<div className="pg-stat">
+							<span className="pg-stat-label">Total Change</span>
+							<span className="pg-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+								{totalChange !== null ? deltaChip(totalChange) || <small>no change</small> : <small>—</small>}
+							</span>
+						</div>
+						<div className="pg-stat">
+							<span className="pg-stat-label">Body Fat</span>
+							<span className="pg-stat-value">{latestFat != null ? <>{latestFat} <small>%</small></> : <small>—</small>}</span>
+						</div>
+						<div className="pg-stat">
+							<span className="pg-stat-label">Entries</span>
+							<span className="pg-stat-value">{timeline.length}</span>
+						</div>
+					</div>
+
+					{/* Weight trend */}
+					{chartWeights.length > 1 && (
+						<div className="pg-chart">
+							<div className="pg-chart-head">
+								<span>Weight trend</span>
+								<span>
+									{new Date(oldest.progressDate).toLocaleDateString()} — {new Date(latest.progressDate).toLocaleDateString()}
+								</span>
+							</div>
+							<WeightSparkline weights={chartWeights} />
+						</div>
+					)}
+
+					{/* Timeline */}
+					<div className="pg-timeline">
+						{timeline.map((entry: any, idx: number) => {
+							const prev = timeline[idx + 1];
+							const delta = prev ? entry.weight - prev.weight : null;
+							return (
+								<div key={entry._id} className="pg-entry">
+									<div className="pg-entry-top">
+										<span className="pg-entry-date">{new Date(entry.progressDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+										{idx === 0 && (
+											<span className="lp-chip lp-chip--cyan" style={{ fontSize: '8.5px' }}>
+												Latest
+											</span>
+										)}
+									</div>
+									<div className="pg-entry-weight">
+										<span className="pg-weight-value">
+											{entry.weight} <small>kg</small>
+										</span>
+										{deltaChip(delta)}
+									</div>
+									{(entry.chest || entry.waist || entry.hips || entry.bodyFat) && (
+										<div className="pg-metrics">
+											{entry.chest && (
+												<span className="pg-metric">
+													CHEST <b>{entry.chest}cm</b>
+												</span>
+											)}
+											{entry.waist && (
+												<span className="pg-metric">
+													WAIST <b>{entry.waist}cm</b>
+												</span>
+											)}
+											{entry.hips && (
+												<span className="pg-metric">
+													HIPS <b>{entry.hips}cm</b>
+												</span>
+											)}
+											{entry.bodyFat && (
+												<span className="pg-metric">
+													FAT <b>{entry.bodyFat}%</b>
+												</span>
+											)}
+										</div>
+									)}
+									{entry.progressNote && <p className="pg-entry-note">{entry.progressNote}</p>}
+								</div>
+							);
+						})}
+					</div>
+				</>
 			)}
 		</div>
 	);

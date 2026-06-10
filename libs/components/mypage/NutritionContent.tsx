@@ -16,8 +16,8 @@ const mealTypeColors: Record<string, string> = {
 };
 
 const inputStyle: React.CSSProperties = {
-	padding: '12px', background: '#1a1a1c', border: '1px solid rgba(255,255,255,0.1)',
-	borderRadius: '10px', color: '#e9feff', fontFamily: 'Hanken Grotesk', fontSize: '14px',
+	padding: '13px 15px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.09)',
+	borderRadius: '11px', color: '#e9eeee', fontFamily: 'Hanken Grotesk', fontSize: '14px',
 	outline: 'none', width: '100%', transition: 'border-color 0.2s ease',
 };
 
@@ -49,13 +49,34 @@ const NutritionContent = () => {
 
 	const defaultForm = { gender: 'MALE', age: '', heightCm: '', weightKg: '', activityLevel: 'MODERATELY_ACTIVE', goal: 'MAINTENANCE' };
 
-	// Nutrition plan form — restore from localStorage
-	const [planForm, setPlanForm] = useState(() => loadSaved(STORAGE_KEY_FORM, defaultForm));
-	const [recommendation, setRecommendation] = useState<any>(() => loadSaved(STORAGE_KEY_RESULT, null));
-	const [planCalculated, setPlanCalculated] = useState(() => loadSaved(STORAGE_KEY_RESULT, null) !== null);
+	// Plan form + result are persisted PER USER — keys are namespaced with the
+	// member id so plans never leak between accounts on the same browser.
+	const formKey = user?._id ? `${STORAGE_KEY_FORM}_${user._id}` : null;
+	const resultKey = user?._id ? `${STORAGE_KEY_RESULT}_${user._id}` : null;
 
-	// Persist form whenever it changes
-	useEffect(() => { localStorage.setItem(STORAGE_KEY_FORM, JSON.stringify(planForm)); }, [planForm]);
+	const [planForm, setPlanForm] = useState(defaultForm);
+	const [recommendation, setRecommendation] = useState<any>(null);
+	const [planCalculated, setPlanCalculated] = useState(false);
+	const [storageReady, setStorageReady] = useState(false);
+
+	// Restore this account's saved plan when the logged-in user is known/changes
+	useEffect(() => {
+		if (!formKey || !resultKey) return;
+		const savedResult = loadSaved(resultKey, null);
+		setPlanForm(loadSaved(formKey, defaultForm));
+		setRecommendation(savedResult);
+		setPlanCalculated(savedResult !== null);
+		setStorageReady(true);
+		// drop legacy global keys that leaked between accounts
+		localStorage.removeItem(STORAGE_KEY_FORM);
+		localStorage.removeItem(STORAGE_KEY_RESULT);
+	}, [formKey]);
+
+	// Persist form whenever it changes (after this user's data is loaded)
+	useEffect(() => {
+		if (!formKey || !storageReady) return;
+		localStorage.setItem(formKey, JSON.stringify(planForm));
+	}, [planForm, formKey, storageReady]);
 
 	// Meals
 	const [meals, setMeals] = useState<any[]>([]);
@@ -77,7 +98,7 @@ const NutritionContent = () => {
 			const rec = data?.getNutritionRecommendation;
 			setRecommendation(rec);
 			setPlanCalculated(true);
-			if (rec) localStorage.setItem(STORAGE_KEY_RESULT, JSON.stringify(rec));
+			if (rec && resultKey) localStorage.setItem(resultKey, JSON.stringify(rec));
 		},
 	});
 
@@ -176,7 +197,7 @@ const NutritionContent = () => {
 	const resetPlan = () => {
 		setPlanCalculated(false);
 		setRecommendation(null);
-		localStorage.removeItem(STORAGE_KEY_RESULT);
+		if (resultKey) localStorage.removeItem(resultKey);
 	};
 
 	const addMealHandler = async () => {
@@ -214,30 +235,26 @@ const NutritionContent = () => {
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 			{/* Header */}
-			<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '32px' }}>
+			<div className="nt-head">
 				<div>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.2em', color: '#ff8a00', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-						{planCalculated ? 'Your Plan' : 'Get Started'}
+					<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>
+						{planCalculated ? 'Your plan' : 'Fuel your training'}
 					</span>
-					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#e5e2e3' }}>Nutrition</h2>
+					<h2>Nutrition</h2>
 				</div>
-				<div style={{ display: 'flex', gap: '10px' }}>
+				<div className="nt-tools">
 					{planCalculated && (
-						<button onClick={resetPlan} style={{ background: 'transparent', color: '#9aabab', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, cursor: 'pointer' }}>
+						<button className="nt-markall" onClick={resetPlan}>
 							Recalculate
 						</button>
 					)}
-					<button onClick={() => fileInputRef.current?.click()} disabled={scanning} style={{
-						background: 'linear-gradient(135deg, rgba(102,218,186,0.15), rgba(0,220,229,0.1))',
-						color: '#7ae8c8', border: '1px solid rgba(102,218,186,0.3)',
-						borderRadius: '8px', padding: '10px 20px',
-						fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, cursor: scanning ? 'wait' : 'pointer',
-					}}>
-						{scanning ? 'Scanning...' : 'Scan Food'}
+					<button className="nm-scan-btn" onClick={() => fileInputRef.current?.click()} disabled={scanning}>
+						<span className="nm-scan-dot" />
+						{scanning ? 'Scanning...' : 'AI Scan Food'}
 					</button>
 					<input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
 						onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScanFood(f); }} />
-					<button onClick={() => setShowAddMeal(!showAddMeal)} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>
+					<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => setShowAddMeal(!showAddMeal)}>
 						+ Log Meal
 					</button>
 				</div>
@@ -549,8 +566,8 @@ const NutritionContent = () => {
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', display: 'block', marginBottom: '6px' }}>{s.label}</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 800, color: s.color }}>{s.value}</span>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}> / {s.target}{s.unit}</span>
-										<div style={{ height: '3px', background: 'rgba(255,255,255,0.06)', borderRadius: '2px', marginTop: '8px', overflow: 'hidden' }}>
-											<div style={{ height: '100%', width: `${pct}%`, background: s.color, borderRadius: '2px', transition: 'width 0.5s ease' }} />
+										<div style={{ height: '5px', background: 'rgba(255,255,255,0.06)', borderRadius: '3px', marginTop: '10px', overflow: 'hidden' }}>
+											<div style={{ height: '100%', width: `${pct}%`, background: `linear-gradient(90deg, ${s.color}99, ${s.color})`, borderRadius: '3px', transition: 'width 0.6s cubic-bezier(0.22,1,0.36,1)', boxShadow: `0 0 8px ${s.color}40` }} />
 										</div>
 									</div>
 								);
@@ -577,8 +594,8 @@ const NutritionContent = () => {
 
 					{/* Add meal form */}
 					{showAddMeal && (
-						<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(0,220,229,0.3)', borderRadius: '12px', padding: '24px', marginBottom: '24px' }}>
-							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 600, color: '#e5e2e3', marginBottom: '16px' }}>Log a Meal</h4>
+						<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)' }}>
+							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}>Log a Meal</h4>
 							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
 								<select value={newMeal.mealType} onChange={(e) => setNewMeal({ ...newMeal, mealType: e.target.value })} style={selectStyle}>
 									{['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map((t) => <option key={t} value={t}>{t}</option>)}
@@ -590,31 +607,42 @@ const NutritionContent = () => {
 									<input key={f} type="number" placeholder={f} value={(newMeal as any)[f] || ''} onChange={(e) => setNewMeal({ ...newMeal, [f]: e.target.value })} style={{ ...inputStyle, fontFamily: 'JetBrains Mono', fontSize: '13px' }} />
 								))}
 							</div>
-							<button onClick={addMealHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '12px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>Save Meal</button>
+							<button className="wd-btn" onClick={addMealHandler}>Save Meal</button>
 						</div>
 					)}
 
 					{/* Meal list */}
-					<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '16px' }}>Recent Meals</h3>
+					<div className="wd-section-head" style={{ marginBottom: '14px' }}>
+						<h3 style={{ fontSize: '20px' }}>Recent Meals</h3>
+						<span className="wd-section-count">{meals.length} logged</span>
+					</div>
 					{mealsLoading ? (
 						<Stack sx={{ py: 4, alignItems: 'center' }}><CircularProgress sx={{ color: '#00dce5' }} /></Stack>
 					) : meals.length === 0 ? (
-						<p style={{ color: '#9aabab', fontFamily: 'Hanken Grotesk', fontSize: '14px', textAlign: 'center', padding: '40px 0' }}>No meals logged yet. Start tracking!</p>
+						<div className="nt-empty" style={{ padding: '40px 0' }}>
+							<div className="nt-empty-ic">◑</div>
+							<h4>No meals logged yet</h4>
+							<p>Log a meal manually or scan your food with AI.</p>
+						</div>
 					) : (
-						<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
 							{meals.slice(0, 10).map((meal: any) => (
-								<div key={meal._id} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '16px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-									<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+								<div key={meal._id} className="nm-row">
+									<div style={{ display: 'flex', alignItems: 'center', gap: '13px', minWidth: 0 }}>
 										{meal.mealImage && (
-											<img src={`${REACT_APP_API_URL}/${meal.mealImage}`} alt="" style={{ width: '48px', height: '48px', borderRadius: '8px', objectFit: 'cover' }} />
+											<img src={`${REACT_APP_API_URL}/${meal.mealImage}`} alt="" style={{ width: '46px', height: '46px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }} />
 										)}
-										<div>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: mealTypeColors[meal.mealType] || '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '2px' }}>{meal.mealType}</span>
-											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3' }}>{meal.mealName}</h4>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#9aabab' }}>{meal.protein}g P • {meal.calories} kcal</span>
+										<div style={{ minWidth: 0 }}>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', fontWeight: 700, color: mealTypeColors[meal.mealType] || '#849495', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '3px' }}>{meal.mealType}</span>
+											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meal.mealName}</h4>
 										</div>
 									</div>
-									<button onClick={() => deleteMealHandler(meal._id)} style={{ background: 'transparent', border: 'none', color: '#9aabab', cursor: 'pointer', fontSize: '16px' }}>×</button>
+									<div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+											<b style={{ color: '#ffffff' }}>{meal.calories}</b> kcal · {meal.protein}g P
+										</span>
+										<button className="nm-del" onClick={() => deleteMealHandler(meal._id)}>✕</button>
+									</div>
 								</div>
 							))}
 						</div>
@@ -624,8 +652,8 @@ const NutritionContent = () => {
 				{/* AI Analysis History sidebar */}
 				{aiHistory.length > 0 && (
 					<div>
-						<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px' }}>
-							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e5e2e3', marginBottom: '12px' }}>AI Food Analysis</h4>
+						<div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(102,218,186,0.15)', borderRadius: '16px', padding: '22px', position: 'sticky', top: '86px' }}>
+							<h4 style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(102,218,186,0.8)', marginBottom: '14px' }}>AI Scan History</h4>
 							{aiHistory.slice(0, 5).map((ai: any) => (
 								<div key={ai._id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
 									<div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>

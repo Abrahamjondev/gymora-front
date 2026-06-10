@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useRouter } from 'next/router';
-import { useQuery } from '@apollo/client';
+import { useQuery, useReactiveVar } from '@apollo/client';
 import { GET_WORKOUTS, GET_TRAINER_MEMBERS } from '../../../apollo/user/query';
+import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import useCountUp from '../../hooks/useCountUp';
 
@@ -9,10 +10,36 @@ const MARQUEE_ITEMS = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Fu
 
 const HeroSection = () => {
 	const router = useRouter();
+	const user = useReactiveVar(userVar);
 	const [workoutTotal, setWorkoutTotal] = useState<number>(0);
 	const [trainerTotal, setTrainerTotal] = useState<number>(0);
 	const workoutCount = useCountUp(workoutTotal);
 	const trainerCount = useCountUp(trainerTotal);
+
+	// Role-aware hero CTAs — a logged-in member never sees "Get Started Free"
+	const heroCta = !user?._id
+		? {
+				badge: workoutTotal > 0 ? `${workoutTotal}+ workouts available` : 'Elite fitness platform',
+				primary: { label: 'Get Started Free', action: () => router.push('/account/join') },
+				secondary: { label: 'Browse Programs', action: () => router.push('/course') },
+		  }
+		: user.memberType === 'TRAINER'
+		? {
+				badge: `Welcome back, ${user.memberNick}`,
+				primary: { label: 'Open Your Studio', action: () => router.push('/mypage') },
+				secondary: { label: 'My Public Profile', action: () => router.push({ pathname: '/trainer/detail', query: { id: user._id } }) },
+		  }
+		: user.memberType === 'ADMIN'
+		? {
+				badge: `Welcome back, ${user.memberNick}`,
+				primary: { label: 'Open Admin Panel', action: () => router.push('/_admin/users') },
+				secondary: { label: 'Browse Platform', action: () => router.push('/workout') },
+		  }
+		: {
+				badge: `Welcome back, ${user.memberNick}`,
+				primary: { label: 'Continue Training', action: () => router.push('/workout') },
+				secondary: { label: 'My Dashboard', action: () => router.push('/mypage') },
+		  };
 
 	useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'cache-and-network',
@@ -40,7 +67,7 @@ const HeroSection = () => {
 					<div className="lp-hero-content">
 						<div className="lp-hero-badge">
 							<span className="lp-dot" />
-							<span>{workoutTotal > 0 ? `${workoutTotal}+ workouts available` : 'Elite fitness platform'}</span>
+							<span>{heroCta.badge}</span>
 						</div>
 
 						<h1 className="lp-hero-title">
@@ -68,11 +95,11 @@ const HeroSection = () => {
 						</p>
 
 						<div className="lp-hero-actions">
-							<button className="lp-btn-primary" onClick={() => router.push('/account/join')}>
-								Get Started Free <span style={{ fontSize: '16px' }}>→</span>
+							<button className="lp-btn-primary" onClick={heroCta.primary.action}>
+								{heroCta.primary.label} <span style={{ fontSize: '16px' }}>→</span>
 							</button>
-							<button className="lp-btn-ghost" onClick={() => router.push('/workout')}>
-								Browse Programs
+							<button className="lp-btn-ghost" onClick={heroCta.secondary.action}>
+								{heroCta.secondary.label}
 							</button>
 						</div>
 

@@ -13,13 +13,14 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
+// Feature lists mirror the landing PricingSection — real platform capabilities only
 const plans = [
 	{
 		key: 'MONTHLY',
 		name: 'Monthly',
 		price: 14.99,
 		period: '/month',
-		features: ['Unlimited workout access', 'Basic nutrition tracking', 'Community access', 'Standard support'],
+		features: ['Full program library access', 'Lesson-by-lesson progression', 'AI nutrition tools', 'Progress analytics'],
 	},
 	{
 		key: 'YEARLY',
@@ -28,7 +29,7 @@ const plans = [
 		period: '/year',
 		sub: '$9.99/mo — Save 33%',
 		featured: true,
-		features: ['Everything in Monthly', 'Advanced analytics', 'Priority trainer access', '1-on-1 monthly review', 'Early program access'],
+		features: ['Everything in Monthly', 'Best value for committed athletes', 'One payment, full year of training', 'Priority support'],
 	},
 ];
 
@@ -257,24 +258,40 @@ const SubscriptionContent = () => {
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 			{/* Header */}
-			<div style={{ textAlign: 'center', marginBottom: '48px' }}>
-				<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.15em', color: 'rgba(255,138,0,0.7)', textTransform: 'uppercase' as const, display: 'block', marginBottom: '8px' }}>Membership</span>
-				<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em' }}>Invest in Performance</h2>
+			<div style={{ textAlign: 'center', marginBottom: '44px' }}>
+				<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '8px' }}>Membership</span>
+				<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: 'clamp(26px, 3vw, 34px)', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
+					Invest in <span className="lp-grad">Performance</span>
+				</h2>
 			</div>
 
 			{/* Active subscription */}
-			{activeSub && (
-				<div style={{ background: 'rgba(102,218,186,0.05)', border: '1px solid rgba(102,218,186,0.15)', borderRadius: '14px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-					<div>
-						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Active Plan</span>
-						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e5e2e3', marginTop: '4px' }}>{activeSub.subscriptionPlan} — ${activeSub.price}</h3>
+			{activeSub && (() => {
+				const daysLeft = activeSub.expiresAt ? Math.max(0, Math.ceil((new Date(activeSub.expiresAt).getTime() - Date.now()) / 86400000)) : null;
+				return (
+					<div style={{ background: 'linear-gradient(135deg, rgba(102,218,186,0.07), rgba(102,218,186,0.02))', border: '1px solid rgba(102,218,186,0.22)', borderRadius: '16px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+						<div>
+							<span className="ct-live" style={{ marginBottom: '8px' }}>
+								<span className="ct-live-dot" />
+								Active Plan
+							</span>
+							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '21px', fontWeight: 800, color: '#ffffff', margin: '8px 0 0' }}>
+								{activeSub.subscriptionPlan === 'MONTHLY' ? 'Monthly' : 'Yearly'} — ${activeSub.price}
+							</h3>
+						</div>
+						<div style={{ textAlign: 'right' }}>
+							{daysLeft !== null && (
+								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '22px', fontWeight: 800, color: '#66daba', display: 'block', lineHeight: 1 }}>
+									{daysLeft} <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(185,202,202,0.55)' }}>days left</span>
+								</span>
+							)}
+							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)', display: 'block', marginTop: '6px' }}>
+								Expires {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : 'N/A'}
+							</span>
+						</div>
 					</div>
-					<div style={{ textAlign: 'right' }}>
-						<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', display: 'block' }}>Expires</span>
-						<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3' }}>{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : 'N/A'}</span>
-					</div>
-				</div>
-			)}
+				);
+			})()}
 
 			{/* Plan cards */}
 			<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
@@ -349,18 +366,42 @@ const SubscriptionContent = () => {
 			{/* Payment history */}
 			{payments.length > 0 && (
 				<div>
-					<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '22px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Payment History</h3>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-						{payments.map((p: any) => (
-							<div key={p._id} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '10px', padding: '16px 20px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-								<div>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3' }}>${p.paymentAmount}</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', marginLeft: '10px' }}>{p.paymentProvider}</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', marginLeft: '8px', color: p.paymentStatus === 'PAID' ? '#66daba' : p.paymentStatus === 'PENDING' ? '#ff8a00' : '#849495' }}>{p.paymentStatus}</span>
+					<div className="wd-section-head" style={{ marginBottom: '14px' }}>
+						<h3 style={{ fontSize: '20px' }}>Payment History</h3>
+						<span className="wd-section-count">{payments.length} payment{payments.length === 1 ? '' : 's'}</span>
+					</div>
+					<div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
+						{payments.map((p: any) => {
+							const statusColor = p.paymentStatus === 'PAID' ? '#66daba' : p.paymentStatus === 'PENDING' ? '#ffb77f' : '#9aabab';
+							return (
+								<div key={p._id} className="nm-row">
+									<div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
+										<span
+											style={{
+												fontFamily: 'JetBrains Mono',
+												fontSize: '9px',
+												fontWeight: 700,
+												letterSpacing: '0.08em',
+												textTransform: 'uppercase',
+												padding: '4px 11px',
+												borderRadius: '7px',
+												background: `${statusColor}14`,
+												border: `1px solid ${statusColor}35`,
+												color: statusColor,
+												flexShrink: 0,
+											}}
+										>
+											{p.paymentStatus}
+										</span>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>${p.paymentAmount}</span>
+										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.5)' }}>{p.paymentProvider}</span>
+									</div>
+									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', flexShrink: 0 }}>
+										{new Date(p.createdAt).toLocaleDateString()}
+									</span>
 								</div>
-								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{new Date(p.createdAt).toLocaleDateString()}</span>
-							</div>
-						))}
+							);
+						})}
 					</div>
 				</div>
 			)}

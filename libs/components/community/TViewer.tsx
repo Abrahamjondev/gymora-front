@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'; //@ts-ignore
-import '@toast-ui/editor/dist/toastui-editor.css';
+import '@toast-ui/editor/dist/toastui-editor.css'; //@ts-ignore
+import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 import { Viewer } from '@toast-ui/react-editor';
 import { Box, Stack, CircularProgress } from '@mui/material';
 
@@ -15,12 +16,19 @@ const TViewer = (props: any) => {
 		}
 	}, [props.markdown]);
 
+	// Seeded content arrives with escaped markdown (\# \- \*) — unescape for display
+	const cleanMarkdown = (props.markdown ?? '').replace(/\\([#*\-_`>~[\]])/g, '$1');
+
 	return (
-		<Stack sx={{ background: 'white', mt: '30px', borderRadius: '10px' }}>
-			<Box component={'div'} sx={{ m: '40px' }}>
+		<Stack
+			className="toastui-editor-dark"
+			sx={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.06)', mt: '8px', borderRadius: '16px' }}
+		>
+			<Box component={'div'} sx={{ m: '28px' }}>
 				{editorLoaded ? (
 					<Viewer
-						initialValue={props.markdown}
+						initialValue={cleanMarkdown}
+						theme="dark"
 						customHTMLRenderer={{
 							htmlBlock: {
 								iframe(node: any) {

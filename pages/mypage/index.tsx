@@ -19,6 +19,7 @@ import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import {
 	GET_MEMBER_WORKOUTS, GET_DASHBOARD_STATS, GET_NOTIFICATIONS,
 	GET_MEMBER_PURCHASED_COURSES, GET_TRAINER_COURSES, GET_RECOMMENDATIONS,
+	GET_TRAINER_BY_MEMBER_ID,
 } from '../../apollo/user/query';
 import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ } from '../../apollo/user/mutation';
 import { Workout } from '../../libs/types/workout/workout';
@@ -30,7 +31,18 @@ export const getStaticProps = async ({ locale }: any) => ({
 	props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
-const menuSections: { title: string | null; items: { key: string; label: string; icon: string; trainerOnly?: boolean; trainerOrAdmin?: boolean; userOnly?: boolean }[] }[] = [
+type MenuItem = {
+	key: string;
+	label: string;
+	icon: string;
+	trainerOnly?: boolean;
+	trainerOrAdmin?: boolean;
+	userOnly?: boolean;
+	/** Consumer features — hidden for trainers, who manage content here instead. */
+	hideForTrainer?: boolean;
+};
+
+const menuSections: { title: string | null; items: MenuItem[] }[] = [
 	{
 		title: null,
 		items: [
@@ -39,16 +51,19 @@ const menuSections: { title: string | null; items: { key: string; label: string;
 		],
 	},
 	{
-		title: 'Content',
+		title: 'Studio',
 		items: [
 			{ key: 'myWorkouts', label: 'My Workouts', icon: '◈', trainerOnly: true },
 			{ key: 'createWorkout', label: 'Create Workout', icon: '＋', trainerOnly: true },
-			{ key: 'myCourses', label: 'My Courses', icon: '▦' },
-			{ key: 'trainerCourses', label: 'Trainer Courses', icon: '◧', trainerOnly: true },
-			{ key: 'createCourse', label: 'Create Course', icon: '＋', trainerOnly: true },
+			{ key: 'trainerCourses', label: 'My Programs', icon: '◧', trainerOnly: true },
+			{ key: 'createCourse', label: 'Create Program', icon: '＋', trainerOnly: true },
 			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOrAdmin: true },
 			{ key: 'writeArticle', label: 'Write Article', icon: '✎', trainerOrAdmin: true },
 		],
+	},
+	{
+		title: 'Training',
+		items: [{ key: 'myCourses', label: 'My Programs', icon: '▦', hideForTrainer: true }],
 	},
 	{
 		title: 'Activity',
@@ -60,24 +75,57 @@ const menuSections: { title: string | null; items: { key: string; label: string;
 	{
 		title: 'Health',
 		items: [
-			{ key: 'nutrition', label: 'Nutrition', icon: '◑' },
-			{ key: 'progress', label: 'Progress', icon: '△' },
+			{ key: 'nutrition', label: 'Nutrition', icon: '◑', hideForTrainer: true },
+			{ key: 'progress', label: 'Progress', icon: '△', hideForTrainer: true },
 		],
 	},
 	{
 		title: null,
 		items: [
-			{ key: 'subscription', label: 'Subscription', icon: '◇' },
+			{ key: 'subscription', label: 'Subscription', icon: '◇', hideForTrainer: true },
 			{ key: 'becomeTrainer', label: 'Become Trainer', icon: '→', userOnly: true },
 		],
 	},
 ];
 
+const notifTypeMeta: Record<string, { icon: string; color: string }> = {
+	SYSTEM: { icon: '◉', color: '#9aabab' },
+	WORKOUT: { icon: '◈', color: '#00dce5' },
+	NUTRITION: { icon: '◑', color: '#ffb77f' },
+	SUBSCRIPTION: { icon: '◇', color: '#ddb7ff' },
+	CHAT: { icon: '◬', color: '#66daba' },
+};
+
+const notifTimeAgo = (iso: string) => {
+	const diff = Date.now() - new Date(iso).getTime();
+	const m = Math.floor(diff / 60000);
+	if (m < 1) return 'now';
+	if (m < 60) return `${m}m ago`;
+	const h = Math.floor(m / 60);
+	if (h < 24) return `${h}h ago`;
+	const d = Math.floor(h / 24);
+	if (d < 7) return `${d}d ago`;
+	return new Date(iso).toLocaleDateString();
+};
+
+const isItemVisible = (item: MenuItem, memberType?: string) => {
+	if (item.trainerOnly) return memberType === 'TRAINER';
+	if (item.trainerOrAdmin) return memberType === 'TRAINER' || memberType === 'ADMIN';
+	if (item.userOnly) return memberType === 'USER';
+	if (item.hideForTrainer) return memberType !== 'TRAINER';
+	return true;
+};
+
 const MyPage: NextPage = () => {
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
-	const category: string = (router.query?.category as string) ?? 'dashboard';
+	const requestedCategory: string = (router.query?.category as string) ?? 'dashboard';
+
+	// Guard: only categories visible to this role can render (e.g. a trainer
+	// hitting ?category=subscription falls back to the dashboard).
+	const allowedKeys = menuSections.flatMap((s) => s.items.filter((i) => isItemVisible(i, user?.memberType)).map((i) => i.key));
+	const cat = allowedKeys.includes(requestedCategory) ? requestedCategory : 'dashboard';
 
 	const [myWorkouts, setMyWorkouts] = useState<Workout[]>([]);
 	const [dashboardStats, setDashboardStats] = useState<any>(null);
@@ -85,6 +133,8 @@ const MyPage: NextPage = () => {
 	const [purchasedCourses, setPurchasedCourses] = useState<Course[]>([]);
 	const [trainerCourses, setTrainerCourses] = useState<Course[]>([]);
 	const [recommendations, setRecommendations] = useState<any[]>([]);
+	const [trainerProfile, setTrainerProfile] = useState<any>(null);
+	const [notifFilter, setNotifFilter] = useState<'all' | 'unread'>('all');
 	const [newWorkout, setNewWorkout] = useState({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
 	const [newCourse, setNewCourse] = useState({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
 	const [trainerForm, setTrainerForm] = useState({ trainerBio: '', trainerSpecializations: '', trainerExperience: 1 });
@@ -95,6 +145,12 @@ const MyPage: NextPage = () => {
 	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
 	useQuery(GET_MEMBER_PURCHASED_COURSES, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setPurchasedCourses(d?.getMemberPurchasedCourses ?? []) });
 	useQuery(GET_TRAINER_COURSES, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setTrainerCourses(d?.getTrainerCourses ?? []) });
+	useQuery(GET_TRAINER_BY_MEMBER_ID, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: user?._id },
+		skip: !user?._id || user?.memberType !== 'TRAINER',
+		onCompleted: (d: T) => setTrainerProfile(d?.getTrainerByMemberId ?? null),
+	});
 	useQuery(GET_RECOMMENDATIONS, { fetchPolicy: 'cache-and-network', skip: !user?._id, variables: { input: { memberId: user?._id, goals: ['GENERAL'] } }, onCompleted: (d: T) => setRecommendations(d?.getRecommendations ?? []) });
 
 	const [markRead] = useMutation(MARK_NOTIFICATION_READ);
@@ -115,6 +171,14 @@ const MyPage: NextPage = () => {
 
 	const markNotifRead = async (id: string) => {
 		await markRead({ variables: { input: id } });
+		const { data: rd } = await notifRefetch();
+		if (rd?.getNotifications) setNotifications(rd.getNotifications);
+	};
+
+	const markAllNotifsRead = async () => {
+		const unread = notifications.filter((n: any) => !n.isRead);
+		if (!unread.length) return;
+		await Promise.all(unread.map((n: any) => markRead({ variables: { input: n._id } })));
 		const { data: rd } = await notifRefetch();
 		if (rd?.getNotifications) setNotifications(rd.getNotifications);
 	};
@@ -156,125 +220,104 @@ const MyPage: NextPage = () => {
 
 	return (
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '240px 1fr', gap: '24px' }}>
+			<div style={{ maxWidth: '1280px', margin: '0 auto', padding: '0 32px', display: 'grid', gridTemplateColumns: '292px 1fr', gap: '28px' }}>
 				{/* Sidebar */}
-				<div style={{ position: 'sticky', top: '24px', alignSelf: 'start' }}>
-					<div style={{
-						background: 'linear-gradient(180deg, rgba(255,255,255,0.035) 0%, rgba(255,255,255,0.015) 100%)',
-						border: '1px solid rgba(255,255,255,0.06)',
-						borderRadius: '16px', padding: '0', overflow: 'hidden',
-						backdropFilter: 'blur(20px)',
-					}}>
-						{/* Profile card */}
-						<div style={{
-							padding: '28px 20px 20px',
-							background: 'linear-gradient(135deg, rgba(0,220,229,0.06) 0%, rgba(0,220,229,0.01) 100%)',
-							borderBottom: '1px solid rgba(255,255,255,0.05)',
-							textAlign: 'center',
-						}}>
-							<div style={{
-								width: '64px', height: '64px', borderRadius: '50%', overflow: 'hidden',
-								margin: '0 auto 14px',
-								border: '2px solid rgba(0,220,229,0.25)',
-								boxShadow: '0 0 20px rgba(0,220,229,0.1)',
-							}}>
-								<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+				<div className="mp-side">
+					{/* Identity card */}
+					<div className="mp-card">
+						<div className="mp-cover" />
+						<div className="mp-profile-body">
+							<div className="mp-ava">
+								<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" />
 							</div>
-							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#e9feff', marginBottom: '6px', letterSpacing: '-0.01em' }}>
-								{user?.memberFullName || user?.memberNick || 'User'}
-							</h3>
-							<span style={{
-								fontFamily: 'JetBrains Mono', fontSize: '9px',
-								color: '#003739', textTransform: 'uppercase', letterSpacing: '0.08em',
-								background: 'linear-gradient(135deg, #00dce5, #66daba)',
-								padding: '3px 10px', borderRadius: '4px', fontWeight: 700,
-							}}>
-								{user?.memberType || 'USER'}
+							<h3 className="mp-name">{user?.memberFullName || user?.memberNick || 'User'}</h3>
+							<span className={`mp-chip${trainerProfile?.trainerVerificationStatus === 'VERIFIED' ? ' is-verified' : ''}`}>
+								{trainerProfile?.trainerVerificationStatus === 'VERIFIED' ? 'Verified Trainer' : user?.memberType || 'USER'}
 							</span>
-						</div>
 
-						{/* Nav sections */}
-						<nav style={{ padding: '8px 8px 12px' }}>
+							{user?.memberType === 'TRAINER' && trainerProfile && (
+								<div className="mp-id-row">
+									<span className="mp-rating">
+										{trainerProfile.trainerRating > 0
+											? `★ ${trainerProfile.trainerRating.toFixed(1)}${trainerProfile.trainerRatingCount ? ` (${trainerProfile.trainerRatingCount})` : ''}`
+											: 'New trainer'}
+									</span>
+									<span>{trainerProfile.trainerExperience ?? 0}y exp</span>
+								</div>
+							)}
+
+							{/* Mini stats */}
+							<div className="mp-mini">
+								{(user?.memberType === 'TRAINER'
+									? [
+											{ v: user?.memberWorkouts ?? 0, l: 'Workouts' },
+											{ v: trainerCourses.length, l: 'Programs' },
+											{ v: user?.memberArticles ?? 0, l: 'Articles' },
+									  ]
+									: [
+											{ v: user?.memberWorkouts ?? 0, l: 'Workouts' },
+											{ v: user?.memberCourses ?? 0, l: 'Programs' },
+											{ v: user?.memberPoints ?? 0, l: 'Points' },
+									  ]
+								).map((s) => (
+									<div key={s.l}>
+										<span className="mp-mini-v">{s.v}</span>
+										<span className="mp-mini-l">{s.l}</span>
+									</div>
+								))}
+							</div>
+
+							{user?.memberType === 'TRAINER' && trainerProfile && (
+								<>
+									{trainerProfile.trainerSpecializations?.length > 0 && (
+										<div className="mp-specs">
+											{trainerProfile.trainerSpecializations.slice(0, 3).map((s: string, i: number) => (
+												<span key={i} className="lp-chip lp-chip--cyan" style={{ fontSize: '8.5px' }}>
+													{s}
+												</span>
+											))}
+										</div>
+									)}
+									{trainerProfile.trainerSocialLinks?.length > 0 && (
+										<div className="mp-socials">
+											{trainerProfile.trainerSocialLinks.slice(0, 2).map((link: string, i: number) => (
+												<a key={i} href={link.startsWith('http') ? link : `https://${link}`} target="_blank" rel="noopener noreferrer">
+													{link.replace(/^https?:\/\//, '')} ↗
+												</a>
+											))}
+										</div>
+									)}
+									<button className="mp-public" onClick={() => router.push({ pathname: '/trainer/detail', query: { id: user._id } })}>
+										View Public Profile →
+									</button>
+								</>
+							)}
+						</div>
+					</div>
+
+					{/* Navigation card */}
+					<div className="mp-card">
+						<nav className="mp-nav">
 							{menuSections.map((section, sIdx) => {
-								const visibleItems = section.items.filter((item) => {
-									if ((item as any).trainerOnly) return user?.memberType === 'TRAINER';
-									if ((item as any).trainerOrAdmin) return user?.memberType === 'TRAINER' || user?.memberType === 'ADMIN';
-									if ((item as any).userOnly) return user?.memberType === 'USER';
-									return true;
-								});
+								const visibleItems = section.items.filter((item) => isItemVisible(item, user?.memberType));
 								if (visibleItems.length === 0) return null;
 
 								return (
 									<div key={sIdx}>
-										{section.title && (
-											<div style={{
-												fontFamily: 'JetBrains Mono', fontSize: '9px', fontWeight: 600,
-												color: '#c8d6d6', textTransform: 'uppercase',
-												letterSpacing: '0.1em', padding: '14px 12px 6px',
-											}}>
-												{section.title}
-											</div>
-										)}
-										{!section.title && sIdx > 0 && (
-											<div style={{ height: '1px', background: 'rgba(255,255,255,0.04)', margin: '8px 12px' }} />
-										)}
+										{section.title && <div className="mp-nav-label">{section.title}</div>}
+										{!section.title && sIdx > 0 && <div className="mp-sep" />}
 										{visibleItems.map((item) => {
-											const isActive = category === item.key;
+											const isActive = cat === item.key;
 											const isBecomeTrainer = item.key === 'becomeTrainer';
 											return (
-												<button key={item.key} onClick={() => menuHandler(item.key)} style={{
-													width: '100%', padding: '9px 12px', borderRadius: '10px',
-													border: 'none', textAlign: 'left',
-													fontFamily: 'Hanken Grotesk', fontSize: '13px',
-													fontWeight: isActive ? 600 : 500,
-													cursor: 'pointer',
-													transition: 'all 0.25s cubic-bezier(0.22,1,0.36,1)',
-													background: isActive
-														? 'linear-gradient(135deg, rgba(0,220,229,0.12), rgba(0,220,229,0.04))'
-														: isBecomeTrainer
-															? 'rgba(102,218,186,0.08)'
-															: 'transparent',
-													color: isActive ? '#e9feff'
-														: isBecomeTrainer ? '#7ae8c8'
-														: '#c8d6d6',
-													display: 'flex', alignItems: 'center', gap: '10px',
-													position: 'relative',
-													boxShadow: isActive ? '0 2px 8px rgba(0,220,229,0.08)' : 'none',
-												}}>
-													<span style={{
-														width: '24px', height: '24px',
-														display: 'flex', alignItems: 'center', justifyContent: 'center',
-														fontSize: '13px',
-														borderRadius: '7px',
-														background: isActive ? 'rgba(0,220,229,0.15)' : 'rgba(255,255,255,0.06)',
-														color: isActive ? '#00dce5'
-															: isBecomeTrainer ? '#7ae8c8'
-															: '#9aabab',
-														transition: 'all 0.25s ease',
-														flexShrink: 0,
-													}}>
-														{item.icon}
-													</span>
-													<span style={{ flex: 1 }}>{item.label}</span>
-													{item.key === 'notifications' && unreadCount > 0 && (
-														<span style={{
-															background: 'linear-gradient(135deg, #00dce5, #66daba)',
-															color: '#003739', fontSize: '9px', fontWeight: 700,
-															padding: '2px 7px', borderRadius: '9999px',
-															fontFamily: 'JetBrains Mono',
-															boxShadow: '0 0 8px rgba(0,220,229,0.3)',
-														}}>
-															{unreadCount}
-														</span>
-													)}
-													{isActive && (
-														<div style={{
-															position: 'absolute', left: '0', top: '50%',
-															transform: 'translateY(-50%)',
-															width: '3px', height: '16px',
-															background: '#00dce5', borderRadius: '0 3px 3px 0',
-														}} />
-													)}
+												<button
+													key={item.key}
+													className={`mp-item${isActive ? ' is-active' : ''}${isBecomeTrainer ? ' is-green' : ''}`}
+													onClick={() => menuHandler(item.key)}
+												>
+													<span className="mp-item-ic">{item.icon}</span>
+													<span className="mp-item-label">{item.label}</span>
+													{item.key === 'notifications' && unreadCount > 0 && <span className="mp-unread">{unreadCount}</span>}
 												</button>
 											);
 										})}
@@ -288,18 +331,26 @@ const MyPage: NextPage = () => {
 				{/* Content */}
 				<div>
 					{/* Dashboard */}
-					{category === 'dashboard' && (
+					{cat === 'dashboard' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#ffffff', marginBottom: '24px' }}>Welcome back, {user?.memberNick}</h2>
 
-							{/* Stats */}
+							{/* Stats — trainers see studio metrics, users see training metrics */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-								{[
-									{ label: 'Total Calories', value: dashboardStats?.totalCalories ? Math.round(dashboardStats.totalCalories) : 0, color: '#ff8a00' },
-									{ label: 'Workouts', value: dashboardStats?.workoutCount ?? user?.memberWorkouts ?? 0, color: '#00dce5' },
-									{ label: 'Progress', value: dashboardStats?.progressEntries ?? 0, color: '#66daba' },
-									{ label: 'Courses', value: user?.memberCourses ?? 0, color: '#ddb7ff' },
-								].map((s) => (
+								{(user?.memberType === 'TRAINER'
+									? [
+											{ label: 'Workouts Published', value: user?.memberWorkouts ?? 0, color: '#00dce5' },
+											{ label: 'Programs', value: trainerCourses.length, color: '#ff8a00' },
+											{ label: 'Likes', value: user?.memberLikes ?? 0, color: '#66daba' },
+											{ label: 'Articles', value: user?.memberArticles ?? 0, color: '#ddb7ff' },
+									  ]
+									: [
+											{ label: 'Total Calories', value: dashboardStats?.totalCalories ? Math.round(dashboardStats.totalCalories) : 0, color: '#ff8a00' },
+											{ label: 'Workouts', value: dashboardStats?.workoutCount ?? user?.memberWorkouts ?? 0, color: '#00dce5' },
+											{ label: 'Progress', value: dashboardStats?.progressEntries ?? 0, color: '#66daba' },
+											{ label: 'Programs', value: user?.memberCourses ?? 0, color: '#ddb7ff' },
+									  ]
+								).map((s) => (
 									<div key={s.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px' }}>
 										<span style={labelStyle}>{s.label}</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: s.color, display: 'block', marginTop: '4px' }}>{s.value}</span>
@@ -307,8 +358,8 @@ const MyPage: NextPage = () => {
 								))}
 							</div>
 
-							{/* Recommendations */}
-							{recommendations.length > 0 && (
+							{/* Recommendations — consumer feature */}
+							{user?.memberType !== 'TRAINER' && recommendations.length > 0 && (
 								<div style={{ background: 'rgba(0,220,229,0.03)', border: '1px solid rgba(0,220,229,0.1)', borderRadius: '14px', padding: '24px', marginBottom: '20px' }}>
 									<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Recommendations for You</h3>
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
@@ -327,21 +378,28 @@ const MyPage: NextPage = () => {
 								</div>
 							)}
 
-							{/* Subscription summary */}
-							{dashboardStats?.subscriptionSummary && (
+							{/* Subscription summary — consumer feature */}
+							{user?.memberType !== 'TRAINER' && dashboardStats?.subscriptionSummary && (
 								<div style={{ background: 'rgba(255,138,0,0.04)', border: '1px solid rgba(255,138,0,0.12)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(255,183,127,0.9)' }}>{dashboardStats.subscriptionSummary}</span>
 								</div>
 							)}
 
-							{/* Quick actions */}
+							{/* Quick actions — role-aware */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-								{[
-									{ label: 'Nutrition', desc: 'Track meals & macros', link: '/nutrition' },
-									{ label: 'Progress', desc: 'Log body metrics', link: '/progress' },
-									{ label: 'Community', desc: 'Read & write articles', link: '/community' },
-								].map((action) => (
-									<button key={action.label} onClick={() => router.push(action.link)} style={{ ...cardStyle, padding: '20px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}
+								{(user?.memberType === 'TRAINER'
+									? [
+											{ label: 'Create Workout', desc: 'Publish a free workout', action: () => menuHandler('createWorkout') },
+											{ label: 'Create Program', desc: 'Build a paid program', action: () => menuHandler('createCourse') },
+											{ label: 'Write Article', desc: 'Share your expertise', action: () => menuHandler('writeArticle') },
+									  ]
+									: [
+											{ label: 'Nutrition', desc: 'Track meals & macros', action: () => menuHandler('nutrition') },
+											{ label: 'Progress', desc: 'Log body metrics', action: () => menuHandler('progress') },
+											{ label: 'Community', desc: 'Read & write articles', action: () => router.push('/community') },
+									  ]
+								).map((action) => (
+									<button key={action.label} onClick={action.action} style={{ ...cardStyle, padding: '20px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}
 										onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.15)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
 										onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', display: 'block', marginBottom: '4px' }}>{action.label}</span>
@@ -352,9 +410,9 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{category === 'myProfile' && <MyProfile />}
+					{cat === 'myProfile' && <MyProfile />}
 
-					{category === 'myWorkouts' && (
+					{cat === 'myWorkouts' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
 								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Workouts ({myWorkouts.length})</h2>
@@ -378,26 +436,68 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{category === 'createWorkout' && (
+					{cat === 'createWorkout' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Create Workout</h2>
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
-								<div><span style={labelStyle}>Title *</span><input value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder="Workout title" style={inputStyle} /></div>
-								<div><span style={labelStyle}>Description</span><textarea value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder="Describe this workout..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
-								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={labelStyle}>Target Muscle *</span><input value={newWorkout.targetMuscle} onChange={(e) => setNewWorkout({ ...newWorkout, targetMuscle: e.target.value })} placeholder="e.g. Chest, Legs" style={inputStyle} /></div>
-									<div><span style={labelStyle}>Difficulty</span><select value={newWorkout.workoutDifficulty} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
+							<div className="nt-head">
+								<div>
+									<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>Studio</span>
+									<h2>Create Workout</h2>
 								</div>
-								<div><span style={labelStyle}>Est. Calories Burned</span><input type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} style={inputStyle} /></div>
-								<button onClick={createWorkoutHandler} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Workout</button>
+							</div>
+							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
+								<div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+									<div>
+										<span style={labelStyle}>Title *</span>
+										<input className="wd-input" value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder="Workout title" />
+									</div>
+									<div>
+										<span style={labelStyle}>Description</span>
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder="Describe this workout..." />
+									</div>
+									<div>
+										<span style={labelStyle}>Target Muscle *</span>
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+											{['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'].map((m) => {
+												const isActive = newWorkout.targetMuscle === m;
+												return (
+													<button
+														key={m}
+														className="cl-cat-btn"
+														style={isActive ? { borderColor: 'rgba(0,220,229,0.5)', background: 'rgba(0,220,229,0.14)', color: '#00eaf4' } : undefined}
+														onClick={() => setNewWorkout({ ...newWorkout, targetMuscle: m })}
+													>
+														{m}
+													</button>
+												);
+											})}
+										</div>
+									</div>
+									<div>
+										<span style={labelStyle}>Difficulty</span>
+										<div className="wl-seg">
+											{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
+												<button key={d} className={newWorkout.workoutDifficulty === d ? 'is-active' : ''} onClick={() => setNewWorkout({ ...newWorkout, workoutDifficulty: d })}>
+													{d.charAt(0) + d.slice(1).toLowerCase()}
+												</button>
+											))}
+										</div>
+									</div>
+									<div style={{ maxWidth: '240px' }}>
+										<span style={labelStyle}>Est. Calories Burned</span>
+										<input className="wd-input" type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} />
+									</div>
+									<button className="wd-btn" style={{ width: 'fit-content' }} onClick={createWorkoutHandler}>
+										Publish Workout →
+									</button>
+								</div>
 							</div>
 						</div>
 					)}
 
-					{category === 'myCourses' && (
+					{cat === 'myCourses' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>My Courses ({purchasedCourses.length})</h2>
-							{purchasedCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses yet. <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>Browse courses →</span></p> : (
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>My Programs ({purchasedCourses.length})</h2>
+							{purchasedCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No programs yet. <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>Browse programs →</span></p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{purchasedCourses.map((c) => (
 										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={cardStyle}
@@ -415,10 +515,10 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{category === 'trainerCourses' && (
+					{cat === 'trainerCourses' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>Trainer Courses ({trainerCourses.length})</h2>
+								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Programs ({trainerCourses.length})</h2>
 								<button onClick={() => menuHandler('createCourse')} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
 							</div>
 							{trainerCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses created yet.</p> : (
@@ -439,57 +539,163 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{category === 'createCourse' && (
+					{cat === 'createCourse' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>Create Course</h2>
-							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '600px' }}>
-								<div><span style={labelStyle}>Title *</span><input value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Course title" style={inputStyle} /></div>
-								<div><span style={labelStyle}>Description</span><textarea value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this course..." style={{ ...inputStyle, minHeight: '80px', resize: 'vertical' }} /></div>
-								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={labelStyle}>Category</span><select value={newCourse.courseCategory} onChange={(e) => setNewCourse({ ...newCourse, courseCategory: e.target.value })} style={inputStyle}><option value="STRENGTH">Strength</option><option value="CARDIO">Cardio</option><option value="YOGA">Yoga</option><option value="MOBILITY">Mobility</option><option value="NUTRITION">Nutrition</option></select></div>
-									<div><span style={labelStyle}>Difficulty</span><select value={newCourse.courseDifficulty} onChange={(e) => setNewCourse({ ...newCourse, courseDifficulty: e.target.value })} style={inputStyle}><option value="BEGINNER">Beginner</option><option value="INTERMEDIATE">Intermediate</option><option value="ADVANCED">Advanced</option></select></div>
+							<div className="nt-head">
+								<div>
+									<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>Studio</span>
+									<h2>Create Program</h2>
 								</div>
-								<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
-									<div><span style={labelStyle}>Price ($)</span><input type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} style={inputStyle} /></div>
-									<div><span style={labelStyle}>Duration (weeks)</span><input type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} style={inputStyle} /></div>
-								</div>
-								<button onClick={createCourseHandler} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Create Course</button>
 							</div>
-						</div>
-					)}
-
-					{category === 'myArticles' && <MyArticles />}
-					{category === 'writeArticle' && <WriteArticle />}
-
-					{category === 'chat' && <ChatContent />}
-					{category === 'nutrition' && <NutritionContent />}
-					{category === 'progress' && <ProgressContent />}
-					{category === 'subscription' && <SubscriptionContent />}
-
-					{category === 'notifications' && (
-						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>Notifications</h2>
-								{unreadCount > 0 && <span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: 'rgba(0,220,229,0.7)' }}>{unreadCount} unread</span>}
-							</div>
-							{notifications.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No notifications.</p> : (
-								<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-									{notifications.map((n: any) => (
-										<div key={n._id} onClick={() => !n.isRead && markNotifRead(n._id)} style={{ background: n.isRead ? 'rgba(255,255,255,0.015)' : 'rgba(0,220,229,0.03)', border: `1px solid ${n.isRead ? 'rgba(255,255,255,0.04)' : 'rgba(0,220,229,0.12)'}`, borderRadius: '12px', padding: '18px', cursor: n.isRead ? 'default' : 'pointer', transition: 'all 0.2s ease' }}>
-											<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '6px' }}>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9px', color: n.isRead ? 'rgba(185,202,202,0.3)' : '#00dce5', textTransform: 'uppercase', letterSpacing: '0.06em' }}>{n.notificationType}</span>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{new Date(n.createdAt).toLocaleDateString()}</span>
-											</div>
-											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: n.isRead ? 'rgba(229,226,227,0.6)' : '#e5e2e3', marginBottom: '4px' }}>{n.notificationTitle}</h4>
-											<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: 'rgba(185,202,202,0.5)', lineHeight: '1.4' }}>{n.notificationMessage}</p>
+							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
+								<div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
+									<div>
+										<span style={labelStyle}>Title *</span>
+										<input className="wd-input" value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Program title" />
+									</div>
+									<div>
+										<span style={labelStyle}>Description</span>
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this program..." />
+									</div>
+									<div>
+										<span style={labelStyle}>Category</span>
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+											{[
+												{ v: 'STRENGTH', c: '#ff8a00' },
+												{ v: 'CARDIO', c: '#00dce5' },
+												{ v: 'YOGA', c: '#ddb7ff' },
+												{ v: 'MOBILITY', c: '#66daba' },
+												{ v: 'NUTRITION', c: '#ffb77f' },
+											].map((catOpt) => {
+												const isActive = newCourse.courseCategory === catOpt.v;
+												return (
+													<button
+														key={catOpt.v}
+														className="cl-cat-btn"
+														style={isActive ? { borderColor: `${catOpt.c}80`, background: `${catOpt.c}1c`, color: catOpt.c } : undefined}
+														onClick={() => setNewCourse({ ...newCourse, courseCategory: catOpt.v })}
+													>
+														<span className="cl-cat-dot" style={{ background: catOpt.c }} />
+														{catOpt.v.charAt(0) + catOpt.v.slice(1).toLowerCase()}
+													</button>
+												);
+											})}
 										</div>
-									))}
+									</div>
+									<div>
+										<span style={labelStyle}>Difficulty</span>
+										<div className="wl-seg">
+											{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
+												<button key={d} className={newCourse.courseDifficulty === d ? 'is-active' : ''} onClick={() => setNewCourse({ ...newCourse, courseDifficulty: d })}>
+													{d.charAt(0) + d.slice(1).toLowerCase()}
+												</button>
+											))}
+										</div>
+									</div>
+									<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+										<div>
+											<span style={labelStyle}>Price ($)</span>
+											<input className="wd-input" type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} />
+										</div>
+										<div>
+											<span style={labelStyle}>Duration (weeks)</span>
+											<input className="wd-input" type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} />
+										</div>
+									</div>
+									<button
+										className="wd-btn"
+										style={{ width: 'fit-content', background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800' }}
+										onClick={createCourseHandler}
+									>
+										Publish Program →
+									</button>
 								</div>
-							)}
+							</div>
 						</div>
 					)}
 
-					{category === 'becomeTrainer' && (
+					{cat === 'myArticles' && <MyArticles />}
+					{cat === 'writeArticle' && <WriteArticle />}
+
+					{cat === 'chat' && <ChatContent />}
+					{cat === 'nutrition' && <NutritionContent />}
+					{cat === 'progress' && <ProgressContent />}
+					{cat === 'subscription' && <SubscriptionContent />}
+
+					{cat === 'notifications' && (
+						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+							<div className="nt-head">
+								<h2>Notifications</h2>
+								<div className="nt-tools">
+									{unreadCount > 0 && (
+										<span className="nt-unread-chip">
+											<span className="nt-unread-dot" />
+											{unreadCount} unread
+										</span>
+									)}
+									<div className="wl-seg">
+										<button className={notifFilter === 'all' ? 'is-active' : ''} onClick={() => setNotifFilter('all')}>
+											All
+										</button>
+										<button className={notifFilter === 'unread' ? 'is-active' : ''} onClick={() => setNotifFilter('unread')}>
+											Unread
+										</button>
+									</div>
+									{unreadCount > 0 && (
+										<button className="nt-markall" onClick={markAllNotifsRead}>
+											Mark all read
+										</button>
+									)}
+								</div>
+							</div>
+
+							{(() => {
+								const visible = notifFilter === 'unread' ? notifications.filter((n: any) => !n.isRead) : notifications;
+								if (visible.length === 0) {
+									return (
+										<div className="nt-empty">
+											<div className="nt-empty-ic">◉</div>
+											<h4>{notifFilter === 'unread' ? 'All caught up' : 'No notifications yet'}</h4>
+											<p>{notifFilter === 'unread' ? 'You have read everything.' : 'Activity around your account will appear here.'}</p>
+										</div>
+									);
+								}
+								return (
+									<div className="nt-list">
+										{visible.map((n: any) => {
+											const meta = notifTypeMeta[n.notificationType] || notifTypeMeta.SYSTEM;
+											return (
+												<div
+													key={n._id}
+													className={`nt-item ${n.isRead ? 'is-read' : 'is-unread'}`}
+													style={
+														{
+															'--ntc': meta.color,
+															'--ntc-bg': `${meta.color}14`,
+															'--ntc-bd': `${meta.color}30`,
+														} as React.CSSProperties
+													}
+													onClick={() => !n.isRead && markNotifRead(n._id)}
+												>
+													<span className="nt-ic">{meta.icon}</span>
+													<div className="nt-body">
+														<h4>{n.notificationTitle}</h4>
+														<p>{n.notificationMessage}</p>
+													</div>
+													<div className="nt-meta">
+														<span className="nt-type">{n.notificationType}</span>
+														<span className="nt-time">{notifTimeAgo(n.createdAt)}</span>
+													</div>
+												</div>
+											);
+										})}
+									</div>
+								);
+							})()}
+						</div>
+					)}
+
+					{cat === 'becomeTrainer' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>Become a Trainer</h2>
 							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.5)', marginBottom: '24px' }}>Create your trainer profile to start sharing workouts and courses.</p>
@@ -502,8 +708,8 @@ const MyPage: NextPage = () => {
 						</div>
 					)}
 
-					{category === 'followers' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Followers</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
-					{category === 'followings' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Following</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
+					{cat === 'followers' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Followers</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
+					{cat === 'followings' && <div style={{ animation: 'fadeInUp 0.5s ease both' }}><h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Following</h2><p style={{ color: 'rgba(185,202,202,0.5)' }}>Coming soon.</p></div>}
 				</div>
 			</div>
 		</div>

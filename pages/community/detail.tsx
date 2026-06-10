@@ -135,9 +135,18 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		setSearchFilter({ ...searchFilter, page: value });
 	};
 
-	const goMemberPage = (id: any) => {
+	const goMemberPage = (id: any, memberType?: string) => {
 		if (id === user?._id) router.push('/mypage');
+		else if (memberType === 'TRAINER') router.push({ pathname: '/trainer/detail', query: { id } });
 		else router.push(`/member?memberId=${id}`);
+	};
+
+	const categoryAccent: Record<string, string> = {
+		FITNESS_TIPS: '#00dce5',
+		NUTRITION: '#ffb77f',
+		WORKOUT_GUIDE: '#ddb7ff',
+		CHALLENGE: '#ff8a8a',
+		SUCCESS_STORY: '#66daba',
 	};
 
 	/** LOADING **/
@@ -149,120 +158,164 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		);
 	}
 
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA COMMUNITY DETAIL MOBILE</div>;
-	}
-
 	if (!boardArticle) {
 		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
+			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>Article not found.</p>
 			</Stack>
 		);
 	}
 
+	const accent = categoryAccent[boardArticle.articleCategory] || '#00dce5';
+	const wordCount = boardArticle.articleContent?.replace(/<[^>]*>/g, ' ').split(/\s+/).filter(Boolean).length ?? 0;
+	const readMinutes = Math.max(1, Math.round(wordCount / 200));
+
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 24px' }}>
-				{/* Category + Author */}
-				<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '16px' }}>
-					<span style={{ padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,245,255,0.1)', border: '1px solid rgba(0,245,255,0.2)', fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00f5ff', textTransform: 'uppercase' }}>
-						{boardArticle.articleCategory?.replace('_', ' ')}
+		<div className="wd-page">
+			<div style={{ maxWidth: '800px', margin: '0 auto', padding: '36px 24px 96px' }}>
+				<button className="wd-back" style={{ marginBottom: '28px' }} onClick={() => router.push('/community')}>
+					← Community
+				</button>
+
+				{/* Meta row */}
+				<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px', flexWrap: 'wrap' }}>
+					<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}>
+						{boardArticle.articleCategory?.replace(/_/g, ' ')}
 					</span>
-					{boardArticle.memberData && (
-						<span
-							onClick={() => goMemberPage(boardArticle.memberData?._id)}
-							style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}
-						>
-							{boardArticle.memberData.memberNick}
-						</span>
-					)}
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>
-						{new Date(boardArticle.createdAt).toLocaleDateString()}
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>
+						{new Date(boardArticle.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' })}
 					</span>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>{readMinutes} min read</span>
 				</div>
 
 				{/* Title */}
-				<h1 style={{ fontFamily: 'Hanken Grotesk', fontSize: '36px', lineHeight: '44px', letterSpacing: '-0.02em', fontWeight: 800, color: '#e5e2e3', marginBottom: '24px' }}>
+				<h1
+					style={{
+						fontFamily: 'Hanken Grotesk',
+						fontSize: 'clamp(30px, 4.5vw, 44px)',
+						lineHeight: 1.12,
+						letterSpacing: '-0.025em',
+						fontWeight: 800,
+						color: '#ffffff',
+						marginBottom: '22px',
+					}}
+				>
 					{boardArticle.articleTitle}
 				</h1>
 
-				{/* Image */}
-				{boardArticle.articleImage && (
-					<div style={{ borderRadius: '12px', overflow: 'hidden', marginBottom: '24px' }}>
-						<img src={`${REACT_APP_API_URL}/${boardArticle.articleImage}`} alt={boardArticle.articleTitle} style={{ width: '100%', height: 'auto' }} />
+				{/* Author card */}
+				{boardArticle.memberData && (
+					<div
+						onClick={() => goMemberPage(boardArticle.memberData?._id, boardArticle.memberData?.memberType)}
+						style={{ display: 'inline-flex', alignItems: 'center', gap: '11px', marginBottom: '26px', cursor: 'pointer' }}
+					>
+						<img
+							src={boardArticle.memberData.memberImage ? `${REACT_APP_API_URL}/${boardArticle.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
+							alt=""
+							style={{ width: '38px', height: '38px', borderRadius: '50%', objectFit: 'cover', border: '1.5px solid rgba(0,220,229,0.35)' }}
+						/>
+						<div>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14.5px', fontWeight: 700, color: '#ffffff', display: 'block' }}>
+								{boardArticle.memberData.memberNick}
+							</span>
+							<span className={`td-person-type${boardArticle.memberData.memberType === 'TRAINER' ? ' is-trainer' : ''}`} style={{ marginTop: '3px', display: 'inline-block' }}>
+								{boardArticle.memberData.memberType}
+							</span>
+						</div>
 					</div>
 				)}
 
-				{/* Stats */}
-				<div style={{ display: 'flex', gap: '16px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #3a494a' }}>
-					<LikeButton
-						liked={!!boardArticle.meLiked?.[0]?.myFavorite}
-						count={boardArticle.articleLikes ?? 0}
-						onClick={likeBoardArticleHandler}
-					/>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: '#849495' }}>👁 {boardArticle.articleViews ?? 0}</span>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: '#849495' }}>💬 {total}</span>
+				{/* Image */}
+				{boardArticle.articleImage && (
+					<div style={{ borderRadius: '18px', overflow: 'hidden', marginBottom: '28px', border: '1px solid rgba(255,255,255,0.07)' }}>
+						<img src={`${REACT_APP_API_URL}/${boardArticle.articleImage}`} alt={boardArticle.articleTitle} style={{ width: '100%', height: 'auto', display: 'block' }} />
+					</div>
+				)}
+
+				{/* Stats bar */}
+				<div
+					style={{
+						display: 'flex',
+						alignItems: 'center',
+						gap: '20px',
+						marginBottom: '30px',
+						padding: '14px 18px',
+						borderRadius: '14px',
+						background: 'rgba(255,255,255,0.02)',
+						border: '1px solid rgba(255,255,255,0.06)',
+					}}
+				>
+					<LikeButton liked={!!boardArticle.meLiked?.[0]?.myFavorite} count={boardArticle.articleLikes ?? 0} onClick={likeBoardArticleHandler} />
+					<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13.5px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+						<b style={{ color: '#ffffff' }}>{boardArticle.articleViews ?? 0}</b> views
+					</span>
+					<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13.5px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+						<b style={{ color: '#ffffff' }}>{total}</b> comments
+					</span>
 				</div>
 
 				{/* Content */}
-				<div style={{ marginBottom: '40px', color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '28px' }}>
+				<div style={{ marginBottom: '48px', color: '#cddada', fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '1.8' }}>
 					<ToastViewerComponent markdown={boardArticle.articleContent} className={'ytb_play'} />
 				</div>
 
 				{/* Comments */}
-				<div style={{ borderTop: '1px solid #3a494a', paddingTop: '32px' }}>
-					<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 600, color: '#e5e2e3', marginBottom: '20px' }}>
-						Comments ({total})
-					</h3>
+				<div className="wd-section">
+					<div className="wd-section-head">
+						<h3>Comments</h3>
+						<span className="wd-section-count">{total} total</span>
+					</div>
 
 					{/* Input */}
-					<div style={{ display: 'flex', gap: '12px', marginBottom: '24px' }}>
-						<input
-							value={comment}
-							onChange={(e) => { if (e.target.value.length <= 100) setComment(e.target.value); }}
-							onKeyDown={(e) => e.key === 'Enter' && createCommentHandler()}
-							placeholder="Leave a comment..."
-							style={{ flex: 1, background: 'rgba(255,255,255,0.03)', border: '1px solid #3a494a', borderRadius: '8px', padding: '12px 16px', fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', outline: 'none' }}
-						/>
-						<button onClick={createCommentHandler} style={{ background: '#e9feff', color: '#003739', border: 'none', borderRadius: '8px', padding: '12px 24px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
-							Post
-						</button>
+					<div className="wd-form-card">
+						<div style={{ display: 'flex', gap: '12px' }}>
+							<input
+								className="wd-input"
+								style={{ flex: 1 }}
+								value={comment}
+								onChange={(e) => {
+									if (e.target.value.length <= 100) setComment(e.target.value);
+								}}
+								onKeyDown={(e) => e.key === 'Enter' && createCommentHandler()}
+								placeholder="Join the conversation..."
+							/>
+							<button className="wd-btn" onClick={createCommentHandler} disabled={!comment}>
+								Post
+							</button>
+						</div>
 					</div>
 
 					{/* List */}
 					{comments.map((c) => (
-						<div key={c._id} style={{ padding: '16px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
-							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
-								<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-									<div style={{ width: '32px', height: '32px', borderRadius: '50%', overflow: 'hidden', background: '#2a2a2b' }}>
-										<img
-											src={c.memberData?.memberImage ? `${REACT_APP_API_URL}/${c.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
-											alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }}
-										/>
-									</div>
-									<span onClick={() => goMemberPage(c.memberData?._id)} style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3', cursor: 'pointer' }}>
+						<div key={c._id} className="wd-comment">
+							<img
+								src={c.memberData?.memberImage ? `${REACT_APP_API_URL}/${c.memberData.memberImage}` : '/img/profile/defaultUser.svg'}
+								alt=""
+								onClick={() => goMemberPage(c.memberData?._id, (c.memberData as any)?.memberType)}
+								style={{ cursor: 'pointer' }}
+							/>
+							<div className="wd-comment-body">
+								<div className="wd-comment-head">
+									<span
+										className="wd-comment-nick"
+										onClick={() => goMemberPage(c.memberData?._id, (c.memberData as any)?.memberType)}
+										style={{ cursor: 'pointer' }}
+									>
 										{c.memberData?.memberNick ?? 'Anonymous'}
 									</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', color: '#849495' }}>
-										{new Date(c.createdAt).toLocaleDateString()}
-									</span>
+									<span className="wd-comment-date">{new Date(c.createdAt).toLocaleDateString()}</span>
+									{c.memberId === user?._id && (
+										<button className="nm-del" style={{ marginLeft: 'auto' }} onClick={() => deleteCommentHandler(c._id)}>
+											✕
+										</button>
+									)}
 								</div>
-								{c.memberId === user?._id && (
-									<button onClick={() => deleteCommentHandler(c._id)} style={{ background: 'transparent', border: 'none', color: '#849495', cursor: 'pointer', fontSize: '16px' }}>
-										×
-									</button>
-								)}
+								<p>{c.commentContent}</p>
 							</div>
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '20px', color: '#b9caca', marginLeft: '44px' }}>
-								{c.commentContent}
-							</p>
 						</div>
 					))}
 
-					{comments.length === 0 && !commentsLoading && (
-						<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', textAlign: 'center', padding: '24px 0' }}>No comments yet.</p>
-					)}
+					{comments.length === 0 && !commentsLoading && <p className="wd-empty-line">No comments yet. Be the first!</p>}
 
 					{total > searchFilter.limit && (
 						<Stack alignItems="center" sx={{ mt: 3 }}>
@@ -272,7 +325,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 								onChange={paginationHandler}
 								shape="rounded"
 								sx={{
-									'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a' },
+									'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a', fontFamily: 'JetBrains Mono, monospace' },
 									'& .Mui-selected': { backgroundColor: '#e9feff !important', color: '#003739' },
 								}}
 							/>

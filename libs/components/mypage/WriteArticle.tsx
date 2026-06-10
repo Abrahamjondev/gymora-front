@@ -7,17 +7,18 @@ const TuiEditor = dynamic(() => import('../community/Teditor'), { ssr: false });
 const WriteArticle: NextPage = () => {
 	const device = useDeviceDetect();
 
-	if (device === 'mobile') {
-		return <div style={{ color: '#e5e2e3' }}>WRITE ARTICLE MOBILE</div>;
-	}
-
 	return (
-		<div>
-			<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>
-				Write an Article
-			</h2>
-			<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', marginBottom: '24px' }}>
-				Share your fitness knowledge with the community
+		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+			<div className="nt-head">
+				<div>
+					<span className="lp-eyebrow lp-eyebrow--violet" style={{ marginBottom: '6px' }}>
+						Community
+					</span>
+					<h2>Write an Article</h2>
+				</div>
+			</div>
+			<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.6)', margin: '-8px 0 22px' }}>
+				Share your fitness knowledge with the community.
 			</p>
 			<TuiEditor />
 		</div>

@@ -8,28 +8,16 @@ import { useMutation, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
 import { UPDATE_MEMBER } from '../../../apollo/user/mutation';
-import { sweetErrorHandling, sweetMixinSuccessAlert } from '../../sweetAlert';
+import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
-const inputStyle = {
-	width: '100%',
-	padding: '14px 16px',
-	background: 'rgba(255,255,255,0.03)',
-	border: '1px solid #3a494a',
-	borderRadius: '8px',
-	fontFamily: 'Hanken Grotesk, sans-serif',
-	fontSize: '14px',
-	color: '#e5e2e3',
-	outline: 'none',
-};
-
-const labelStyle = {
+const labelStyle: React.CSSProperties = {
 	fontFamily: 'JetBrains Mono, monospace',
-	fontSize: '11px',
-	letterSpacing: '0.05em',
-	color: '#849495',
-	textTransform: 'uppercase' as const,
+	fontSize: '10px',
+	letterSpacing: '0.08em',
+	color: '#9aabab',
+	textTransform: 'uppercase',
 	display: 'block',
-	marginBottom: '8px',
+	marginBottom: '7px',
 };
 
 const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
@@ -37,6 +25,8 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
 	const [updateData, setUpdateData] = useState<MemberUpdate>(initialValues);
+	const [uploading, setUploading] = useState(false);
+	const [saving, setSaving] = useState(false);
 
 	/** APOLLO REQUESTS **/
 	const [updateMember] = useMutation(UPDATE_MEMBER);
@@ -56,6 +46,8 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 	const uploadImage = async (e: any) => {
 		try {
 			const image = e.target.files[0];
+			if (!image) return;
+			setUploading(true);
 			const formData = new FormData();
 			formData.append(
 				'operations',
@@ -80,13 +72,17 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			const responseImage = response.data.data.imageUploader;
 			updateData.memberImage = responseImage;
 			setUpdateData({ ...updateData });
-		} catch (err) {
+		} catch (err: any) {
+			sweetMixinErrorAlert('Image upload failed. Please try again.').then();
+		} finally {
+			setUploading(false);
 		}
 	};
 
 	const updateProfileHandler = useCallback(async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
+			setSaving(true);
 			const result = await updateMember({
 				variables: { input: { ...updateData, _id: user._id } },
 			});
@@ -96,29 +92,41 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			await sweetMixinSuccessAlert('Profile updated successfully.');
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
+		} finally {
+			setSaving(false);
 		}
 	}, [updateData]);
 
-	const isDisabled = !updateData.memberNick || !updateData.memberPhone;
-
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3' }}>MY PROFILE MOBILE</div>;
-	}
+	const isDisabled = saving || !updateData.memberNick || !updateData.memberPhone;
 
 	return (
-		<div>
-			<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>
-				My Profile
-			</h2>
-			<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', marginBottom: '32px' }}>
-				Update your personal information
-			</p>
+		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+			<div className="nt-head">
+				<div>
+					<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>
+						Account
+					</span>
+					<h2>My Profile</h2>
+				</div>
+			</div>
 
 			{/* Photo */}
-			<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '24px', marginBottom: '20px' }}>
+			<div className="wd-form-card" style={{ marginBottom: '18px' }}>
 				<span style={labelStyle}>Profile Photo</span>
-				<div style={{ display: 'flex', alignItems: 'center', gap: '20px', marginTop: '12px' }}>
-					<div style={{ width: '80px', height: '80px', borderRadius: '50%', overflow: 'hidden', border: '2px solid #3a494a', flexShrink: 0 }}>
+				<div style={{ display: 'flex', alignItems: 'center', gap: '22px', marginTop: '12px' }}>
+					<div
+						style={{
+							width: '88px',
+							height: '88px',
+							borderRadius: '50%',
+							overflow: 'hidden',
+							border: '2.5px solid rgba(0,220,229,0.4)',
+							boxShadow: '0 0 24px rgba(0,220,229,0.15)',
+							flexShrink: 0,
+							opacity: uploading ? 0.5 : 1,
+							transition: 'opacity 0.3s ease',
+						}}
+					>
 						<img
 							src={updateData?.memberImage ? `${REACT_APP_API_URL}/${updateData.memberImage}` : '/img/profile/defaultUser.svg'}
 							alt=""
@@ -129,22 +137,12 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 						<input type="file" hidden id="profile-upload" onChange={uploadImage} accept="image/jpg, image/jpeg, image/png" />
 						<label
 							htmlFor="profile-upload"
-							style={{
-								display: 'inline-block',
-								padding: '10px 20px',
-								background: '#353436',
-								border: '1px solid #3a494a',
-								borderRadius: '8px',
-								fontFamily: 'Hanken Grotesk',
-								fontSize: '13px',
-								fontWeight: 600,
-								color: '#e5e2e3',
-								cursor: 'pointer',
-							}}
+							className="nt-markall"
+							style={{ display: 'inline-block', cursor: uploading ? 'wait' : 'pointer' }}
 						>
-							Upload Image
+							{uploading ? 'Uploading...' : 'Upload Image'}
 						</label>
-						<p style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', marginTop: '8px' }}>
+						<p style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)', marginTop: '9px' }}>
 							JPG, JPEG or PNG format
 						</p>
 					</div>
@@ -152,67 +150,55 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			</div>
 
 			{/* Fields */}
-			<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
-				<div>
-					<span style={labelStyle}>Username</span>
+			<div className="wd-form-card">
+				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
+					<div>
+						<span style={labelStyle}>Username *</span>
+						<input
+							className="wd-input"
+							type="text"
+							placeholder="Your username"
+							value={updateData.memberNick || ''}
+							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberNick: value })}
+						/>
+					</div>
+					<div>
+						<span style={labelStyle}>Phone *</span>
+						<input
+							className="wd-input"
+							type="text"
+							placeholder="Your phone"
+							value={updateData.memberPhone || ''}
+							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberPhone: value })}
+						/>
+					</div>
+				</div>
+
+				<div style={{ marginBottom: '16px' }}>
+					<span style={labelStyle}>Address</span>
 					<input
+						className="wd-input"
 						type="text"
-						placeholder="Your username"
-						value={updateData.memberNick || ''}
-						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberNick: value })}
-						style={inputStyle}
+						placeholder="Your address"
+						value={updateData.memberAddress || ''}
+						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberAddress: value })}
 					/>
 				</div>
-				<div>
-					<span style={labelStyle}>Phone</span>
-					<input
-						type="text"
-						placeholder="Your phone"
-						value={updateData.memberPhone || ''}
-						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberPhone: value })}
-						style={inputStyle}
+
+				<div style={{ marginBottom: '22px' }}>
+					<span style={labelStyle}>Description</span>
+					<textarea
+						className="wd-textarea"
+						placeholder="About yourself..."
+						value={updateData.memberDesc || ''}
+						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberDesc: value })}
 					/>
 				</div>
-			</div>
 
-			<div style={{ marginBottom: '16px' }}>
-				<span style={labelStyle}>Address</span>
-				<input
-					type="text"
-					placeholder="Your address"
-					value={updateData.memberAddress || ''}
-					onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberAddress: value })}
-					style={inputStyle}
-				/>
+				<button className="wd-btn" onClick={updateProfileHandler} disabled={isDisabled}>
+					{saving ? 'Saving...' : 'Update Profile'}
+				</button>
 			</div>
-
-			<div style={{ marginBottom: '24px' }}>
-				<span style={labelStyle}>Description</span>
-				<textarea
-					placeholder="About yourself..."
-					value={updateData.memberDesc || ''}
-					onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberDesc: value })}
-					style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }}
-				/>
-			</div>
-
-			<button
-				onClick={updateProfileHandler}
-				disabled={isDisabled}
-				style={{
-					padding: '14px 32px',
-					borderRadius: '8px',
-					border: 'none',
-					fontFamily: 'Hanken Grotesk',
-					fontSize: '14px',
-					fontWeight: 700,
-					cursor: isDisabled ? 'not-allowed' : 'pointer',
-					background: isDisabled ? '#353436' : '#e9feff',
-					color: isDisabled ? '#849495' : '#003739',
-				}}
-			>
-				Update Profile
-			</button>
 		</div>
 	);
 };

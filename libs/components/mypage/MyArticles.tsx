@@ -12,6 +12,14 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAler
 import { Messages, REACT_APP_API_URL } from '../../config';
 import { useRouter } from 'next/router';
 
+const categoryAccent: Record<string, string> = {
+	FITNESS_TIPS: '#00dce5',
+	NUTRITION: '#ffb77f',
+	WORKOUT_GUIDE: '#ddb7ff',
+	CHALLENGE: '#ff8a8a',
+	SUCCESS_STORY: '#66daba',
+};
+
 const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const user = useReactiveVar(userVar);
@@ -49,46 +57,72 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		}
 	};
 
-	if (device === 'mobile') return <div style={{ color: '#e5e2e3' }}>MY ARTICLES MOBILE</div>;
-
 	return (
-		<div>
-			<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>My Articles</h2>
-			<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#849495', marginBottom: '24px' }}>Articles you have written</p>
+		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+			<div className="nt-head">
+				<div>
+					<span className="lp-eyebrow lp-eyebrow--violet" style={{ marginBottom: '6px' }}>
+						Community
+					</span>
+					<h2>My Articles</h2>
+				</div>
+				<div className="nt-tools">
+					<span className="wd-section-count">{totalCount} published</span>
+					<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => router.push({ pathname: '/mypage', query: { category: 'writeArticle' } }, undefined, { shallow: true })}>
+						+ Write Article
+					</button>
+				</div>
+			</div>
 
 			{boardArticles?.length > 0 ? (
-				<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
-					{boardArticles.map((article) => (
-						<div
-							key={article._id}
-							onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
-							style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px', cursor: 'pointer', display: 'flex', gap: '16px', transition: 'all 0.2s' }}
-							onMouseOver={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.3)')}
-							onMouseOut={(e) => ((e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.08)')}
-						>
-							{article.articleImage && (
-								<div style={{ width: '120px', height: '80px', borderRadius: '8px', overflow: 'hidden', flexShrink: 0 }}>
-									<img src={`${REACT_APP_API_URL}/${article.articleImage}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-								</div>
-							)}
-							<div style={{ flex: 1 }}>
-								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00f5ff', textTransform: 'uppercase' }}>{article.articleCategory?.replace('_', ' ')}</span>
-								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3', margin: '4px 0 8px' }}>{article.articleTitle}</h4>
-								<div style={{ display: 'flex', gap: '16px' }}>
-									<span onClick={(e) => likeHandler(e, article._id)} style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: article.meLiked?.[0]?.myFavorite ? '#ff8a00' : '#849495', cursor: 'pointer' }}>
-										{article.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {article.articleLikes ?? 0}
-									</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#849495' }}>👁 {article.articleViews ?? 0}</span>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#849495' }}>{article.articleStatus}</span>
+				<div className="cm-list">
+					{boardArticles.map((article) => {
+						const accent = categoryAccent[article.articleCategory] || '#00dce5';
+						return (
+							<div
+								key={article._id}
+								className="cm-row"
+								style={{ ['--accent' as any]: accent }}
+								onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
+							>
+								{article.articleImage && (
+									<div className="cm-thumb" style={{ width: '150px' }}>
+										<img src={`${REACT_APP_API_URL}/${article.articleImage}`} alt="" loading="lazy" />
+									</div>
+								)}
+								<div className="cm-body">
+									<div className="cm-meta-top">
+										<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}30`, color: accent }}>
+											{article.articleCategory?.replace(/_/g, ' ')}
+										</span>
+										<span className="cm-date">{new Date(article.createdAt).toLocaleDateString()}</span>
+									</div>
+									<h3 style={{ fontSize: '17px' }}>{article.articleTitle}</h3>
+									<div className="cm-foot">
+										<span
+											className="cm-stat"
+											onClick={(e) => likeHandler(e, article._id)}
+											style={{ cursor: 'pointer', color: article.meLiked?.[0]?.myFavorite ? '#ff8a8a' : undefined }}
+										>
+											{article.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {article.articleLikes ?? 0}
+										</span>
+										<span className="cm-stat">{article.articleViews ?? 0} views</span>
+										<span className="cm-stat">{article.articleComments ?? 0} comments</span>
+										<span className="cm-arrow">→</span>
+									</div>
 								</div>
 							</div>
-						</div>
-					))}
+						);
+					})}
 				</div>
 			) : (
-				<div style={{ textAlign: 'center', padding: '40px', color: '#849495' }}>
-					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px' }}>No articles found.</p>
-				</div>
+				!loading && (
+					<div className="nt-empty">
+						<div className="nt-empty-ic">▤</div>
+						<h4>No articles yet</h4>
+						<p>Share your first piece of knowledge with the community.</p>
+					</div>
+				)
 			)}
 
 			{totalCount > searchCommunity.limit && (
@@ -99,7 +133,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 						onChange={paginationHandler}
 						shape="rounded"
 						sx={{
-							'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a' },
+							'& .MuiPaginationItem-root': { color: '#b9caca', borderColor: '#3a494a', fontFamily: 'JetBrains Mono, monospace' },
 							'& .Mui-selected': { backgroundColor: '#e9feff !important', color: '#003739' },
 						}}
 					/>

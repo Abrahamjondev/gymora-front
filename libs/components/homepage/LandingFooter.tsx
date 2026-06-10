@@ -54,7 +54,7 @@ const LandingFooter = () => {
 								<span style={{ fontSize: '14px', fontWeight: 900, color: '#003739', fontFamily: 'Hanken Grotesk' }}>G</span>
 							</div>
 							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
-								gymora<span style={{ color: '#00dce5' }}>.</span>
+								gymora
 							</span>
 						</div>
 						<p>The elite platform for high-performance training and athletic development.</p>

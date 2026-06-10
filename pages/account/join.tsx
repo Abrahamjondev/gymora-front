@@ -2,7 +2,6 @@ import React, { useCallback, useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
-import { Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import { logIn, signUp } from '../../libs/auth';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
@@ -14,19 +13,26 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
+const labelStyle: React.CSSProperties = {
+	fontFamily: 'JetBrains Mono, monospace',
+	fontSize: '10px',
+	letterSpacing: '0.08em',
+	color: '#9aabab',
+	textTransform: 'uppercase',
+	display: 'block',
+	marginBottom: '7px',
+};
+
 const Join: NextPage = () => {
 	const router = useRouter();
 	const device = useDeviceDetect();
 	const [input, setInput] = useState({ nick: '', password: '', phone: '', type: 'USER' });
 	const [loginView, setLoginView] = useState<boolean>(true);
+	const [busy, setBusy] = useState<boolean>(false);
 
 	/** HANDLERS **/
 	const viewChangeHandler = (state: boolean) => {
 		setLoginView(state);
-	};
-
-	const checkUserTypeHandler = (type: string) => {
-		handleInput('type', type);
 	};
 
 	const handleInput = useCallback((name: any, value: any) => {
@@ -41,9 +47,11 @@ const Join: NextPage = () => {
 				await sweetMixinErrorAlert('Please fill in all fields');
 				return;
 			}
+			setBusy(true);
 			await logIn(input.nick, input.password);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
+			setBusy(false);
 			const msg = (err.message || 'Login failed').replace('Definer: ', '');
 			await sweetMixinErrorAlert(msg);
 		}
@@ -55,171 +63,114 @@ const Join: NextPage = () => {
 				await sweetMixinErrorAlert('Please fill in all fields');
 				return;
 			}
+			setBusy(true);
 			await signUp(input.nick, input.password, input.phone, input.type);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
+			setBusy(false);
 			const msg = (err.message || 'Signup failed').replace('Definer: ', '');
 			await sweetMixinErrorAlert(msg);
 		}
 	}, [input]);
 
-	const inputStyle = {
-		width: '100%',
-		padding: '14px 16px',
-		background: 'rgba(255,255,255,0.03)',
-		border: '1px solid #3a494a',
-		borderRadius: '8px',
-		fontFamily: 'Hanken Grotesk, sans-serif',
-		fontSize: '14px',
-		color: '#e5e2e3',
-		outline: 'none',
-	};
+	const submitDisabled = busy || (loginView ? !input.nick || !input.password : !input.nick || !input.password || !input.phone);
 
-	const labelStyle = {
-		fontFamily: 'JetBrains Mono, monospace',
-		fontSize: '11px',
-		letterSpacing: '0.05em',
-		color: '#849495',
-		textTransform: 'uppercase' as const,
-		display: 'block',
-		marginBottom: '8px',
+	const onEnter = (e: React.KeyboardEvent) => {
+		if (e.key !== 'Enter') return;
+		if (loginView) doLogin();
+		else doSignUp();
 	};
-
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA LOGIN MOBILE</div>;
-	}
 
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '40px 24px' }}>
-			<div style={{ maxWidth: '440px', width: '100%' }}>
-				{/* Logo */}
-				<div style={{ textAlign: 'center', marginBottom: '40px' }}>
-					<h1 style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '32px', fontWeight: 800, letterSpacing: '-0.02em', color: '#e9feff' }}>
-						GYMORA
-					</h1>
-					<p style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#849495', textTransform: 'uppercase', letterSpacing: '0.2em', marginTop: '4px' }}>
-						Elite Performance
-					</p>
+		<div className="au-shell">
+			{/* Visual panel */}
+			<div className="au-visual">
+				<div className="au-visual-bg" />
+				<div className="au-visual-tint" />
+				<div className="lp-hero-grain" />
+
+				<div className="au-brand">
+					<div className="au-brand-mark">
+						<span>G</span>
+					</div>
+					<span className="au-brand-word">gymora</span>
 				</div>
 
-				{/* Card */}
-				<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '32px' }}>
+				<h2 className="au-quote">
+					Every session counts.
+					<br />
+					<span className="lp-grad">Make yours today.</span>
+				</h2>
+
+				<span className="au-foot">Elite training platform</span>
+			</div>
+
+			{/* Form panel */}
+			<div className="au-panel">
+				<div className="au-card">
+					<h1 className="au-title">{loginView ? 'Welcome back' : 'Join Gymora'}</h1>
+					<p className="au-sub">
+						{loginView ? 'Log in to continue your training.' : 'Create a free account — every workout is free from day one.'}
+					</p>
+
 					{/* Tabs */}
-					<div style={{ display: 'flex', marginBottom: '32px', borderRadius: '8px', overflow: 'hidden', border: '1px solid #3a494a' }}>
-						<button
-							onClick={() => viewChangeHandler(true)}
-							style={{
-								flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
-								fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', fontWeight: 700,
-								background: loginView ? '#e9feff' : 'transparent',
-								color: loginView ? '#003739' : '#849495',
-								transition: 'all 0.2s',
-							}}
-						>
+					<div className="wl-seg au-seg">
+						<button className={loginView ? 'is-active' : ''} onClick={() => viewChangeHandler(true)}>
 							Login
 						</button>
-						<button
-							onClick={() => viewChangeHandler(false)}
-							style={{
-								flex: 1, padding: '12px', border: 'none', cursor: 'pointer',
-								fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', fontWeight: 700,
-								background: !loginView ? '#e9feff' : 'transparent',
-								color: !loginView ? '#003739' : '#849495',
-								transition: 'all 0.2s',
-							}}
-						>
+						<button className={!loginView ? 'is-active' : ''} onClick={() => viewChangeHandler(false)}>
 							Sign Up
 						</button>
 					</div>
 
 					{/* Form */}
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+					<div className="au-fields">
 						<div>
 							<span style={labelStyle}>Nickname</span>
 							<input
+								className="wd-input"
 								type="text"
-								placeholder="Enter Nickname"
-								style={inputStyle}
+								placeholder="Enter nickname"
+								value={input.nick}
 								onChange={(e) => handleInput('nick', e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && loginView) doLogin();
-									if (e.key === 'Enter' && !loginView) doSignUp();
-								}}
+								onKeyDown={onEnter}
 							/>
 						</div>
 						<div>
 							<span style={labelStyle}>Password</span>
 							<input
+								className="wd-input"
 								type="password"
-								placeholder="Enter Password"
-								style={inputStyle}
+								placeholder="Enter password"
+								value={input.password}
 								onChange={(e) => handleInput('password', e.target.value)}
-								onKeyDown={(e) => {
-									if (e.key === 'Enter' && loginView) doLogin();
-									if (e.key === 'Enter' && !loginView) doSignUp();
-								}}
+								onKeyDown={onEnter}
 							/>
 						</div>
 						{!loginView && (
-							<>
-								<div>
-									<span style={labelStyle}>Phone</span>
-									<input
-										type="text"
-										placeholder="Enter Phone"
-										style={inputStyle}
-										onChange={(e) => handleInput('phone', e.target.value)}
-										onKeyDown={(e) => {
-											if (e.key === 'Enter') doSignUp();
-										}}
-									/>
-								</div>
-							</>
+							<div>
+								<span style={labelStyle}>Phone</span>
+								<input
+									className="wd-input"
+									type="text"
+									placeholder="Enter phone"
+									value={input.phone}
+									onChange={(e) => handleInput('phone', e.target.value)}
+									onKeyDown={onEnter}
+								/>
+							</div>
 						)}
 					</div>
 
 					{/* Submit */}
-					<button
-						onClick={loginView ? doLogin : doSignUp}
-						disabled={
-							loginView
-								? input.nick === '' || input.password === ''
-								: input.nick === '' || input.password === '' || input.phone === ''
-						}
-						style={{
-							width: '100%',
-							padding: '16px',
-							marginTop: '24px',
-							borderRadius: '8px',
-							border: 'none',
-							fontFamily: 'Hanken Grotesk, sans-serif',
-							fontSize: '16px',
-							fontWeight: 700,
-							cursor: 'pointer',
-							textTransform: 'uppercase',
-							letterSpacing: '0.05em',
-							background:
-								(loginView && input.nick && input.password) || (!loginView && input.nick && input.password && input.phone)
-									? '#e9feff'
-									: '#353436',
-							color:
-								(loginView && input.nick && input.password) || (!loginView && input.nick && input.password && input.phone)
-									? '#003739'
-									: '#849495',
-						}}
-					>
-						{loginView ? 'Login' : 'Create Account'}
+					<button className="lp-btn-primary au-submit" onClick={loginView ? doLogin : doSignUp} disabled={submitDisabled} style={{ opacity: submitDisabled ? 0.55 : 1, cursor: submitDisabled ? 'not-allowed' : 'pointer' }}>
+						{busy ? 'Please wait...' : loginView ? 'Log In' : 'Create Free Account'} <span style={{ fontSize: '16px' }}>→</span>
 					</button>
 
 					{/* Switch */}
-					<p style={{ textAlign: 'center', marginTop: '20px', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', color: '#849495' }}>
+					<p className="au-switch">
 						{loginView ? "Don't have an account? " : 'Already have an account? '}
-						<span
-							onClick={() => viewChangeHandler(!loginView)}
-							style={{ color: '#e9feff', fontWeight: 700, cursor: 'pointer' }}
-						>
-							{loginView ? 'Sign Up' : 'Login'}
-						</span>
+						<span onClick={() => viewChangeHandler(!loginView)}>{loginView ? 'Sign Up' : 'Log In'}</span>
 					</p>
 				</div>
 			</div>

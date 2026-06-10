@@ -988,42 +988,67 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	align-items: center;
 	gap: 16px;
 }
+@keyframes gnavShine {
+	to {
+		transform: translateX(340%) skewX(-18deg);
+	}
+}
 .gnav-logo {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 11px;
 	text-decoration: none;
 	.gnav-logo-mark {
-		width: 30px;
-		height: 30px;
-		border-radius: 9px;
-		background: linear-gradient(135deg, #00dce5 0%, #00f5ff 100%);
+		position: relative;
+		width: 35px;
+		height: 35px;
+		border-radius: 10px;
+		background: linear-gradient(135deg, #00dce5 0%, #00f5ff 55%, #e9feff 130%);
 		display: flex;
 		align-items: center;
 		justify-content: center;
-		box-shadow: 0 0 18px rgba(0, 220, 229, 0.28);
-		transition: transform 0.35s $lp-ease, box-shadow 0.35s ease;
+		box-shadow: 0 0 18px rgba(0, 220, 229, 0.3);
+		overflow: hidden;
+		transition: transform 0.4s $lp-ease, box-shadow 0.4s ease, border-radius 0.4s $lp-ease;
 		span {
-			font-size: 15px;
+			position: relative;
+			z-index: 2;
+			font-size: 17px;
 			font-weight: 900;
 			color: #003739;
 			font-family: 'Hanken Grotesk', sans-serif;
 		}
+		&::after {
+			content: '';
+			position: absolute;
+			top: -40%;
+			left: -70%;
+			width: 45%;
+			height: 200%;
+			background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+			transform: translateX(-120%) skewX(-18deg);
+		}
 	}
 	.gnav-logo-word {
 		font-family: 'Hanken Grotesk', sans-serif;
-		font-size: 19px;
+		font-size: 22px;
 		font-weight: 800;
 		letter-spacing: -0.03em;
 		color: #ffffff;
-		&::after {
-			content: '.';
-			color: #00dce5;
-		}
+		transition: letter-spacing 0.4s $lp-ease;
 	}
-	&:hover .gnav-logo-mark {
-		transform: rotate(-8deg) scale(1.07);
-		box-shadow: 0 0 28px rgba(0, 220, 229, 0.45);
+	&:hover {
+		.gnav-logo-mark {
+			transform: rotate(-10deg) scale(1.1);
+			border-radius: 50%;
+			box-shadow: 0 0 34px rgba(0, 220, 229, 0.55), 0 0 60px rgba(0, 220, 229, 0.2);
+			&::after {
+				animation: gnavShine 0.7s $lp-ease forwards;
+			}
+		}
+		.gnav-logo-word {
+			letter-spacing: 0.005em;
+		}
 	}
 }
 .gnav-links {
@@ -1033,7 +1058,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gnav-link {
 	font-family: 'Hanken Grotesk', sans-serif;
-	font-size: 14px;
+	font-size: 15px;
 	font-weight: 700;
 	letter-spacing: 0.02em;
 	color: rgba(222, 234, 234, 0.92);
@@ -1102,7 +1127,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		}
 		span {
 			font-family: 'Hanken Grotesk', sans-serif;
-			font-size: 14px;
+			font-size: 15px;
 			font-weight: 700;
 			color: #ffffff;
 		}
@@ -1114,7 +1139,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 	.gnav-logout {
 		font-family: 'Hanken Grotesk', sans-serif;
-		font-size: 12.5px;
+		font-size: 13.5px;
 		font-weight: 600;
 		color: rgba(213, 226, 226, 0.75);
 		background: transparent;
@@ -1129,7 +1154,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gnav-login {
 	font-family: 'Hanken Grotesk', sans-serif;
-	font-size: 13px;
+	font-size: 14.5px;
 	font-weight: 600;
 	color: rgba(185, 202, 202, 0.8);
 	background: transparent;
@@ -1143,12 +1168,12 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 .gnav-cta {
 	font-family: 'Hanken Grotesk', sans-serif;
-	font-size: 12.5px;
+	font-size: 14px;
 	font-weight: 700;
 	color: #003739;
 	background: linear-gradient(135deg, #00dce5 0%, #e9feff 100%);
 	border: none;
-	padding: 9px 20px;
+	padding: 10px 22px;
 	border-radius: 9999px;
 	cursor: pointer;
 	transition: all 0.3s $lp-ease;
