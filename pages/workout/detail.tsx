@@ -6,6 +6,7 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Workout } from '../../libs/types/workout/workout';
 import LikeButton from '../../libs/components/common/LikeButton';
+import VideoPlayer from '../../libs/components/common/VideoPlayer';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
@@ -338,7 +339,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 							<div className="wd-section-head">
 								<h3>Video</h3>
 							</div>
-							<video className="wd-video" src={`${REACT_APP_API_URL}/${workout.videoUrl}`} controls />
+							<VideoPlayer src={workout.videoUrl} title={workout.workoutTitle} />
 						</div>
 					)}
 

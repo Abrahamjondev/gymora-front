@@ -9,9 +9,10 @@ import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS } from '../../apollo/user/query';
-import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION } from '../../apollo/user/mutation';
+import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION, CONFIRM_COURSE_PAYMENT } from '../../apollo/user/mutation';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { userVar } from '../../apollo/store';
+import VideoPlayer from '../../libs/components/common/VideoPlayer';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -42,6 +43,7 @@ const CourseDetail: NextPage = () => {
 	const [reviewText, setReviewText] = useState('');
 	const [reviewRating, setReviewRating] = useState(5);
 	const [lessonProgress, setLessonProgress] = useState<any[]>([]);
+	const [watchingLesson, setWatchingLesson] = useState<string | null>(null);
 
 	const { loading, refetch } = useQuery(GET_COURSE, {
 		fetchPolicy: 'network-only',
@@ -69,10 +71,36 @@ const CourseDetail: NextPage = () => {
 	const [createReview] = useMutation(CREATE_REVIEW);
 	const [completeLesson] = useMutation(COMPLETE_LESSON);
 	const [createCheckoutSession] = useMutation(CREATE_COURSE_CHECKOUT_SESSION);
+	const [confirmCoursePayment] = useMutation(CONFIRM_COURSE_PAYMENT);
+	const confirmingRef = React.useRef(false);
 
 	useEffect(() => {
-		if (router.query.id) setCourseId(router.query.id as string);
+		// Stripe success/cancel URLs return with ?courseId=... (not ?id=) — accept both
+		const id = (router.query.id as string) || (router.query.courseId as string);
+		if (id) setCourseId(id);
 	}, [router]);
+
+	// Complete the Stripe checkout: success_url carries session_id, and without
+	// this call (backend has no webhook) the paid member is never enrolled.
+	useEffect(() => {
+		const sessionId = router.query.session_id as string;
+		const id = (router.query.id as string) || (router.query.courseId as string);
+		if (!sessionId || !id || !user?._id || confirmingRef.current) return;
+		confirmingRef.current = true;
+		(async () => {
+			try {
+				await confirmCoursePayment({ variables: { sessionId, courseId: id } });
+				const { data } = await refetch({ input: id });
+				if (data?.getCourse) setCourse(data.getCourse);
+				await sweetMixinSuccessAlert('Payment confirmed — you are enrolled!');
+			} catch (err: any) {
+				sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
+			} finally {
+				// strip stripe params so refresh doesn't re-confirm
+				router.replace({ pathname: '/course/detail', query: { id } }, undefined, { shallow: true });
+			}
+		})();
+	}, [router.query.session_id, user?._id]);
 
 	const isLessonCompleted = (lessonId: string) => lessonProgress.some((p: any) => p.lessonId === lessonId && p.isCompleted);
 
@@ -301,31 +329,50 @@ const CourseDetail: NextPage = () => {
 									{lessonsByWeek[wn].map((l) => {
 										lessonIndex += 1;
 										const done = isLessonCompleted(l._id);
+										const watching = watchingLesson === l._id;
 										return (
-											<div key={l._id} className={`pd-lesson${done ? ' is-done' : ''}`}>
-												<span className={`pd-lesson-check${done ? ' is-done' : ''}`}>{done ? '✓' : String(lessonIndex).padStart(2, '0')}</span>
-												<div className="pd-lesson-info">
-													<h4>{l.title}</h4>
-													{l.description && <p>{l.description}</p>}
-												</div>
-												<div className="pd-lesson-right">
-													{l.duration ? <span className="pd-lesson-dur">{Math.round(l.duration)} min</span> : null}
-													{isEnrolled &&
-														(done ? (
-															<span className="pd-lesson-done">Completed</span>
-														) : (
+											<React.Fragment key={l._id}>
+												<div className={`pd-lesson${done ? ' is-done' : ''}`}>
+													<span className={`pd-lesson-check${done ? ' is-done' : ''}`}>{done ? '✓' : String(lessonIndex).padStart(2, '0')}</span>
+													<div className="pd-lesson-info">
+														<h4>{l.title}</h4>
+														{l.description && <p>{l.description}</p>}
+													</div>
+													<div className="pd-lesson-right">
+														{l.duration ? <span className="pd-lesson-dur">{Math.round(l.duration)} min</span> : null}
+														{isEnrolled && l.videoUrl && (
 															<button
 																className="pd-lesson-btn"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	completeLessonHandler(l._id);
+																	setWatchingLesson(watching ? null : l._id);
 																}}
 															>
-																Mark done
+																{watching ? 'Close' : 'Watch'}
 															</button>
-														))}
+														)}
+														{isEnrolled &&
+															(done ? (
+																<span className="pd-lesson-done">Completed</span>
+															) : (
+																<button
+																	className="pd-lesson-btn"
+																	onClick={(e) => {
+																		e.stopPropagation();
+																		completeLessonHandler(l._id);
+																	}}
+																>
+																	Mark done
+																</button>
+															))}
+													</div>
 												</div>
-											</div>
+												{watching && isEnrolled && l.videoUrl && (
+													<div style={{ margin: '4px 0 14px', animation: 'fadeInUp 0.3s ease both' }}>
+														<VideoPlayer src={l.videoUrl} title={l.title} />
+													</div>
+												)}
+											</React.Fragment>
 										);
 									})}
 								</div>

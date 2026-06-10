@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { CircularProgress, Stack } from '@mui/material';
-import { useQuery, useReactiveVar } from '@apollo/client';
+import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY } from '../../../apollo/user/query';
+import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY, GET_PARTNER_ONLINE_STATUS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import { REACT_APP_API_URL, Messages } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
@@ -24,6 +24,17 @@ const ChatContent = () => {
 	});
 
 	// Load message history when partner changes
+	// Live presence check for the open conversation (chat:online snapshot goes
+	// stale — backend tracks onlineMembers in memory)
+	const [checkPartnerOnline] = useLazyQuery(GET_PARTNER_ONLINE_STATUS, {
+		fetchPolicy: 'network-only',
+		onCompleted: (d: any) => {
+			const st = d?.getPartnerOnlineStatus;
+			if (!st?.memberId) return;
+			setConversations((prev) => prev.map((c: any) => (c.partnerId === st.memberId ? { ...c, isOnline: st.isOnline } : c)));
+		},
+	});
+
 	const { loading: msgsLoading, refetch: msgsRefetch } = useQuery(GET_MESSAGE_HISTORY, {
 		fetchPolicy: 'network-only',
 		variables: { input: activePartner },
@@ -32,7 +43,10 @@ const ChatContent = () => {
 	});
 
 	useEffect(() => {
-		if (activePartner) msgsRefetch({ input: activePartner });
+		if (activePartner) {
+			msgsRefetch({ input: activePartner });
+			checkPartnerOnline({ variables: { input: activePartner } });
+		}
 	}, [activePartner]);
 
 	// Scroll to bottom on new messages

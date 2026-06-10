@@ -13,14 +13,15 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
-// Feature lists mirror the landing PricingSection — real platform capabilities only
+// Honest membership framing — programs are one-time purchases; the
+// subscription supports the platform (nothing on the backend gates on it)
 const plans = [
 	{
 		key: 'MONTHLY',
 		name: 'Monthly',
 		price: 14.99,
 		period: '/month',
-		features: ['Full program library access', 'Lesson-by-lesson progression', 'AI nutrition tools', 'Progress analytics'],
+		features: ['Support free training for everyone', 'Back verified trainers directly', 'Billed monthly, cancel anytime', 'Secured by Stripe'],
 	},
 	{
 		key: 'YEARLY',
@@ -29,7 +30,7 @@ const plans = [
 		period: '/year',
 		sub: '$9.99/mo — Save 33%',
 		featured: true,
-		features: ['Everything in Monthly', 'Best value for committed athletes', 'One payment, full year of training', 'Priority support'],
+		features: ['Everything in Monthly', 'Best value — $9.99 a month', 'One payment for the whole year', 'Founding supporter of the platform'],
 	},
 ];
 

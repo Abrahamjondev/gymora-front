@@ -42,9 +42,6 @@ const AdminMenuList = (props: any) => {
 			case 'community':
 				setClickMenu(['Community']);
 				break;
-			case 'cs':
-				setClickMenu(['Cs']);
-				break;
 			default:
 				setClickMenu(['Users']);
 				break;

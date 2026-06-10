@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { CircularProgress, Stack } from '@mui/material';
 import { useLazyQuery, useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store';
-import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION, GET_AI_ANALYZE_HISTORY } from '../../../apollo/user/query';
+import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION, GET_AI_ANALYZE_HISTORY, GET_NUTRITION_HISTORY } from '../../../apollo/user/query';
 import { ADD_MEAL_LOG, DELETE_MEAL_LOG, ANALYZE_FOOD_IMAGE } from '../../../apollo/user/mutation';
 import { T } from '../../types/common';
 import { Messages, REACT_APP_API_URL } from '../../config';
@@ -86,6 +86,10 @@ const NutritionContent = () => {
 	// AI history
 	const [aiHistory, setAiHistory] = useState<any[]>([]);
 
+	// Daily nutrition documents (kept in sync by backend on every meal log)
+	const [nutritionHistory, setNutritionHistory] = useState<any[]>([]);
+	const [historyPeriod, setHistoryPeriod] = useState<'WEEK' | 'MONTH' | 'YEAR'>('WEEK');
+
 	// Apollo
 	const { loading: mealsLoading, refetch: mealsRefetch } = useQuery(GET_MEAL_HISTORY, {
 		fetchPolicy: 'network-only', skip: !user?._id,
@@ -105,6 +109,11 @@ const NutritionContent = () => {
 	useQuery(GET_AI_ANALYZE_HISTORY, {
 		fetchPolicy: 'network-only', skip: !user?._id,
 		onCompleted: (d: T) => setAiHistory(d?.getAIAnalyzeHistory ?? []),
+	});
+
+	const { refetch: nutritionHistoryRefetch } = useQuery(GET_NUTRITION_HISTORY, {
+		fetchPolicy: 'network-only', skip: !user?._id,
+		onCompleted: (d: T) => setNutritionHistory(d?.getNutritionHistory ?? []),
 	});
 
 	const [addMealLog] = useMutation(ADD_MEAL_LOG);
@@ -161,6 +170,7 @@ const NutritionContent = () => {
 				},
 			});
 			await mealsRefetch();
+			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
 			await sweetMixinSuccessAlert(`Logged as ${mealType.toLowerCase()}!`);
 			setScanResult(null);
 			setScanPreview(null);
@@ -206,6 +216,7 @@ const NutritionContent = () => {
 			if (!newMeal.mealName) throw new Error('Meal name required');
 			await addMealLog({ variables: { input: { ...newMeal, calories: Number(newMeal.calories), protein: Number(newMeal.protein), carbs: Number(newMeal.carbs), fats: Number(newMeal.fats) } } });
 			await mealsRefetch();
+			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
 			setShowAddMeal(false);
 			setNewMeal({ mealType: 'BREAKFAST', mealName: '', calories: 0, protein: 0, carbs: 0, fats: 0, mealDate: new Date().toISOString() });
 			await sweetMixinSuccessAlert('Meal logged!');
@@ -217,14 +228,61 @@ const NutritionContent = () => {
 			if (await sweetConfirmAlert('Delete this meal?')) {
 				await deleteMealLog({ variables: { input: id } });
 				await mealsRefetch();
+			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
 			}
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
-	const totalCalories = meals.reduce((a: number, m: any) => a + (m.calories || 0), 0);
-	const totalProtein = meals.reduce((a: number, m: any) => a + (m.protein || 0), 0);
-	const totalCarbs = meals.reduce((a: number, m: any) => a + (m.carbs || 0), 0);
-	const totalFats = meals.reduce((a: number, m: any) => a + (m.fats || 0), 0);
+	// "Today's intake" must only count TODAY — getMealHistory returns the full history
+	const todayStr = new Date().toDateString();
+	const todayMeals = meals.filter((m: any) => m.mealDate && new Date(m.mealDate).toDateString() === todayStr);
+	const totalCalories = todayMeals.reduce((a: number, m: any) => a + (m.calories || 0), 0);
+	const totalProtein = todayMeals.reduce((a: number, m: any) => a + (m.protein || 0), 0);
+	const totalCarbs = todayMeals.reduce((a: number, m: any) => a + (m.carbs || 0), 0);
+	const totalFats = todayMeals.reduce((a: number, m: any) => a + (m.fats || 0), 0);
+
+	// ── History aggregation: week = last 7 days (daily), month = last 30 days
+	// (daily), year = last 12 months (monthly sums). All from real daily docs.
+	const historyData = (() => {
+		const docs = [...nutritionHistory].sort(
+			(a, b) => new Date(a.nutritionDate).getTime() - new Date(b.nutritionDate).getTime(),
+		);
+		const now = new Date();
+		if (historyPeriod === 'YEAR') {
+			const buckets: Record<string, { label: string; calories: number; protein: number }> = {};
+			for (let i = 11; i >= 0; i--) {
+				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+				const key = `${d.getFullYear()}-${d.getMonth()}`;
+				buckets[key] = { label: d.toLocaleDateString([], { month: 'short' }), calories: 0, protein: 0 };
+			}
+			docs.forEach((doc) => {
+				const d = new Date(doc.nutritionDate);
+				const key = `${d.getFullYear()}-${d.getMonth()}`;
+				if (buckets[key]) {
+					buckets[key].calories += doc.totalCalories || 0;
+					buckets[key].protein += doc.totalProtein || 0;
+				}
+			});
+			return Object.values(buckets);
+		}
+		const days = historyPeriod === 'WEEK' ? 7 : 30;
+		const out: { label: string; calories: number; protein: number }[] = [];
+		for (let i = days - 1; i >= 0; i--) {
+			const d = new Date(now);
+			d.setDate(now.getDate() - i);
+			const doc = docs.find((x) => new Date(x.nutritionDate).toDateString() === d.toDateString());
+			out.push({
+				label: d.toLocaleDateString([], historyPeriod === 'WEEK' ? { weekday: 'short' } : { day: 'numeric' }),
+				calories: doc?.totalCalories || 0,
+				protein: doc?.totalProtein || 0,
+			});
+		}
+		return out;
+	})();
+	const historyMax = Math.max(1, ...historyData.map((d) => d.calories));
+	const historyTotal = historyData.reduce((a, d) => a + d.calories, 0);
+	const historyActiveDays = historyData.filter((d) => d.calories > 0).length;
+	const historyAvg = historyActiveDays > 0 ? Math.round(historyTotal / historyActiveDays) : 0;
 
 	const goalLabels: Record<string, string> = { WEIGHT_LOSS: 'Weight Loss', MAINTENANCE: 'Maintenance', MUSCLE_GAIN: 'Muscle Gain' };
 	const activityLabels: Record<string, string> = {
@@ -592,7 +650,71 @@ const NutritionContent = () => {
 						</div>
 					)}
 
-					{/* Add meal form */}
+					{/* ─── NUTRITION HISTORY (week / month / year) ─── */}
+				{nutritionHistory.length > 0 && (
+					<div className="pg-chart" style={{ marginBottom: '24px' }}>
+						<div className="pg-chart-head" style={{ alignItems: 'center' }}>
+							<span>Calorie history</span>
+							<div className="wl-seg" style={{ padding: '2px' }}>
+								{(['WEEK', 'MONTH', 'YEAR'] as const).map((p) => (
+									<button
+										key={p}
+										className={historyPeriod === p ? 'is-active' : ''}
+										style={{ padding: '6px 13px', fontSize: '11.5px' }}
+										onClick={() => setHistoryPeriod(p)}
+									>
+										{p === 'WEEK' ? 'Week' : p === 'MONTH' ? 'Month' : 'Year'}
+									</button>
+								))}
+							</div>
+						</div>
+
+						{/* Bar chart */}
+						<div style={{ display: 'flex', alignItems: 'flex-end', gap: historyPeriod === 'MONTH' ? '3px' : '6px', height: '110px', marginTop: '14px' }}>
+							{historyData.map((d, i) => {
+								const h = Math.max(d.calories > 0 ? 6 : 2, Math.round((d.calories / historyMax) * 100));
+								const isToday = historyPeriod !== 'YEAR' && i === historyData.length - 1;
+								return (
+									<div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', minWidth: 0 }} title={`${d.label}: ${Math.round(d.calories)} kcal`}>
+										<div
+											style={{
+												width: '100%',
+												maxWidth: '26px',
+												height: `${h}%`,
+												borderRadius: '4px 4px 2px 2px',
+												background: d.calories > 0
+													? isToday
+														? 'linear-gradient(180deg, #00dce5, rgba(0,220,229,0.4))'
+														: 'linear-gradient(180deg, rgba(0,220,229,0.55), rgba(0,220,229,0.15))'
+													: 'rgba(255,255,255,0.06)',
+												boxShadow: isToday && d.calories > 0 ? '0 0 10px rgba(0,220,229,0.4)' : 'none',
+												transition: 'height 0.5s cubic-bezier(0.22,1,0.36,1)',
+											}}
+										/>
+										{(historyPeriod !== 'MONTH' || i % 5 === 0) && (
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '8px', color: 'rgba(185,202,202,0.45)', whiteSpace: 'nowrap' }}>{d.label}</span>
+										)}
+									</div>
+								);
+							})}
+						</div>
+
+						{/* Period summary */}
+						<div style={{ display: 'flex', gap: '22px', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+								<b style={{ color: '#ffffff' }}>{Math.round(historyTotal).toLocaleString()}</b> kcal total
+							</span>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+								<b style={{ color: '#00dce5' }}>{historyAvg.toLocaleString()}</b> avg / active day
+							</span>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
+								<b style={{ color: '#66daba' }}>{historyActiveDays}</b> {historyPeriod === 'YEAR' ? 'active months' : 'days logged'}
+							</span>
+						</div>
+					</div>
+				)}
+
+				{/* Add meal form */}
 					{showAddMeal && (
 						<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)' }}>
 							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}>Log a Meal</h4>
@@ -688,6 +810,7 @@ const NutritionContent = () => {
 														},
 													});
 													await mealsRefetch();
+			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
 													await sweetMixinSuccessAlert(`Logged as ${type.toLowerCase()}!`);
 												} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 											}} style={{

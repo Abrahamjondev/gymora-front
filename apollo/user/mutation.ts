@@ -533,6 +533,22 @@ export const CREATE_COURSE = gql`
 	}
 `;
 
+export const UPDATE_COURSE = gql`
+	mutation UpdateCourse($input: CourseUpdate!) {
+		updateCourse(input: $input) {
+			_id
+			trainerId
+			courseTitle
+			courseDesc
+			courseDifficulty
+			courseCategory
+			coursePrice
+			courseDuration
+			updatedAt
+		}
+	}
+`;
+
 export const CREATE_COURSE_CHECKOUT_SESSION = gql`
 	mutation CreateCourseCheckoutSession($courseId: String!, $baseUrl: String!) {
 		createCourseCheckoutSession(courseId: $courseId, baseUrl: $baseUrl) 

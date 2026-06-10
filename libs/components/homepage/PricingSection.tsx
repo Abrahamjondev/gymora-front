@@ -18,7 +18,7 @@ const PricingSection = () => {
 						<span className="lp-eyebrow">Membership</span>
 						<h2 className="lp-h2">Simple, honest pricing</h2>
 						<p className="lp-sub" style={{ margin: '14px auto 0' }}>
-							All workouts are free forever. Go premium to unlock structured programs and full progression tracking.
+							Every workout is free forever and programs are one-time purchases. Membership is how you back the platform and the trainers behind it.
 						</p>
 					</div>
 				</div>
@@ -31,10 +31,10 @@ const PricingSection = () => {
 						</span>
 						<p className="lp-price-note">Billed monthly. Cancel anytime.</p>
 						<ul>
-							<li>Full program library access</li>
-							<li>Lesson-by-lesson progression</li>
-							<li>AI nutrition tools</li>
-							<li>Progress analytics</li>
+							<li>Support free training for everyone</li>
+							<li>Back verified trainers directly</li>
+							<li>Billed monthly, cancel anytime</li>
+							<li>Secured by Stripe</li>
 						</ul>
 						<button className="lp-btn-ghost lp-price-btn" onClick={() => router.push('/subscription')}>
 							Start Monthly
@@ -51,9 +51,9 @@ const PricingSection = () => {
 						<p className="lp-price-note">$119.88 billed yearly. Cancel anytime.</p>
 						<ul>
 							<li>Everything in Monthly</li>
-							<li>Best value for committed athletes</li>
-							<li>One payment, full year of training</li>
-							<li>Priority support</li>
+							<li>Best value — $9.99 a month</li>
+							<li>One payment for the whole year</li>
+							<li>Founding supporter of the platform</li>
 						</ul>
 						<button className="lp-btn-primary lp-price-btn" onClick={() => router.push('/subscription')}>
 							Start Yearly

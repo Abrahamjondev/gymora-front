@@ -14,14 +14,17 @@ import SubscriptionContent from '../../libs/components/mypage/SubscriptionConten
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
-import { getJwtToken, updateUserInfo } from '../../libs/auth';
+import { getJwtToken, updateUserInfo, logOut } from '../../libs/auth';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import {
 	GET_MEMBER_WORKOUTS, GET_DASHBOARD_STATS, GET_NOTIFICATIONS,
 	GET_MEMBER_PURCHASED_COURSES, GET_TRAINER_COURSES, GET_RECOMMENDATIONS,
 	GET_TRAINER_BY_MEMBER_ID,
+	GET_FREE_WORKOUT_COUNT,
 } from '../../apollo/user/query';
-import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ } from '../../apollo/user/mutation';
+import { CREATE_TRAINER, CREATE_WORKOUT, CREATE_COURSE, MARK_NOTIFICATION_READ, UPDATE_WORKOUT, UPDATE_COURSE } from '../../apollo/user/mutation';
+import LessonManager from '../../libs/components/mypage/LessonManager';
+import { uploadImageFile, uploadVideoFile } from '../../libs/upload';
 import { Workout } from '../../libs/types/workout/workout';
 import { Course } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
@@ -135,16 +138,46 @@ const MyPage: NextPage = () => {
 	const [recommendations, setRecommendations] = useState<any[]>([]);
 	const [trainerProfile, setTrainerProfile] = useState<any>(null);
 	const [notifFilter, setNotifFilter] = useState<'all' | 'unread'>('all');
-	const [newWorkout, setNewWorkout] = useState({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
-	const [newCourse, setNewCourse] = useState({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
+	const [editWorkout, setEditWorkout] = useState<any>(null);
+	const [editCourse, setEditCourse] = useState<any>(null);
+	const [lessonCourse, setLessonCourse] = useState<{ id: string; title: string } | null>(null);
+	const [newWorkout, setNewWorkout] = useState<any>({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, workoutThumbnail: '', videoUrl: '', exercises: [] });
+	const [newCourse, setNewCourse] = useState<any>({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4, courseThumbnail: '' });
+	const [uploadBusy, setUploadBusy] = useState<string | null>(null);
+
+	/** Upload helpers — imageUploader/videoUploader on the backend */
+	const pickFile = (accept: string, onPick: (f: File) => void) => {
+		const input = document.createElement('input');
+		input.type = 'file';
+		input.accept = accept;
+		input.onchange = () => input.files?.[0] && onPick(input.files[0]);
+		input.click();
+	};
+
+	const uploadTo = async (kind: string, file: File, isVideo: boolean, apply: (url: string) => void) => {
+		try {
+			setUploadBusy(kind);
+			const url = isVideo ? await uploadVideoFile(file) : await uploadImageFile(file, kind.toLowerCase().includes('course') ? 'course' : 'workout');
+			apply(url);
+		} catch (err: any) {
+			sweetMixinErrorAlert(err.message || 'Upload failed').then();
+		} finally {
+			setUploadBusy(null);
+		}
+	};
+
+	const cleanExercises = (list: any[]) =>
+		(list ?? [])
+			.filter((e: any) => e.exerciseName?.trim())
+			.map((e: any) => ({ exerciseName: e.exerciseName.trim(), sets: Number(e.sets) || 1, reps: Number(e.reps) || 1 }));
 	const [trainerForm, setTrainerForm] = useState({ trainerBio: '', trainerSpecializations: '', trainerExperience: 1 });
 
 	/** APOLLO **/
-	useQuery(GET_MEMBER_WORKOUTS, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setMyWorkouts(d?.getMemberWorkouts ?? []) });
+	const { refetch: myWorkoutsRefetch } = useQuery(GET_MEMBER_WORKOUTS, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setMyWorkouts(d?.getMemberWorkouts ?? []) });
 	useQuery(GET_DASHBOARD_STATS, { fetchPolicy: 'cache-and-network', skip: !user?._id, onCompleted: (d: T) => setDashboardStats(d?.getDashboardStats) });
 	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
 	useQuery(GET_MEMBER_PURCHASED_COURSES, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setPurchasedCourses(d?.getMemberPurchasedCourses ?? []) });
-	useQuery(GET_TRAINER_COURSES, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setTrainerCourses(d?.getTrainerCourses ?? []) });
+	const { refetch: trainerCoursesRefetch } = useQuery(GET_TRAINER_COURSES, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setTrainerCourses(d?.getTrainerCourses ?? []) });
 	useQuery(GET_TRAINER_BY_MEMBER_ID, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: user?._id },
@@ -155,6 +188,69 @@ const MyPage: NextPage = () => {
 
 	const [markRead] = useMutation(MARK_NOTIFICATION_READ);
 	const [createTrainer] = useMutation(CREATE_TRAINER);
+	const [freeWorkoutCount, setFreeWorkoutCount] = useState<number | null>(null);
+	useQuery(GET_FREE_WORKOUT_COUNT, {
+		fetchPolicy: 'network-only',
+		skip: !user?._id || user?.memberType !== 'TRAINER',
+		onCompleted: (d: T) => setFreeWorkoutCount(d?.getFreeWorkoutCount ?? null),
+	});
+
+	const [updateWorkoutMut] = useMutation(UPDATE_WORKOUT);
+	const [updateCourseMut] = useMutation(UPDATE_COURSE);
+
+	/** Owner edit handlers — backend updateWorkout/updateCourse verify ownership */
+	const saveWorkoutEdit = async () => {
+		try {
+			if (!editWorkout?.workoutTitle || !editWorkout?.targetMuscle) throw new Error('Title and target muscle required');
+			await updateWorkoutMut({
+				variables: {
+					input: {
+						_id: editWorkout._id,
+						workoutTitle: editWorkout.workoutTitle,
+						workoutDesc: editWorkout.workoutDesc || undefined,
+						workoutDifficulty: editWorkout.workoutDifficulty,
+						targetMuscle: editWorkout.targetMuscle,
+						estimatedCaloriesBurned: Number(editWorkout.estimatedCaloriesBurned),
+						workoutThumbnail: editWorkout.workoutThumbnail || undefined,
+						videoUrl: editWorkout.videoUrl || undefined,
+						exercises: cleanExercises(editWorkout.exercises),
+					},
+				},
+			});
+			const { data } = await myWorkoutsRefetch();
+			if (data?.getMemberWorkouts) setMyWorkouts(data.getMemberWorkouts);
+			setEditWorkout(null);
+			await sweetMixinSuccessAlert('Workout updated!');
+		} catch (err: any) {
+			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
+		}
+	};
+
+	const saveCourseEdit = async () => {
+		try {
+			if (!editCourse?.courseTitle) throw new Error('Title required');
+			await updateCourseMut({
+				variables: {
+					input: {
+						_id: editCourse._id,
+						courseTitle: editCourse.courseTitle,
+						courseDesc: editCourse.courseDesc || undefined,
+						courseDifficulty: editCourse.courseDifficulty,
+						courseCategory: editCourse.courseCategory,
+						coursePrice: Number(editCourse.coursePrice),
+						courseDuration: Number(editCourse.courseDuration),
+						courseThumbnail: editCourse.courseThumbnail || undefined,
+					},
+				},
+			});
+			const { data } = await trainerCoursesRefetch();
+			if (data?.getTrainerCourses) setTrainerCourses(data.getTrainerCourses);
+			setEditCourse(null);
+			await sweetMixinSuccessAlert('Program updated!');
+		} catch (err: any) {
+			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
+		}
+	};
 	const [createWorkout] = useMutation(CREATE_WORKOUT);
 	const [createCourseMut] = useMutation(CREATE_COURSE);
 
@@ -186,8 +282,21 @@ const MyPage: NextPage = () => {
 	const createWorkoutHandler = async () => {
 		try {
 			if (!newWorkout.workoutTitle || !newWorkout.targetMuscle) throw new Error('Title and target muscle required');
-			await createWorkout({ variables: { input: { ...newWorkout, estimatedCaloriesBurned: Number(newWorkout.estimatedCaloriesBurned) } } });
-			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300 });
+			await createWorkout({
+				variables: {
+					input: {
+						workoutTitle: newWorkout.workoutTitle,
+						workoutDesc: newWorkout.workoutDesc || undefined,
+						workoutDifficulty: newWorkout.workoutDifficulty,
+						targetMuscle: newWorkout.targetMuscle,
+						estimatedCaloriesBurned: Number(newWorkout.estimatedCaloriesBurned),
+						workoutThumbnail: newWorkout.workoutThumbnail || undefined,
+						videoUrl: newWorkout.videoUrl || undefined,
+						exercises: cleanExercises(newWorkout.exercises),
+					},
+				},
+			});
+			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, workoutThumbnail: '', videoUrl: '', exercises: [] });
 			await sweetMixinSuccessAlert('Workout created!');
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
@@ -196,8 +305,8 @@ const MyPage: NextPage = () => {
 	const createCourseHandler = async () => {
 		try {
 			if (!newCourse.courseTitle) throw new Error('Course title required');
-			await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration) } } });
-			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4 });
+			await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration), courseThumbnail: newCourse.courseThumbnail || undefined } } });
+			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4, courseThumbnail: '' });
 			await sweetMixinSuccessAlert('Course created!');
 			router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
@@ -207,8 +316,81 @@ const MyPage: NextPage = () => {
 		try {
 			if (!trainerForm.trainerBio) throw new Error('Bio is required');
 			await createTrainer({ variables: { input: { trainerBio: trainerForm.trainerBio, trainerSpecializations: trainerForm.trainerSpecializations.split(',').map((s: string) => s.trim()).filter(Boolean), trainerExperience: Number(trainerForm.trainerExperience) } } });
-			await sweetMixinSuccessAlert('Trainer profile created! Please re-login.');
+			await sweetMixinSuccessAlert('Trainer profile created! Please log in again to activate your Studio.');
+			logOut();
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+	};
+
+	/** Shared media + exercises editors for create/edit forms */
+	const mediaControls = (kind: string, obj: any, setObj: (v: any) => void, withVideo: boolean) => {
+		const thumbField = kind.toLowerCase().includes('course') ? 'courseThumbnail' : 'workoutThumbnail';
+		return (
+			<div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+				<div style={{ width: '96px', height: '60px', borderRadius: '10px', overflow: 'hidden', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(255,255,255,0.03)', flexShrink: 0 }}>
+					{obj[thumbField] ? (
+						<img src={`${REACT_APP_API_URL}/${obj[thumbField]}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+					) : (
+						<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono', fontSize: '8.5px', color: 'rgba(185,202,202,0.4)', letterSpacing: '0.08em' }}>NO IMAGE</div>
+					)}
+				</div>
+				<button
+					className="nt-markall"
+					disabled={uploadBusy === kind + 'Img'}
+					onClick={() => pickFile('image/*', (f) => uploadTo(kind + 'Img', f, false, (url) => setObj({ ...obj, [thumbField]: url })))}
+				>
+					{uploadBusy === kind + 'Img' ? 'Uploading...' : obj[thumbField] ? 'Change Thumbnail' : 'Upload Thumbnail'}
+				</button>
+				{withVideo && (
+					<button
+						className="nt-markall"
+						disabled={uploadBusy === kind + 'Vid'}
+						onClick={() => pickFile('video/mp4,video/webm,video/ogg', (f) => uploadTo(kind + 'Vid', f, true, (url) => setObj({ ...obj, videoUrl: url })))}
+					>
+						{uploadBusy === kind + 'Vid' ? 'Uploading video...' : obj.videoUrl ? 'Replace Video' : 'Upload Video'}
+					</button>
+				)}
+				{withVideo && obj.videoUrl && (
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba' }}>Video attached ✓</span>
+				)}
+				{withVideo && (
+					<input
+						className="wd-input"
+						style={{ flex: '1 1 100%', minWidth: '240px' }}
+						value={obj.videoUrl ?? ''}
+						onChange={(e) => setObj({ ...obj, videoUrl: e.target.value })}
+						placeholder="...or paste a video URL (YouTube, Vimeo, mp4)"
+					/>
+				)}
+			</div>
+		);
+	};
+
+	const exercisesEditor = (obj: any, setObj: (v: any) => void) => {
+		const list = obj.exercises ?? [];
+		const update = (i: number, field: string, value: any) => {
+			const next = list.map((e: any, idx: number) => (idx === i ? { ...e, [field]: value } : e));
+			setObj({ ...obj, exercises: next });
+		};
+		return (
+			<div>
+				<span style={labelStyle}>Training Plan (exercises)</span>
+				<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+					{list.map((ex: any, i: number) => (
+						<div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 86px 86px 36px', gap: '8px', alignItems: 'center' }}>
+							<input className="wd-input" placeholder={`Exercise ${i + 1} name`} value={ex.exerciseName} onChange={(e) => update(i, 'exerciseName', e.target.value)} />
+							<input className="wd-input" type="number" min={1} placeholder="Sets" value={ex.sets} onChange={(e) => update(i, 'sets', e.target.value)} />
+							<input className="wd-input" type="number" min={1} placeholder="Reps" value={ex.reps} onChange={(e) => update(i, 'reps', e.target.value)} />
+							<button className="nm-del" style={{ opacity: 1 }} onClick={() => setObj({ ...obj, exercises: list.filter((_: any, idx: number) => idx !== i) })}>
+								✕
+							</button>
+						</div>
+					))}
+				</div>
+				<button className="nt-markall" style={{ marginTop: '9px' }} onClick={() => setObj({ ...obj, exercises: [...list, { exerciseName: '', sets: 3, reps: 10 }] })}>
+					+ Add Exercise
+				</button>
+			</div>
+		);
 	};
 
 	const inputStyle: React.CSSProperties = { padding: '12px', background: '#201f20', border: '1px solid #3a494a', borderRadius: '8px', color: '#e5e2e3', fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '14px', outline: 'none', width: '100%' };
@@ -418,6 +600,40 @@ const MyPage: NextPage = () => {
 								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Workouts ({myWorkouts.length})</h2>
 								<button onClick={() => menuHandler('createWorkout')} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
 							</div>
+							{/* Edit panel */}
+							{editWorkout && (
+								<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)', marginBottom: '18px' }}>
+									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>Edit Workout</h4>
+									<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+										<input className="wd-input" value={editWorkout.workoutTitle} onChange={(e) => setEditWorkout({ ...editWorkout, workoutTitle: e.target.value })} placeholder="Title *" />
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editWorkout.workoutDesc ?? ''} onChange={(e) => setEditWorkout({ ...editWorkout, workoutDesc: e.target.value })} placeholder="Description" />
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+											{['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'].map((m) => (
+												<button key={m} className="cl-cat-btn" style={editWorkout.targetMuscle === m ? { borderColor: 'rgba(0,220,229,0.5)', background: 'rgba(0,220,229,0.14)', color: '#00eaf4' } : undefined} onClick={() => setEditWorkout({ ...editWorkout, targetMuscle: m })}>
+													{m}
+												</button>
+											))}
+										</div>
+										<div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+											<div className="wl-seg">
+												{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
+													<button key={d} className={editWorkout.workoutDifficulty === d ? 'is-active' : ''} onClick={() => setEditWorkout({ ...editWorkout, workoutDifficulty: d })}>
+														{d.charAt(0) + d.slice(1).toLowerCase()}
+													</button>
+												))}
+											</div>
+											<input className="wd-input" type="number" style={{ width: '140px' }} value={editWorkout.estimatedCaloriesBurned} onChange={(e) => setEditWorkout({ ...editWorkout, estimatedCaloriesBurned: e.target.value })} placeholder="Kcal" />
+										</div>
+										{mediaControls('editWorkout', editWorkout, setEditWorkout, true)}
+										{exercisesEditor(editWorkout, setEditWorkout)}
+										<div style={{ display: 'flex', gap: '10px' }}>
+											<button className="wd-btn" onClick={saveWorkoutEdit}>Save Changes</button>
+											<button className="nt-markall" onClick={() => setEditWorkout(null)}>Cancel</button>
+										</div>
+									</div>
+								</div>
+							)}
+
 							{myWorkouts.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No workouts yet.</p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{myWorkouts.map((w) => (
@@ -425,9 +641,21 @@ const MyPage: NextPage = () => {
 											onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.2)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-3px)'; }}
 											onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={w.workoutThumbnail ? `${REACT_APP_API_URL}/${w.workoutThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
-											<div style={{ padding: '14px' }}>
-												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{w.workoutTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{w.workoutDifficulty} · {w.estimatedCaloriesBurned} kcal</span>
+											<div style={{ padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
+												<div style={{ minWidth: 0 }}>
+													<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.workoutTitle}</h4>
+													<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{w.workoutDifficulty} · {w.estimatedCaloriesBurned} kcal</span>
+												</div>
+												<button
+													className="ad-btn"
+													onClick={(e) => {
+														e.stopPropagation();
+														setEditWorkout({ ...w });
+														window.scrollTo({ top: 0, behavior: 'smooth' });
+													}}
+												>
+													Edit
+												</button>
 											</div>
 										</div>
 									))}
@@ -442,6 +670,11 @@ const MyPage: NextPage = () => {
 								<div>
 									<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>Studio</span>
 									<h2>Create Workout</h2>
+									{freeWorkoutCount !== null && (
+										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(102,218,186,0.8)', display: 'block', marginTop: '6px' }}>
+											{freeWorkoutCount} free workout{freeWorkoutCount === 1 ? '' : 's'} published
+										</span>
+									)}
 								</div>
 							</div>
 							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
@@ -486,6 +719,11 @@ const MyPage: NextPage = () => {
 										<span style={labelStyle}>Est. Calories Burned</span>
 										<input className="wd-input" type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} />
 									</div>
+									<div>
+										<span style={labelStyle}>Media</span>
+										{mediaControls('newWorkout', newWorkout, setNewWorkout, true)}
+									</div>
+									{exercisesEditor(newWorkout, setNewWorkout)}
 									<button className="wd-btn" style={{ width: 'fit-content' }} onClick={createWorkoutHandler}>
 										Publish Workout →
 									</button>
@@ -521,6 +759,47 @@ const MyPage: NextPage = () => {
 								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Programs ({trainerCourses.length})</h2>
 								<button onClick={() => menuHandler('createCourse')} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
 							</div>
+							{/* Edit program panel */}
+							{editCourse && (
+								<div className="wd-form-card" style={{ borderColor: 'rgba(255,138,0,0.25)', marginBottom: '18px' }}>
+									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>Edit Program</h4>
+									<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+										<input className="wd-input" value={editCourse.courseTitle} onChange={(e) => setEditCourse({ ...editCourse, courseTitle: e.target.value })} placeholder="Title *" />
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editCourse.courseDesc ?? ''} onChange={(e) => setEditCourse({ ...editCourse, courseDesc: e.target.value })} placeholder="Description" />
+										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
+											{[
+												{ v: 'STRENGTH', c: '#ff8a00' },
+												{ v: 'CARDIO', c: '#00dce5' },
+												{ v: 'YOGA', c: '#ddb7ff' },
+												{ v: 'MOBILITY', c: '#66daba' },
+												{ v: 'NUTRITION', c: '#ffb77f' },
+											].map((catOpt) => (
+												<button key={catOpt.v} className="cl-cat-btn" style={editCourse.courseCategory === catOpt.v ? { borderColor: `${catOpt.c}80`, background: `${catOpt.c}1c`, color: catOpt.c } : undefined} onClick={() => setEditCourse({ ...editCourse, courseCategory: catOpt.v })}>
+													<span className="cl-cat-dot" style={{ background: catOpt.c }} />
+													{catOpt.v.charAt(0) + catOpt.v.slice(1).toLowerCase()}
+												</button>
+											))}
+										</div>
+										<div style={{ display: 'flex', gap: '14px', alignItems: 'center', flexWrap: 'wrap' }}>
+											<div className="wl-seg">
+												{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
+													<button key={d} className={editCourse.courseDifficulty === d ? 'is-active' : ''} onClick={() => setEditCourse({ ...editCourse, courseDifficulty: d })}>
+														{d.charAt(0) + d.slice(1).toLowerCase()}
+													</button>
+												))}
+											</div>
+											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.coursePrice} onChange={(e) => setEditCourse({ ...editCourse, coursePrice: e.target.value })} placeholder="Price $" />
+											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.courseDuration} onChange={(e) => setEditCourse({ ...editCourse, courseDuration: e.target.value })} placeholder="Weeks" />
+										</div>
+										{mediaControls('editCourse', editCourse, setEditCourse, false)}
+										<div style={{ display: 'flex', gap: '10px' }}>
+											<button className="wd-btn" style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800' }} onClick={saveCourseEdit}>Save Changes</button>
+											<button className="nt-markall" onClick={() => setEditCourse(null)}>Cancel</button>
+										</div>
+									</div>
+								</div>
+							)}
+
 							{trainerCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses created yet.</p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{trainerCourses.map((c) => (
@@ -531,11 +810,37 @@ const MyPage: NextPage = () => {
 											<div style={{ padding: '14px' }}>
 												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{c.courseTitle}</h4>
 												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{c.courseCategory} · ${c.coursePrice} · {c.courseRating ? `★ ${c.courseRating.toFixed(1)}` : 'No ratings'}</span>
+												<div style={{ display: 'flex', gap: '7px', marginTop: '12px' }}>
+													<button
+														className="ad-btn"
+														onClick={(e) => {
+															e.stopPropagation();
+															setEditCourse({ ...c });
+															setLessonCourse(null);
+															window.scrollTo({ top: 0, behavior: 'smooth' });
+														}}
+													>
+														Edit
+													</button>
+													<button
+														className="ad-btn is-success"
+														onClick={(e) => {
+															e.stopPropagation();
+															setLessonCourse(lessonCourse?.id === c._id ? null : { id: c._id, title: c.courseTitle });
+															setEditCourse(null);
+														}}
+													>
+														{lessonCourse?.id === c._id ? 'Hide Lessons' : 'Lessons'}
+													</button>
+												</div>
 											</div>
 										</div>
 									))}
 								</div>
 							)}
+
+							{/* Lesson manager */}
+							{lessonCourse && <LessonManager key={lessonCourse.id} courseId={lessonCourse.id} courseTitle={lessonCourse.title} />}
 						</div>
 					)}
 
@@ -601,6 +906,10 @@ const MyPage: NextPage = () => {
 											<span style={labelStyle}>Duration (weeks)</span>
 											<input className="wd-input" type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} />
 										</div>
+									</div>
+									<div>
+										<span style={labelStyle}>Thumbnail</span>
+										{mediaControls('newCourse', newCourse, setNewCourse, false)}
 									</div>
 									<button
 										className="wd-btn"
