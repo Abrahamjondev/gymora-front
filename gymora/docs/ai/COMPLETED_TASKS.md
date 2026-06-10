@@ -14,6 +14,8 @@
 - Trainer Detail follow-up: Articles section (GET_BOARD_ARTICLES search.memberId), tabbed Followers/Following panel in sidebar (GET_MEMBER_FOLLOWERS/GET_MEMBER_FOLLOWINGS — guards and FollowSearch fields verified), person rows route by memberType.
 - /member page placeholders ("will be implemented with migration") replaced with real Followers/Following/Articles tabs using the same public queries; page redesigned to td-* system; TRAINER profiles auto-redirect to /trainer/detail.
 - Naming unified to "Programs" across UI (backend stays `course`): landing "Top Courses" → "Top Programs", trainer detail and copy updated. /course page redesigned: editorial hero with live count, glass console (difficulty seg + category buttons with colored dots), category-accent cards (CSS vars drive hover glow/border/CTA color), shimmer skeletons, fully responsive, mobile placeholder removed.
+- Community page redesigned + fixed: real "All Posts" tab (was mislabeled FITNESS_TIPS), default sort ASC→DESC, sort dropdown added (whitelist-verified), BAISearch type aligned with backend (articleCategory optional), emojis removed, markdown stripped from excerpts; category-accent buttons with dots, editorial article rows with author/date/stats, skeletons, fully responsive.
+- /course/detail redesigned: cinematic hero with category-accent chips and real meta (enrolled count), sticky price card with Stripe note and enrolled state, NEW real progress bar (getLessonProgress), week-grouped curriculum rows with completion checkmarks, enrollment-gated review form + already-reviewed note. Removed fake "Included" card (PDF logs/Discord/Certificate didn't exist on backend). Stripe/purchase/completeLesson logic unchanged.
 
 ## 2026-06-09
 
