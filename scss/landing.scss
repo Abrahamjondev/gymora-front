@@ -951,6 +951,53 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
 
+/* ---------- CTA banner (support/about) ---------- */
+.lp-cta {
+	position: relative;
+	overflow: hidden;
+	border-radius: 22px;
+	border: 1px solid rgba(0, 220, 229, 0.14);
+	background: linear-gradient(135deg, rgba(0, 220, 229, 0.07) 0%, rgba(13, 13, 14, 0.4) 55%, rgba(0, 46, 52, 0.25) 100%);
+	padding: 72px 40px;
+	text-align: center;
+	.lp-cta-orb {
+		position: absolute;
+		top: -40%;
+		left: 50%;
+		transform: translateX(-50%);
+		width: 700px;
+		height: 440px;
+		background: radial-gradient(ellipse, rgba(0, 220, 229, 0.12) 0%, transparent 65%);
+		filter: blur(40px);
+		pointer-events: none;
+	}
+	h2 {
+		font-family: 'Hanken Grotesk', sans-serif;
+		font-size: clamp(26px, 4vw, 44px);
+		font-weight: 800;
+		letter-spacing: -0.03em;
+		color: #ffffff;
+		margin: 0 0 14px;
+		position: relative;
+	}
+	p {
+		font-family: 'Hanken Grotesk', sans-serif;
+		font-size: 15px;
+		color: rgba(185, 202, 202, 0.65);
+		max-width: 460px;
+		margin: 0 auto 32px;
+		line-height: 1.65;
+		position: relative;
+	}
+	.lp-cta-actions {
+		display: flex;
+		gap: 14px;
+		justify-content: center;
+		flex-wrap: wrap;
+		position: relative;
+	}
+}
+
 /* ---------- navbar ---------- */
 .gnav {
 	position: fixed;

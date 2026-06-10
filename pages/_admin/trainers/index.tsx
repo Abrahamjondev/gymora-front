@@ -1,20 +1,43 @@
 import React, { useEffect, useState } from 'react';
 import type { NextPage } from 'next';
 import withAdminLayout from '../../../libs/components/layout/LayoutAdmin';
-import { Stack, Typography, TablePagination } from '@mui/material';
+import { TablePagination } from '@mui/material';
 import { useMutation, useQuery } from '@apollo/client';
 import { GET_ALL_TRAINERS_BY_ADMIN } from '../../../apollo/admin/query';
-import { DELETE_TRAINER_BY_ADMIN } from '../../../apollo/admin/mutation';
+import { GET_TRAINER_MEMBERS } from '../../../apollo/user/query';
+import { DELETE_TRAINER_BY_ADMIN, UPDATE_TRAINER_BY_ADMIN } from '../../../apollo/admin/mutation';
+import { REACT_APP_API_URL } from '../../../libs/config';
 import { Trainer } from '../../../libs/types/trainer/trainer';
 import { TrainersListInquiry } from '../../../libs/types/trainer/trainer.input';
-import { Direction } from '../../../libs/enums/common.enum';
+import { TrainerVerificationStatus } from '../../../libs/enums/trainer.enum';
 import { T } from '../../../libs/types/common';
-import { sweetConfirmAlert, sweetErrorHandling } from '../../../libs/sweetAlert';
+import { sweetConfirmAlert, sweetErrorHandling, sweetTopSmallSuccessAlert } from '../../../libs/sweetAlert';
+
+const statusMeta: Record<string, { color: string }> = {
+	VERIFIED: { color: '#66daba' },
+	PENDING: { color: '#ffb77f' },
+	REJECTED: { color: '#ff8a8a' },
+};
 
 const AdminTrainers: NextPage = ({ initialInquiry, ...props }: any) => {
 	const [trainers, setTrainers] = useState<Trainer[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [inquiry, setInquiry] = useState<TrainersListInquiry>(initialInquiry);
+	const [memberMap, setMemberMap] = useState<Record<string, { nick: string; image?: string }>>({});
+
+	// Trainer entity carries only memberId — resolve names/avatars via the
+	// public trainer-members list (backend Trainer DTO has no memberData)
+	useQuery(GET_TRAINER_MEMBERS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 200, search: {} } },
+		onCompleted: (d: T) => {
+			const map: Record<string, { nick: string; image?: string }> = {};
+			(d?.getTrainerMembers?.list ?? []).forEach((m: any) => {
+				map[m._id] = { nick: m.memberFullName || m.memberNick, image: m.memberImage };
+			});
+			setMemberMap(map);
+		},
+	});
 
 	const { loading, refetch } = useQuery(GET_ALL_TRAINERS_BY_ADMIN, {
 		fetchPolicy: 'network-only',
@@ -27,6 +50,7 @@ const AdminTrainers: NextPage = ({ initialInquiry, ...props }: any) => {
 	});
 
 	const [deleteTrainer] = useMutation(DELETE_TRAINER_BY_ADMIN);
+	const [updateTrainer] = useMutation(UPDATE_TRAINER_BY_ADMIN);
 
 	useEffect(() => {
 		refetch({ input: inquiry });
@@ -38,6 +62,17 @@ const AdminTrainers: NextPage = ({ initialInquiry, ...props }: any) => {
 
 	const handleRowsPerPage = (e: React.ChangeEvent<HTMLInputElement>) => {
 		setInquiry({ ...inquiry, limit: parseInt(e.target.value, 10), page: 1 });
+	};
+
+	// Mirrors backend updateTrainerByAdmin — verification moderation
+	const setVerification = async (id: string, status: TrainerVerificationStatus) => {
+		try {
+			await updateTrainer({ variables: { input: { _id: id, trainerVerificationStatus: status } } });
+			await refetch({ input: inquiry });
+			await sweetTopSmallSuccessAlert(`Trainer ${status.toLowerCase()}`, 800);
+		} catch (err: any) {
+			await sweetErrorHandling(err);
+		}
 	};
 
 	const deleteHandler = async (id: string) => {
@@ -52,41 +87,79 @@ const AdminTrainers: NextPage = ({ initialInquiry, ...props }: any) => {
 	};
 
 	return (
-		<Stack sx={{ p: 3 }}>
-			<Typography variant="h4" sx={{ mb: 3, fontFamily: 'Hanken Grotesk', fontWeight: 700 }}>
-				Trainers Management
-			</Typography>
+		<div className="ad-page">
+			<div className="ad-head">
+				<h2>Trainers</h2>
+				<span className="wd-section-count">{total} total</span>
+			</div>
 
-			<div style={{ overflowX: 'auto' }}>
-				<table style={{ width: '100%', borderCollapse: 'collapse' }}>
+			<div className="ad-table-wrap">
+				<table className="ad-table">
 					<thead>
-						<tr style={{ borderBottom: '1px solid #eee' }}>
-							{['ID', 'Bio', 'Specializations', 'Experience', 'Rating', 'Status', 'Actions'].map((h) => (
-								<th key={h} style={{ padding: '12px 8px', textAlign: 'left', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600 }}>{h}</th>
+						<tr>
+							{['Trainer', 'Bio', 'Specializations', 'Exp', 'Rating', 'Status', 'Actions'].map((h) => (
+								<th key={h}>{h}</th>
 							))}
 						</tr>
 					</thead>
 					<tbody>
-						{trainers.map((t) => (
-							<tr key={t._id} style={{ borderBottom: '1px solid #f0f0f0' }}>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{t._id.slice(-6)}</td>
-								<td style={{ padding: '8px', fontFamily: 'Hanken Grotesk', fontSize: '13px', maxWidth: '200px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.trainerBio}</td>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{t.trainerSpecializations?.join(', ')}</td>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{t.trainerExperience} yrs</td>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '12px' }}>{t.trainerRating?.toFixed(1) ?? '-'}</td>
-								<td style={{ padding: '8px', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>{t.trainerVerificationStatus}</td>
-								<td style={{ padding: '8px' }}>
-									<button
-										onClick={() => deleteHandler(t._id)}
-										style={{ padding: '4px 12px', background: '#ff4444', color: '#fff', border: 'none', borderRadius: '4px', fontSize: '12px', cursor: 'pointer' }}
-									>
-										Delete
-									</button>
-								</td>
-							</tr>
-						))}
+						{trainers.map((t) => {
+							const meta = statusMeta[t.trainerVerificationStatus] || statusMeta.PENDING;
+							const member = memberMap[String(t.memberId)];
+							return (
+								<tr key={t._id}>
+									<td>
+										<div style={{ display: 'flex', alignItems: 'center', gap: '11px' }}>
+											<img
+												src={member?.image ? `${REACT_APP_API_URL}/${member.image}` : '/img/profile/defaultUser.svg'}
+												alt=""
+												style={{ width: '34px', height: '34px', borderRadius: '50%', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }}
+											/>
+											<div>
+												<span className="ad-strong" style={{ display: 'block', whiteSpace: 'nowrap' }}>{member?.nick ?? '—'}</span>
+												<span className="ad-mono">{t._id.slice(-6)}</span>
+											</div>
+										</div>
+									</td>
+									<td style={{ maxWidth: '240px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{t.trainerBio}</td>
+									<td className="ad-mono" style={{ maxWidth: '180px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+										{t.trainerSpecializations?.join(', ')}
+									</td>
+									<td className="ad-mono">{t.trainerExperience}y</td>
+									<td className="ad-mono" style={{ color: '#ffb77f' }}>
+										{t.trainerRating ? `★ ${t.trainerRating.toFixed(1)}` : '—'}
+									</td>
+									<td>
+										<span
+											className="ad-chip"
+											style={{ ['--adc' as any]: meta.color, ['--adc-bg' as any]: `${meta.color}14`, ['--adc-bd' as any]: `${meta.color}35` }}
+										>
+											{t.trainerVerificationStatus}
+										</span>
+									</td>
+									<td>
+										<div className="ad-actions">
+											{t.trainerVerificationStatus !== TrainerVerificationStatus.VERIFIED && (
+												<button className="ad-btn is-success" onClick={() => setVerification(t._id, TrainerVerificationStatus.VERIFIED)}>
+													Verify
+												</button>
+											)}
+											{t.trainerVerificationStatus !== TrainerVerificationStatus.REJECTED && (
+												<button className="ad-btn" onClick={() => setVerification(t._id, TrainerVerificationStatus.REJECTED)}>
+													Reject
+												</button>
+											)}
+											<button className="ad-btn is-danger" onClick={() => deleteHandler(t._id)}>
+												Delete
+											</button>
+										</div>
+									</td>
+								</tr>
+							);
+						})}
 					</tbody>
 				</table>
+				{!loading && trainers.length === 0 && <div className="ad-empty">No trainers found.</div>}
 			</div>
 
 			<TablePagination
@@ -96,8 +169,9 @@ const AdminTrainers: NextPage = ({ initialInquiry, ...props }: any) => {
 				onPageChange={handlePageChange}
 				rowsPerPage={inquiry.limit}
 				onRowsPerPageChange={handleRowsPerPage}
+				sx={{ color: '#b9caca', '& .MuiSvgIcon-root': { color: '#b9caca' } }}
 			/>
-		</Stack>
+		</div>
 	);
 };
 

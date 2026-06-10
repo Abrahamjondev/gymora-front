@@ -61,15 +61,17 @@ const withAdminLayout = (Component: ComponentType) => {
 		if (!user || user?.memberType !== MemberType.ADMIN) return null;
 
 		return (
-			<main id="pc-wrap" className="admin">
+			<main id="pc-wrap" className="admin" style={{ background: '#0d0d0e', minHeight: '100vh' }}>
 				<Box component={'div'} sx={{ display: 'flex' }}>
 					<AppBar
 						position="fixed"
 						sx={{
 							width: `calc(100% - ${drawerWidth}px)`,
 							ml: `${drawerWidth}px`,
-							boxShadow: 'rgb(100 116 139 / 12%) 0px 1px 4px',
-							background: 'none',
+							boxShadow: 'none',
+							background: 'rgba(13,13,14,0.85)',
+							backdropFilter: 'blur(16px)',
+							borderBottom: '1px solid rgba(255,255,255,0.06)',
 						}}
 					>
 						<Toolbar>
@@ -86,6 +88,15 @@ const withAdminLayout = (Component: ComponentType) => {
 								sx={{ mt: '45px' }}
 								id="menu-appbar"
 								className={'pop-menu'}
+								PaperProps={{
+									sx: {
+										background: '#161618',
+										border: '1px solid rgba(255,255,255,0.08)',
+										borderRadius: '14px',
+										color: '#e5e2e3',
+										boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+									},
+								}}
 								anchorEl={anchorElUser}
 								anchorOrigin={{
 									vertical: 'top',
@@ -107,17 +118,17 @@ const withAdminLayout = (Component: ComponentType) => {
 									}}
 								>
 									<Stack sx={{ px: '20px', my: '12px' }}>
-										<Typography variant={'h6'} component={'h6'} sx={{ mb: '4px' }}>
+										<Typography variant={'h6'} component={'h6'} sx={{ mb: '4px', color: '#ffffff', fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: '15px' }}>
 											{user?.memberNick}
 										</Typography>
-										<Typography variant={'subtitle1'} component={'p'} color={'#757575'}>
+										<Typography variant={'subtitle1'} component={'p'} sx={{ color: 'rgba(185,202,202,0.55)', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>
 											{user?.memberPhone}
 										</Typography>
 									</Stack>
-									<Divider />
+									<Divider sx={{ borderColor: 'rgba(255,255,255,0.07)' }} />
 									<Box component={'div'} sx={{ p: 1, py: '6px' }} onClick={logoutHandler}>
-										<MenuItem sx={{ px: '16px', py: '6px' }}>
-											<Typography variant={'subtitle1'} component={'span'}>
+										<MenuItem sx={{ px: '16px', py: '6px', borderRadius: '8px', '&:hover': { background: 'rgba(255,138,138,0.08)' } }}>
+											<Typography variant={'subtitle1'} component={'span'} sx={{ color: '#ffb4a8', fontFamily: 'Hanken Grotesk', fontWeight: 600, fontSize: '13.5px' }}>
 												Logout
 											</Typography>
 										</MenuItem>
@@ -134,6 +145,9 @@ const withAdminLayout = (Component: ComponentType) => {
 							'& .MuiDrawer-paper': {
 								width: drawerWidth,
 								boxSizing: 'border-box',
+								background: '#101012',
+								borderRight: '1px solid rgba(255,255,255,0.06)',
+								color: '#e5e2e3',
 							},
 						}}
 						variant="permanent"
@@ -141,8 +155,24 @@ const withAdminLayout = (Component: ComponentType) => {
 						className="aside"
 					>
 						<Toolbar sx={{ flexDirection: 'column', alignItems: 'flexStart' }}>
-							<Stack className={'logo-box'}>
-								<img src={'/img/logo/logoText.svg'} alt={'logo'} />
+							<Stack className={'logo-box'} direction={'row'} alignItems={'center'} gap={'10px'} sx={{ py: '14px' }}>
+								<div
+									style={{
+										width: '32px',
+										height: '32px',
+										borderRadius: '9px',
+										background: 'linear-gradient(135deg, #00dce5 0%, #00f5ff 100%)',
+										display: 'flex',
+										alignItems: 'center',
+										justifyContent: 'center',
+										boxShadow: '0 0 18px rgba(0,220,229,0.3)',
+									}}
+								>
+									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 900, color: '#003739' }}>G</span>
+								</div>
+								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '19px', fontWeight: 800, letterSpacing: '-0.03em', color: '#ffffff' }}>
+									gymora <span style={{ fontFamily: 'JetBrains Mono', fontSize: '9px', color: 'rgba(0,220,229,0.7)', letterSpacing: '0.12em', verticalAlign: 'middle' }}>ADMIN</span>
+								</span>
 							</Stack>
 
 							<Stack

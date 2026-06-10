@@ -128,6 +128,7 @@ export const GET_ALL_COURSES_BY_ADMIN = gql`
 				courseRating
 				courseRatingCount
 				courseRank
+				purchasedMembers
 				createdAt
 				updatedAt
 			}
@@ -154,6 +155,7 @@ export const GET_BOARD_ARTICLES_BY_ADMIN = gql`
 				articleImage
 				articleViews
 				articleLikes
+				articleComments
 				memberId
 				createdAt
 				updatedAt

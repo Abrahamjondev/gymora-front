@@ -15,6 +15,7 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLE, GET_COMMENTS } from '../../apollo/user/query';
 import { CREATE_COMMENT, LIKE_TARGET_BOARD_ARTICLE, UPDATE_COMMENT } from '../../apollo/user/mutation';
+import { REMOVE_COMMENT_BY_ADMIN } from '../../apollo/admin/mutation';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
@@ -45,6 +46,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
 	const [createComment] = useMutation(CREATE_COMMENT);
 	const [updateComment] = useMutation(UPDATE_COMMENT);
+	const [removeCommentByAdmin] = useMutation(REMOVE_COMMENT_BY_ADMIN);
 
 	const {
 		loading: articleLoading,
@@ -116,12 +118,17 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		}
 	};
 
-	const deleteCommentHandler = async (commentId: string) => {
+	const deleteCommentHandler = async (commentId: string, isOwn: boolean) => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
 			if (await sweetConfirmAlert('Delete this comment?')) {
-				const updateData: CommentUpdate = { _id: commentId, commentStatus: CommentStatus.DELETE };
-				await updateComment({ variables: { input: updateData } });
+				if (isOwn) {
+					const updateData: CommentUpdate = { _id: commentId, commentStatus: CommentStatus.DELETE };
+					await updateComment({ variables: { input: updateData } });
+				} else {
+					// Admin moderation — backend removeCommentByAdmin
+					await removeCommentByAdmin({ variables: { input: commentId } });
+				}
 				const { data: cd } = await commentsRefetch({ input: searchFilter });
 				if (cd?.getComments) { setComments(cd.getComments.list ?? []); setTotal(cd.getComments.metaCounter?.[0]?.total ?? 0); }
 				await sweetMixinSuccessAlert('Deleted!');
@@ -304,8 +311,8 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 										{c.memberData?.memberNick ?? 'Anonymous'}
 									</span>
 									<span className="wd-comment-date">{new Date(c.createdAt).toLocaleDateString()}</span>
-									{c.memberId === user?._id && (
-										<button className="nm-del" style={{ marginLeft: 'auto' }} onClick={() => deleteCommentHandler(c._id)}>
+									{(c.memberId === user?._id || user?.memberType === 'ADMIN') && (
+										<button className="nm-del" style={{ marginLeft: 'auto' }} onClick={() => deleteCommentHandler(c._id, c.memberId === user?._id)}>
 											✕
 										</button>
 									)}

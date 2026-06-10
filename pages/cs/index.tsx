@@ -1,127 +1,101 @@
 import React, { useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: {
-		...(await serverSideTranslations(locale, ['common'])),
-	},
+	props: { ...(await serverSideTranslations(locale, ['common'])) },
 });
 
+// Static FAQ — there is no CS backend module; every answer reflects real platform behavior.
 const faqs = [
-	{ q: 'How do I get started with Gymora?', a: 'Create an account, choose your fitness goal, and browse our workout library. You can start with free workouts or subscribe for premium access to courses and trainers.' },
-	{ q: 'What is included in the subscription?', a: 'Monthly and Yearly plans include unlimited access to all courses, personalized nutrition tracking, AI-powered food analysis, progress tracking, and direct messaging with trainers.' },
-	{ q: 'Can I become a trainer on Gymora?', a: 'Yes! Sign up as a Trainer during registration. Once verified, you can create workouts, courses with lessons, and earn from course sales.' },
-	{ q: 'How do course payments work?', a: 'Free courses can be enrolled directly. Paid courses use Stripe checkout. After payment confirmation, all lessons are unlocked for lifetime access.' },
-	{ q: 'How do I track my progress?', a: 'Use the Progress Tracker to log your weight, body measurements, and photos over time. The Analytics dashboard shows your BMI, BMR, and daily calorie needs.' },
-	{ q: 'Can I cancel my subscription?', a: 'Yes, you can cancel anytime from your account settings. Your access continues until the end of the billing period.' },
+	{
+		q: 'Is Gymora really free?',
+		a: 'Yes — every workout on the platform is completely free for registered members. Trainers publish their workouts openly; you only pay if you enroll in a structured multi-week program.',
+	},
+	{
+		q: 'How do program purchases work?',
+		a: 'Programs are one-time purchases with lifetime access, processed through Stripe secure checkout. Your first lesson unlocks immediately after enrolling, and the following lessons unlock as you complete the previous ones.',
+	},
+	{
+		q: 'How do I become a trainer?',
+		a: 'Open My Page and use the "Become Trainer" form — add your bio, specializations and experience. Your account is upgraded to a trainer profile, and platform admins verify trainers before their badge turns green.',
+	},
+	{
+		q: 'Who can leave reviews?',
+		a: 'Workout reviews are open to all members. To review a program you must be enrolled in it, and to review a trainer you must have purchased one of their programs — this keeps every rating genuine.',
+	},
+	{
+		q: 'How does the AI food scanner work?',
+		a: 'In My Page → Nutrition, tap "AI Scan Food" and upload a photo of your meal. The AI estimates calories, protein, carbs and fats, and you can log the result directly as breakfast, lunch, dinner or a snack.',
+	},
+	{
+		q: 'How does the membership subscription work?',
+		a: 'Membership is $14.99 monthly or $119.88 yearly ($9.99/month equivalent). Payments are processed by Stripe and you can manage everything from My Page → Subscription.',
+	},
+	{
+		q: 'Can I message trainers directly?',
+		a: 'Yes — My Page → Messages is a real-time chat. You can see who is online and get replies instantly while you are both on the platform.',
+	},
 ];
 
-const CS: NextPage = () => {
-	const device = useDeviceDetect();
+const SupportPage: NextPage = () => {
 	const router = useRouter();
-	const [openFaq, setOpenFaq] = useState<number | null>(null);
-
-	if (device === 'mobile') {
-		return <div style={{ padding: '24px', color: '#e5e2e3', background: '#131314' }}>GYMORA CS MOBILE</div>;
-	}
+	const [open, setOpen] = useState<number | null>(0);
 
 	return (
-		<div style={{ background: '#131314', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '800px', margin: '0 auto', padding: '0 24px' }}>
-				{/* Header */}
-				<div style={{ textAlign: 'center', marginBottom: '48px' }}>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.2em', color: '#00f5ff', fontWeight: 500, textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>
-						Support Center
-					</span>
-					<h1 style={{ fontFamily: 'Hanken Grotesk', fontSize: '40px', lineHeight: '48px', letterSpacing: '-0.02em', fontWeight: 800, color: '#e5e2e3', marginBottom: '12px' }}>
-						How can we help?
+		<div className="wl-page">
+			<div className="lp-container" style={{ maxWidth: '860px' }}>
+				{/* Hero */}
+				<div className="wl-hero">
+					<div className="wl-hero-glow" />
+					<span className="lp-eyebrow" style={{ marginBottom: '8px' }}>Support</span>
+					<h1 className="wl-title">
+						How can we <span className="lp-grad">help?</span>
 					</h1>
-					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', lineHeight: '24px', color: '#b9caca' }}>
-						Find answers to common questions about Gymora
+					<p className="lp-sub" style={{ margin: 0 }}>
+						Answers to the most common questions about training, programs and your account.
 					</p>
 				</div>
 
 				{/* FAQ */}
-				<div style={{ marginBottom: '48px' }}>
-					<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>
-						Frequently Asked Questions
-					</h2>
-					<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-						{faqs.map((faq, idx) => (
-							<div
-								key={idx}
-								style={{
-									background: 'rgba(255,255,255,0.03)',
-									border: '1px solid rgba(255,255,255,0.08)',
-									borderRadius: '12px',
-									overflow: 'hidden',
-									transition: 'all 0.2s',
-								}}
-							>
-								<button
-									onClick={() => setOpenFaq(openFaq === idx ? null : idx)}
-									style={{
-										width: '100%',
-										padding: '20px 24px',
-										background: 'transparent',
-										border: 'none',
-										cursor: 'pointer',
-										display: 'flex',
-										justifyContent: 'space-between',
-										alignItems: 'center',
-									}}
-								>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 600, color: '#e5e2e3', textAlign: 'left' }}>
-										{faq.q}
-									</span>
-									<span style={{ color: '#00f5ff', fontSize: '20px', flexShrink: 0, marginLeft: '16px' }}>
-										{openFaq === idx ? '−' : '+'}
-									</span>
+				<div style={{ marginTop: '8px' }}>
+					{faqs.map((item, i) => {
+						const isOpen = open === i;
+						return (
+							<div key={i} className={`cs-acc${isOpen ? ' is-open' : ''}`}>
+								<button className="cs-q" onClick={() => setOpen(isOpen ? null : i)}>
+									{item.q}
+									<span className="cs-q-ic">+</span>
 								</button>
-								{openFaq === idx && (
-									<div style={{ padding: '0 24px 20px' }}>
-										<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', lineHeight: '22px', color: '#b9caca' }}>
-											{faq.a}
-										</p>
+								<div className="cs-a">
+									<div>
+										<p>{item.a}</p>
 									</div>
-								)}
+								</div>
 							</div>
-						))}
-					</div>
+						);
+					})}
 				</div>
 
-				{/* Contact */}
-				<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '16px', padding: '40px', textAlign: 'center' }}>
-					<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 700, color: '#e5e2e3', marginBottom: '12px' }}>
-						Still need help?
-					</h3>
-					<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#b9caca', marginBottom: '24px' }}>
-						Our team is ready to assist you with any questions
-					</p>
-					<button
-						onClick={() => router.push('/account/join')}
-						style={{
-							background: '#e9feff',
-							color: '#003739',
-							border: 'none',
-							borderRadius: '8px',
-							padding: '14px 32px',
-							fontFamily: 'Hanken Grotesk',
-							fontSize: '14px',
-							fontWeight: 700,
-							cursor: 'pointer',
-						}}
-					>
-						Contact Support
-					</button>
+				{/* Still need help */}
+				<div className="lp-cta" style={{ padding: '52px 32px', marginTop: '40px' }}>
+					<div className="lp-cta-orb" />
+					<h2 style={{ fontSize: 'clamp(24px, 3vw, 32px)' }}>Still have a question?</h2>
+					<p>The community is full of trainers and athletes who have probably been exactly where you are.</p>
+					<div className="lp-cta-actions">
+						<button className="lp-btn-primary" onClick={() => router.push('/community')}>
+							Ask the Community →
+						</button>
+						<button className="lp-btn-ghost" onClick={() => router.push('/trainer')}>
+							Find a Trainer
+						</button>
+					</div>
 				</div>
 			</div>
 		</div>
 	);
 };
 
-export default withLayoutBasic(CS);
+export default withLayoutBasic(SupportPage);
