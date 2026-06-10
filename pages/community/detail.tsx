@@ -18,6 +18,7 @@ import { CREATE_COMMENT, LIKE_TARGET_BOARD_ARTICLE, UPDATE_COMMENT } from '../..
 import { REMOVE_COMMENT_BY_ADMIN } from '../../apollo/admin/mutation';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { userVar } from '../../apollo/store';
+import { notifyMember } from '../../libs/notify';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import dynamic from 'next/dynamic';
 
@@ -94,6 +95,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 				meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: articleId, myFavorite: true }],
 			}));
 			await likeTargetBoardArticle({ variables: { input: articleId } });
+			if (!wasLiked) notifyMember((boardArticle as any)?.memberId, user._id, 'SYSTEM', 'New like on your article', `${user.memberNick} liked "${boardArticle?.articleTitle}"`);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		} finally {
@@ -107,6 +109,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			if (!user?._id) throw new Error(Messages.error2);
 			const commentInput: CommentInput = { commentGroup: CommentGroup.ARTICLE, commentRefId: articleId, commentContent: comment };
 			await createComment({ variables: { input: commentInput } });
+			notifyMember((boardArticle as any)?.memberId, user._id, 'SYSTEM', 'New comment on your article', `${user.memberNick} commented on "${boardArticle?.articleTitle}"`);
 			const { data: cd } = await commentsRefetch({ input: searchFilter });
 			if (cd?.getComments) { setComments(cd.getComments.list ?? []); setTotal(cd.getComments.metaCounter?.[0]?.total ?? 0); }
 			const { data: ad } = await articleRefetch({ input: articleId });

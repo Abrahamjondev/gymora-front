@@ -32,6 +32,8 @@
 - Community page redesigned + fixed: real "All Posts" tab (was mislabeled FITNESS_TIPS), default sort ASC→DESC, sort dropdown added (whitelist-verified), BAISearch type aligned with backend (articleCategory optional), emojis removed, markdown stripped from excerpts; category-accent buttons with dots, editorial article rows with author/date/stats, skeletons, fully responsive.
 - /course/detail redesigned: cinematic hero with category-accent chips and real meta (enrolled count), sticky price card with Stripe note and enrolled state, NEW real progress bar (getLessonProgress), week-grouped curriculum rows with completion checkmarks, enrollment-gated review form + already-reviewed note. Removed fake "Included" card (PDF logs/Discord/Certificate didn't exist on backend). Stripe/purchase/completeLesson logic unchanged.
 
+- Cross-member social notifications wired end-to-end: new libs/notify.ts fire-and-forget helper (self/missing-id guarded) called from workout like/comment/review, community article like/comment, trainer profile like/review, and member profile like — content owners now get real notifications; backend createNotification receiver fix + socket invalid-token crash fix applied with explicit permission and verified live. Privacy Policy and Terms of Service pages added (honest static content) and linked from both footers.
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

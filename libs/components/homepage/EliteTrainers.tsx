@@ -61,7 +61,7 @@ const EliteTrainers = () => {
 							style={{
 								fontFamily: 'Hanken Grotesk',
 								fontSize: '13px',
-								color: 'rgba(185,202,202,0.45)',
+								color: 'rgba(205,218,218,0.65)',
 								marginTop: '20px',
 								lineHeight: 1.6,
 							}}

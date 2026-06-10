@@ -26,6 +26,7 @@ import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE, CREATE_REVIEW } from '../..
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { Workout } from '../../libs/types/workout/workout';
 import { userVar } from '../../apollo/store';
+import { notifyMember } from '../../libs/notify';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -154,6 +155,7 @@ const TrainerDetail: NextPage = () => {
 					: prev,
 			);
 			await likeMember({ variables: { input: memberId } });
+			if (!wasLiked) notifyMember(memberId, user._id, 'SYSTEM', 'New like on your profile', `${user.memberNick} liked your profile`);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -184,6 +186,7 @@ const TrainerDetail: NextPage = () => {
 			if (!user?._id) throw new Error(Messages.error2);
 			if (!reviewText) throw new Error('Review text required');
 			await createReview({ variables: { input: { trainerId: trainer?._id, reviewRating, reviewText } } });
+			notifyMember(memberId, user._id, 'SYSTEM', 'New review on your trainer profile', `${user.memberNick} rated you ${reviewRating}/5`);
 			setReviewText('');
 			if (trainer?._id) {
 				const { data } = await reviewsRefetch({ input: trainer._id });

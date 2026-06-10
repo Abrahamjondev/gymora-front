@@ -76,15 +76,15 @@ const HotWorkouts = () => {
 										{w.workoutTitle}
 									</h3>
 									<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>
+										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, color: '#ffc08f' }}>
 											{w.estimatedCaloriesBurned} kcal
 										</span>
 										<div style={{ display: 'flex', gap: '12px' }}>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.35)' }}>
-												{w.workoutViews ?? 0} views
+											<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.8)' }}>
+												<b style={{ color: '#ffffff' }}>{w.workoutViews ?? 0}</b> views
 											</span>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.35)' }}>
-												♥ {w.workoutLikes ?? 0}
+											<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.8)' }}>
+												♥ <b style={{ color: '#ffffff' }}>{w.workoutLikes ?? 0}</b>
 											</span>
 										</div>
 									</div>

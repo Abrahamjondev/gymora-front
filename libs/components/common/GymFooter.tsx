@@ -16,8 +16,8 @@ const GymFooter = () => {
 			title: 'Company',
 			links: [
 				{ label: 'About Us', href: '/about' },
-				{ label: 'Privacy', href: '#' },
-				{ label: 'Terms', href: '#' },
+				{ label: 'Privacy', href: '/privacy' },
+				{ label: 'Terms', href: '/terms' },
 			],
 		},
 	];

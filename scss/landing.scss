@@ -544,10 +544,11 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		display: flex;
 		gap: 16px;
 		font-family: 'JetBrains Mono', monospace;
-		font-size: 10.5px;
+		font-size: 12px;
+		font-weight: 600;
 		text-transform: uppercase;
 		letter-spacing: 0.08em;
-		color: rgba(213, 226, 226, 0.6);
+		color: rgba(222, 234, 234, 0.8);
 	}
 	.lp-course-feature-go {
 		display: inline-flex;
@@ -624,7 +625,8 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	.lp-course-row-idx {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 12px;
-		color: rgba(185, 202, 202, 0.35);
+		font-weight: 600;
+		color: rgba(0, 220, 229, 0.55);
 		flex: none;
 		width: 24px;
 	}
@@ -659,10 +661,11 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			display: flex;
 			gap: 12px;
 			font-family: 'JetBrains Mono', monospace;
-			font-size: 9.5px;
+			font-size: 11px;
+			font-weight: 600;
 			text-transform: uppercase;
 			letter-spacing: 0.07em;
-			color: rgba(185, 202, 202, 0.45);
+			color: rgba(213, 226, 226, 0.65);
 		}
 	}
 	.lp-course-row-right {
@@ -716,7 +719,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		font-size: clamp(24px, 2.8vw, 38px);
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: rgba(255, 255, 255, 0.35);
+		color: rgba(255, 255, 255, 0.5);
 		transition: color 0.35s ease, transform 0.35s $lp-ease;
 		line-height: 1.1;
 		display: flex;
@@ -725,17 +728,17 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		.lp-trainer-idx {
 			font-family: 'JetBrains Mono', monospace;
 			font-size: 12px;
-			font-weight: 500;
-			color: rgba(185, 202, 202, 0.35);
+			font-weight: 600;
+			color: rgba(0, 220, 229, 0.55);
 			letter-spacing: 0.08em;
 		}
 	}
 	.lp-trainer-meta {
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 10px;
-		text-transform: uppercase;
-		letter-spacing: 0.08em;
-		color: rgba(185, 202, 202, 0.4);
+		font-family: 'Hanken Grotesk', sans-serif;
+		font-size: 13px;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: rgba(213, 226, 226, 0.75);
 		white-space: nowrap;
 		display: flex;
 		gap: 18px;
@@ -845,9 +848,10 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-family: 'JetBrains Mono', monospace;
-		font-size: 10px;
-		color: rgba(185, 202, 202, 0.45);
+		font-family: 'Hanken Grotesk', sans-serif;
+		font-size: 12.5px;
+		font-weight: 600;
+		color: rgba(213, 226, 226, 0.7);
 	}
 }
 
@@ -1295,7 +1299,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	span {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 10px;
-		color: rgba(185, 202, 202, 0.25);
+		color: rgba(185, 202, 202, 0.45);
 		text-transform: uppercase;
 		letter-spacing: 0.06em;
 	}

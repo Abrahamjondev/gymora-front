@@ -16,6 +16,7 @@ import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
 import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
+import { notifyMember } from '../../libs/notify';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -116,6 +117,10 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 				}),
 			);
 			await likeTargetBoardArticle({ variables: { input: id } });
+			const target: any = boardArticles.find((a) => a._id === id);
+			if (target && !target.meLiked?.[0]?.myFavorite) {
+				notifyMember(target.memberId, user._id, 'SYSTEM', 'New like on your article', `${user.memberNick} liked "${target.articleTitle}"`);
+			}
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}

@@ -17,6 +17,7 @@ import { LIKE_WORKOUT } from '../../apollo/user/mutation';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { notifyMember } from '../../libs/notify';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -99,6 +100,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 			);
 
 			const { data } = await likeWorkoutMutation({ variables: { input: id } });
+			if (nextLiked) {
+				const target = previousWorkouts.find((w) => w._id === id);
+				notifyMember((target as any)?.memberId, user._id, 'WORKOUT', 'New like on your workout', `${user.memberNick} liked "${target?.workoutTitle ?? 'your workout'}"`);
+			}
 			const updatedLikes = data?.likeWorkout?.workoutLikes;
 			if (typeof updatedLikes === 'number') {
 				setWorkouts((prev) =>

@@ -19,6 +19,7 @@ import { CommentGroup } from '../../libs/enums/comment.enum';
 import { Direction, Message } from '../../libs/enums/common.enum';
 import { userVar } from '../../apollo/store';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import { notifyMember } from '../../libs/notify';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -93,6 +94,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 			if (!user?._id) throw new Error(Messages.error2);
 			if (!reviewText) throw new Error('Review text required');
 			await createReview({ variables: { input: { workoutId, reviewRating, reviewText } } });
+			notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New review on your workout', `${user.memberNick} rated "${workout?.workoutTitle}" ${reviewRating}/5`);
 			setReviewText('');
 			const { data } = await reviewsRefetch({ input: workoutId });
 			if (data?.getWorkoutReviews) setWorkoutReviews(data.getWorkoutReviews);
@@ -151,6 +153,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 			}
 
 			const { data } = await likeWorkoutMutation({ variables: { input: id } });
+			if (nextLiked) notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New like on your workout', `${user.memberNick} liked "${workout?.workoutTitle}"`);
 			const updatedLikes = data?.likeWorkout?.workoutLikes;
 			if (typeof updatedLikes === 'number') {
 				setWorkout((prev) =>
@@ -180,6 +183,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		try {
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
 			await createComment({ variables: { input: insertCommentData } });
+			notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New comment on your workout', `${user.memberNick} commented on "${workout?.workoutTitle}"`);
 			setInsertCommentData({ ...insertCommentData, commentContent: '' });
 			await getCommentsRefetch({ input: commentInquiry });
 		} catch (err: any) {

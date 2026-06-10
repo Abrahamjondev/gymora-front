@@ -6,6 +6,7 @@ import { CircularProgress, Stack } from '@mui/material';
 import { useRouter } from 'next/router';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
+import { notifyMember } from '../../libs/notify';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import {
@@ -134,6 +135,7 @@ const MemberPage: NextPage = () => {
 					: prev,
 			);
 			await likeTargetMember({ variables: { input: memberId } });
+			if (!wasLiked) notifyMember(memberId, user._id, 'SYSTEM', 'New like on your profile', `${user.memberNick} liked your profile`);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
