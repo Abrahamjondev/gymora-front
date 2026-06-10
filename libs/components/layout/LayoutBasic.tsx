@@ -6,7 +6,6 @@ import GymNavbar from '../common/GymNavbar';
 import GymFooter from '../common/GymFooter';
 import { Stack } from '@mui/material';
 import { getJwtToken, updateUserInfo } from '../../auth';
-import Chat from '../Chat';
 import { useReactiveVar } from '@apollo/client';
 import { userVar } from '../../../apollo/store'; //@ts-ignore
 import 'swiper/css'; //@ts-ignore
@@ -54,8 +53,6 @@ const withLayoutBasic = (Component: any) => {
 						<Stack id={'main'} >
 							<Component {...props} />
 						</Stack>
-
-						<Chat />
 
 						<GymFooter />
 					</Stack>

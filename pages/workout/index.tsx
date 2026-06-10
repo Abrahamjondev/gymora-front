@@ -8,6 +8,7 @@ import { Workout } from '../../libs/types/workout/workout';
 import { WorkoutsInquiry } from '../../libs/types/workout/workout.input';
 import { WorkoutDifficulty } from '../../libs/enums/workout.enum';
 import { Direction } from '../../libs/enums/common.enum';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
@@ -39,6 +40,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const [activeFilter, setActiveFilter] = useState<string>('ALL');
 	const [searchText, setSearchText] = useState<string>('');
 	const [activeMuscle, setActiveMuscle] = useState<string>('');
+	const [likingWorkoutId, setLikingWorkoutId] = useState<string | null>(null);
 	
 	const [activeSort, setActiveSort] = useState<string>('createdAt');
 
@@ -60,20 +62,56 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 
 	const [likeWorkoutMutation] = useMutation(LIKE_WORKOUT);
 
+	useEffect(() => {
+		if (!user?._id) return;
+		refetch({ input: searchFilter });
+	}, [user?._id]);
+
 	/** HANDLERS **/
 	const likeHandler = async (e: any, id: string) => {
+		e.stopPropagation();
+		if (likingWorkoutId === id) return;
+
+		const previousWorkouts = workouts;
+
 		try {
-			e.stopPropagation();
 			if (!user?._id) throw new Error(Messages.error2);
-			await likeWorkoutMutation({ variables: { input: id } });
-			const { data } = await refetch({ input: searchFilter });
-			if (data?.getWorkouts?.list) {
-				setWorkouts(data.getWorkouts.list);
-				setTotal(data.getWorkouts.metaCounter?.[0]?.total ?? 0);
+			setLikingWorkoutId(id);
+
+			let nextLiked = false;
+			setWorkouts((prev) =>
+				prev.map((w) => {
+					if (w._id !== id) return w;
+					const wasLiked = !!w.meLiked?.[0]?.myFavorite;
+					nextLiked = !wasLiked;
+					return {
+						...w,
+						workoutLikes: (w.workoutLikes ?? 0) + (wasLiked ? -1 : 1),
+						meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: id, myFavorite: true }],
+					};
+				}),
+			);
+
+			const { data } = await likeWorkoutMutation({ variables: { input: id } });
+			const updatedLikes = data?.likeWorkout?.workoutLikes;
+			if (typeof updatedLikes === 'number') {
+				setWorkouts((prev) =>
+					prev.map((w) =>
+						w._id === id
+							? {
+									...w,
+									workoutLikes: updatedLikes,
+									meLiked: nextLiked ? [{ memberId: user._id, likeRefId: id, myFavorite: true }] : [],
+							  }
+							: w,
+					),
+				);
 			}
-			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
+			setWorkouts(previousWorkouts);
 			sweetMixinErrorAlert(err.message).then();
+		} finally {
+			setLikingWorkoutId(null);
 		}
 	};
 
@@ -366,12 +404,11 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 												{workout.workoutDifficulty}
 											</span>
 											<div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-												<span
+												<LikeButton
+													liked={!!workout.meLiked?.[0]?.myFavorite}
+													count={workout.workoutLikes ?? 0}
 													onClick={(e) => likeHandler(e, workout._id)}
-													style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: workout.meLiked?.[0]?.myFavorite ? '#ff8a00' : '#849495', cursor: 'pointer' }}
-												>
-													{workout.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {workout.workoutLikes ?? 0}
-												</span>
+												/>
 												<span style={{ color: '#e9feff', fontSize: '18px' }}>→</span>
 											</div>
 										</div>

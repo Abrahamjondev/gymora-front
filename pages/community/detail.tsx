@@ -10,6 +10,7 @@ import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.
 import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
 import { CommentUpdate } from '../../libs/types/comment/comment.update';
 import { T } from '../../libs/types/common';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLE, GET_COMMENTS } from '../../apollo/user/query';
@@ -84,10 +85,13 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			if (!articleId) return;
 			if (!user?._id) throw new Error(Messages.error2);
 			setLikeLoading(true);
+			const wasLiked = !!boardArticle?.meLiked?.[0]?.myFavorite;
+			setBoardArticle((prev: any) => ({
+				...prev,
+				articleLikes: (prev.articleLikes ?? 0) + (wasLiked ? -1 : 1),
+				meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: articleId, myFavorite: true }],
+			}));
 			await likeTargetBoardArticle({ variables: { input: articleId } });
-			const { data: rd } = await articleRefetch({ input: articleId });
-			if (rd?.getBoardArticle) setBoardArticle(rd.getBoardArticle);
-			await sweetTopSmallSuccessAlert('Success!', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		} finally {
@@ -192,9 +196,11 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 
 				{/* Stats */}
 				<div style={{ display: 'flex', gap: '16px', marginBottom: '24px', paddingBottom: '24px', borderBottom: '1px solid #3a494a' }}>
-					<span onClick={likeBoardArticleHandler} style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: boardArticle.meLiked?.[0]?.myFavorite ? '#ff8a00' : '#849495', cursor: 'pointer' }}>
-						{boardArticle.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {boardArticle.articleLikes ?? 0}
-					</span>
+					<LikeButton
+						liked={!!boardArticle.meLiked?.[0]?.myFavorite}
+						count={boardArticle.articleLikes ?? 0}
+						onClick={likeBoardArticleHandler}
+					/>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: '#849495' }}>👁 {boardArticle.articleViews ?? 0}</span>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '13px', color: '#849495' }}>💬 {total}</span>
 				</div>

@@ -13,6 +13,7 @@ import { Messages, REACT_APP_API_URL } from '../../libs/config';
 import { Member } from '../../libs/types/member/member';
 import { Workout } from '../../libs/types/workout/workout';
 import { T } from '../../libs/types/common';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -82,10 +83,9 @@ const MemberPage: NextPage = () => {
 	const likeMemberHandler = async () => {
 		try {
 			if (!memberId || !user?._id) throw new Error(Messages.error2);
+			const wasLiked = !!member?.meLiked?.[0]?.myFavorite;
+			setMember((prev: any) => prev ? { ...prev, memberLikes: (prev.memberLikes ?? 0) + (wasLiked ? -1 : 1), meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: memberId, myFavorite: true }] } : prev);
 			await likeTargetMember({ variables: { input: memberId } });
-			const { data } = await memberRefetch({ input: memberId });
-			if (data?.getMember) setMember(data.getMember);
-			await sweetTopSmallSuccessAlert('Success!', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -166,9 +166,12 @@ const MemberPage: NextPage = () => {
 										Follow
 									</button>
 								)}
-								<button onClick={likeMemberHandler} style={{ width: '100%', padding: '12px', background: member.meLiked?.[0]?.myFavorite ? '#e9feff' : 'transparent', color: member.meLiked?.[0]?.myFavorite ? '#003739' : '#e9feff', border: '1px solid #3a494a', borderRadius: '8px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-									{member.meLiked?.[0]?.myFavorite ? '♥ Liked' : '♡ Like'} ({member.memberLikes})
-								</button>
+								<LikeButton
+									liked={!!member.meLiked?.[0]?.myFavorite}
+									count={member.memberLikes ?? 0}
+									onClick={likeMemberHandler}
+									variant="full"
+								/>
 							</div>
 						)}
 					</div>

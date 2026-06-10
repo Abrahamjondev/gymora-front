@@ -5,6 +5,7 @@ import { Box, Button, CircularProgress, Stack, Typography, Pagination as MuiPagi
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Workout } from '../../libs/types/workout/workout';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
@@ -33,6 +34,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const [commentInquiry, setCommentInquiry] = useState<CommentsInquiry>(initialComment);
 	const [workoutComments, setWorkoutComments] = useState<Comment[]>([]);
 	const [commentTotal, setCommentTotal] = useState<number>(0);
+	const [likeLoading, setLikeLoading] = useState<boolean>(false);
 	const [insertCommentData, setInsertCommentData] = useState<CommentInput>({
 		commentGroup: CommentGroup.WORKOUT,
 		commentContent: '',
@@ -118,16 +120,53 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		}
 	}, [commentInquiry]);
 
+	useEffect(() => {
+		if (!user?._id || !workoutId) return;
+
+		getWorkoutRefetch({ input: workoutId }).then(({ data }) => {
+			if (data?.getWorkout) setWorkout(data.getWorkout);
+		});
+	}, [user?._id, workoutId]);
+
 	/** HANDLERS **/
 	const likeHandler = async (user: T, id: string) => {
+		if (likeLoading) return;
+		const previousWorkout = workout;
+
 		try {
 			if (!id) return;
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			await likeWorkoutMutation({ variables: { input: id } });
-			await getWorkoutRefetch({ input: workoutId });
-			await sweetTopSmallSuccessAlert('success', 800);
+
+			setLikeLoading(true);
+			let nextLiked = false;
+			if (workout) {
+				const wasLiked = !!workout.meLiked?.[0]?.myFavorite;
+				nextLiked = !wasLiked;
+				setWorkout({
+					...workout,
+					workoutLikes: (workout.workoutLikes ?? 0) + (wasLiked ? -1 : 1),
+					meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: id, myFavorite: true }],
+				} as any);
+			}
+
+			const { data } = await likeWorkoutMutation({ variables: { input: id } });
+			const updatedLikes = data?.likeWorkout?.workoutLikes;
+			if (typeof updatedLikes === 'number') {
+				setWorkout((prev) =>
+					prev
+						? ({
+								...prev,
+								workoutLikes: updatedLikes,
+								meLiked: nextLiked ? [{ memberId: user._id, likeRefId: id, myFavorite: true }] : [],
+						  } as any)
+						: prev,
+				);
+			}
 		} catch (err: any) {
+			setWorkout(previousWorkout);
 			sweetMixinErrorAlert(err.message).then();
+		} finally {
+			setLikeLoading(false);
 		}
 	};
 
@@ -223,23 +262,13 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					</div>
 
 					{/* Like button */}
-					<button
-						onClick={() => likeHandler(user, workout._id)}
-						style={{
-							width: '100%',
-							padding: '14px',
-							background: workout.meLiked?.[0]?.myFavorite ? '#e9feff' : 'transparent',
-							color: workout.meLiked?.[0]?.myFavorite ? '#003739' : '#e9feff',
-							border: '1px solid #3a494a',
-							borderRadius: '8px',
-							fontFamily: 'Hanken Grotesk',
-							fontSize: '14px',
-							fontWeight: 700,
-							cursor: 'pointer',
-						}}
-					>
-						{workout.meLiked?.[0]?.myFavorite ? '♥ Liked' : '♡ Like this workout'}
-					</button>
+					<LikeButton
+						liked={!!workout.meLiked?.[0]?.myFavorite}
+						count={workout.workoutLikes ?? 0}
+						onClick={(e) => likeHandler(user, workout._id)}
+						variant="full"
+						label="Like this workout"
+					/>
 				</div>
 
 				{/* Right content */}

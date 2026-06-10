@@ -6,6 +6,7 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { T } from '../../libs/types/common';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
 import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
@@ -80,10 +81,14 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			e.stopPropagation();
 			if (!id) return;
 			if (!user?._id) throw new Error(Messages.error2);
+			setBoardArticles((prev: any[]) =>
+				prev.map((a: any) => {
+					if (a._id !== id) return a;
+					const wasLiked = !!a.meLiked?.[0]?.myFavorite;
+					return { ...a, articleLikes: (a.articleLikes ?? 0) + (wasLiked ? -1 : 1), meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: id, myFavorite: true }] };
+				}),
+			);
 			await likeTargetBoardArticle({ variables: { input: id } });
-			const { data: rd } = await boardArticlesRefetch({ input: searchCommunity });
-			if (rd?.getBoardArticles?.list) { setBoardArticles(rd.getBoardArticles.list); setTotalCount(rd.getBoardArticles.metaCounter?.[0]?.total ?? 0); }
-			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -209,12 +214,11 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 										{article.articleContent?.replace(/<[^>]*>/g, '').slice(0, 200)}
 									</p>
 									<div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-										<span
+										<LikeButton
+											liked={!!article.meLiked?.[0]?.myFavorite}
+											count={article.articleLikes ?? 0}
 											onClick={(e) => likeArticleHandler(e, article._id)}
-											style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: article.meLiked?.[0]?.myFavorite ? '#ff8a00' : '#849495', cursor: 'pointer' }}
-										>
-											{article.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {article.articleLikes ?? 0}
-										</span>
+										/>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '12px', color: '#849495' }}>
 											👁 {article.articleViews ?? 0}
 										</span>

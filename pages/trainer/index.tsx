@@ -6,6 +6,7 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
@@ -62,13 +63,14 @@ const TrainerList: NextPage = () => {
 		try {
 			e.stopPropagation();
 			if (!user?._id) throw new Error(Messages.error2);
+			setTrainers((prev: any[]) =>
+				prev.map((t: any) => {
+					if (t._id !== id) return t;
+					const wasLiked = !!t.meLiked?.[0]?.myFavorite;
+					return { ...t, memberLikes: (t.memberLikes ?? 0) + (wasLiked ? -1 : 1), meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: id, myFavorite: true }] };
+				}),
+			);
 			await likeMember({ variables: { input: id } });
-			const { data } = await refetch({ input: searchFilter });
-			if (data?.getTrainerMembers?.list) {
-				setTrainers(data.getTrainerMembers.list);
-				setTotal(data.getTrainerMembers.metaCounter?.[0]?.total ?? 0);
-			}
-			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -217,12 +219,11 @@ const TrainerList: NextPage = () => {
 								</p>
 								<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', paddingTop: '12px', borderTop: '1px solid rgba(58,73,74,0.5)' }}>
 									<div style={{ display: 'flex', gap: '12px', alignItems: 'center' }}>
-										<span
+										<LikeButton
+											liked={!!trainer.meLiked?.[0]?.myFavorite}
+											count={trainer.memberLikes ?? 0}
 											onClick={(e) => likeHandler(e, trainer._id)}
-											style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '12px', color: trainer.meLiked?.[0]?.myFavorite ? '#ff8a00' : '#849495', cursor: 'pointer' }}
-										>
-											{trainer.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {trainer.memberLikes}
-										</span>
+										/>
 										<span style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: '11px', color: '#849495' }}>
 											{trainer.memberWorkouts} workouts
 										</span>

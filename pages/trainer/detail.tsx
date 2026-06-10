@@ -8,6 +8,7 @@ import { Member } from '../../libs/types/member/member';
 import { Trainer } from '../../libs/types/trainer/trainer';
 import { Course } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_MEMBER, GET_TRAINER_BY_MEMBER_ID, GET_COURSES_BY_TRAINER_ID, GET_TRAINER_REVIEWS, GET_WORKOUTS_BY_MEMBER_ID } from '../../apollo/user/query';
@@ -57,10 +58,9 @@ const TrainerDetail: NextPage = () => {
 	const likeHandler = async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
+			const wasLiked = !!member?.meLiked?.[0]?.myFavorite;
+			setMember((prev: any) => prev ? { ...prev, memberLikes: (prev.memberLikes ?? 0) + (wasLiked ? -1 : 1), meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: memberId, myFavorite: true }] } : prev);
 			await likeMember({ variables: { input: memberId } });
-			const { data } = await memberRefetch({ input: memberId });
-			if (data?.getMember) setMember(data.getMember);
-			await sweetTopSmallSuccessAlert('success', 800);
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
@@ -146,9 +146,12 @@ const TrainerDetail: NextPage = () => {
 								<button onClick={followHandler} style={{ width: '100%', padding: '12px', background: isFollowing ? '#353436' : '#e9feff', color: isFollowing ? '#849495' : '#003739', border: isFollowing ? '1px solid #3a494a' : 'none', borderRadius: '8px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer' }}>
 									{isFollowing ? 'Unfollow' : 'Follow'}
 								</button>
-								<button onClick={likeHandler} style={{ width: '100%', padding: '12px', background: isLiked ? '#e9feff' : 'transparent', color: isLiked ? '#003739' : '#e9feff', border: '1px solid #3a494a', borderRadius: '8px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, cursor: 'pointer' }}>
-									{isLiked ? '♥ Liked' : '♡ Like'} ({member.memberLikes})
-								</button>
+								<LikeButton
+									liked={!!isLiked}
+									count={member.memberLikes ?? 0}
+									onClick={likeHandler}
+									variant="full"
+								/>
 							</div>
 						)}
 					</div>
