@@ -44,7 +44,7 @@ const loadSaved = (key: string, fallback: any) => {
 	} catch { return fallback; }
 };
 
-const NutritionContent = () => {
+const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 	const user = useReactiveVar(userVar);
 
 	const defaultForm = { gender: 'MALE', age: '', heightCm: '', weightKg: '', activityLevel: 'MODERATELY_ACTIVE', goal: 'MAINTENANCE' };
@@ -224,13 +224,22 @@ const NutritionContent = () => {
 	};
 
 	const deleteMealHandler = async (id: string) => {
+		if (!(await sweetConfirmAlert('Delete this meal?'))) return;
+		// Optimistically drop the row so the UI feels instant and stale rows can't
+		// be deleted twice.
+		setMeals((prev: any[]) => prev.filter((m: any) => m._id !== id));
 		try {
-			if (await sweetConfirmAlert('Delete this meal?')) {
-				await deleteMealLog({ variables: { input: id } });
-				await mealsRefetch();
-			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
+			await deleteMealLog({ variables: { input: id }, context: { skipGlobalError: true } });
+		} catch (err: any) {
+			// Already gone (e.g. deleted in another tab / stale list) — treat as success
+			const msg = err?.graphQLErrors?.[0]?.message || err?.message || '';
+			if (!/not found|access denied/i.test(msg)) {
+				sweetMixinErrorAlert(msg || 'Could not delete meal').then();
 			}
-		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+		}
+		const { data } = await mealsRefetch();
+		if (data?.getMealHistory) setMeals(data.getMealHistory);
+		await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
 	};
 
 	// "Today's intake" must only count TODAY — getMealHistory returns the full history
@@ -296,30 +305,34 @@ const NutritionContent = () => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>
-						{planCalculated ? 'Your plan' : 'Fuel your training'}
+						{view === 'plan' ? (planCalculated ? 'Your plan' : 'Fuel your training') : 'Track your intake'}
 					</span>
-					<h2>Nutrition</h2>
+					<h2>{view === 'plan' ? 'Nutrition Plan' : 'Meal Tracker'}</h2>
 				</div>
 				<div className="nt-tools">
-					{planCalculated && (
+					{view === 'plan' && planCalculated && (
 						<button className="nt-markall" onClick={resetPlan}>
 							Recalculate
 						</button>
 					)}
-					<button className="nm-scan-btn" onClick={() => fileInputRef.current?.click()} disabled={scanning}>
-						<span className="nm-scan-dot" />
-						{scanning ? 'Scanning...' : 'AI Scan Food'}
-					</button>
-					<input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
-						onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScanFood(f); }} />
-					<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => setShowAddMeal(!showAddMeal)}>
-						+ Log Meal
-					</button>
+					{view === 'tracker' && (
+						<>
+							<button className="nm-scan-btn" onClick={() => fileInputRef.current?.click()} disabled={scanning}>
+								<span className="nm-scan-dot" />
+								{scanning ? 'Scanning...' : 'AI Scan Food'}
+							</button>
+							<input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
+								onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScanFood(f); }} />
+							<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => setShowAddMeal(!showAddMeal)}>
+								+ Log Meal
+							</button>
+						</>
+					)}
 				</div>
 			</div>
 
-			{/* ─── AI SCAN RESULT ─── */}
-			{(scanning || scanResult) && (
+			{/* ─── AI SCAN RESULT (tracker) ─── */}
+			{view === 'tracker' && (scanning || scanResult) && (
 				<div style={{
 					background: 'linear-gradient(135deg, rgba(102,218,186,0.06), rgba(0,220,229,0.03))',
 					border: '1px solid rgba(102,218,186,0.2)', borderRadius: '16px',
@@ -393,8 +406,8 @@ const NutritionContent = () => {
 				</div>
 			)}
 
-			{/* ─── NUTRITION PLAN FORM ─── */}
-			{!planCalculated && (
+			{/* ─── NUTRITION PLAN FORM (plan) ─── */}
+			{view === 'plan' && !planCalculated && (
 				<div style={{
 					background: 'linear-gradient(135deg, rgba(255,138,0,0.04), rgba(0,220,229,0.03))',
 					border: '1px solid rgba(255,138,0,0.12)', borderRadius: '16px',
@@ -503,8 +516,8 @@ const NutritionContent = () => {
 				</div>
 			)}
 
-			{/* ─── RESULTS ─── */}
-			{planCalculated && recommendation && (
+			{/* ─── RESULTS (plan) ─── */}
+			{view === 'plan' && planCalculated && recommendation && (
 				<div style={{ marginBottom: '32px' }}>
 					{/* Overview cards */}
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
@@ -606,7 +619,8 @@ const NutritionContent = () => {
 				</div>
 			)}
 
-			{/* ─── TODAY'S INTAKE ─── */}
+			{/* ─── TODAY'S INTAKE + HISTORY + MEALS (tracker) ─── */}
+			{view === 'tracker' && (
 			<div style={{ display: 'grid', gridTemplateColumns: planCalculated && aiHistory.length > 0 ? '1fr 280px' : '1fr', gap: '24px' }}>
 				<div>
 					{/* Macro summary (today's eaten) */}
@@ -829,6 +843,7 @@ const NutritionContent = () => {
 					</div>
 				)}
 			</div>
+			)}
 		</div>
 	);
 };

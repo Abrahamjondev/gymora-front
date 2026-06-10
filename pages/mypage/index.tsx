@@ -44,6 +44,9 @@ type MenuItem = {
 	userOnly?: boolean;
 	/** Consumer features — hidden for trainers, who manage content here instead. */
 	hideForTrainer?: boolean;
+	/** Optional inline "+" action that opens a create category (saves a nav row). */
+	createKey?: string;
+	createTitle?: string;
 };
 
 const menuSections: { title: string | null; items: MenuItem[] }[] = [
@@ -57,12 +60,9 @@ const menuSections: { title: string | null; items: MenuItem[] }[] = [
 	{
 		title: 'Studio',
 		items: [
-			{ key: 'myWorkouts', label: 'My Workouts', icon: '◈', trainerOnly: true },
-			{ key: 'createWorkout', label: 'Create Workout', icon: '＋', trainerOnly: true },
-			{ key: 'trainerCourses', label: 'My Programs', icon: '◧', trainerOnly: true },
-			{ key: 'createCourse', label: 'Create Program', icon: '＋', trainerOnly: true },
-			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOnly: true },
-			{ key: 'writeArticle', label: 'Write Article', icon: '✎', trainerOnly: true },
+			{ key: 'myWorkouts', label: 'My Workouts', icon: '◈', trainerOnly: true, createKey: 'createWorkout', createTitle: 'Create workout' },
+			{ key: 'trainerCourses', label: 'My Programs', icon: '◧', trainerOnly: true, createKey: 'createCourse', createTitle: 'Create program' },
+			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOnly: true, createKey: 'writeArticle', createTitle: 'Write article' },
 		],
 	},
 	{
@@ -79,7 +79,8 @@ const menuSections: { title: string | null; items: MenuItem[] }[] = [
 	{
 		title: 'Health',
 		items: [
-			{ key: 'nutrition', label: 'Nutrition', icon: '◑', userOnly: true },
+			{ key: 'nutrition', label: 'Nutrition Plan', icon: '◑', userOnly: true },
+			{ key: 'mealTracker', label: 'Meal Tracker', icon: '▥', userOnly: true },
 			{ key: 'progress', label: 'Progress', icon: '△', userOnly: true },
 		],
 	},
@@ -128,7 +129,11 @@ const MyPage: NextPage = () => {
 
 	// Guard: only categories visible to this role can render (e.g. a trainer
 	// hitting ?category=subscription falls back to the dashboard).
-	const allowedKeys = menuSections.flatMap((s) => s.items.filter((i) => isItemVisible(i, user?.memberType)).map((i) => i.key));
+	const allowedKeys = menuSections.flatMap((s) =>
+		s.items
+			.filter((i) => isItemVisible(i, user?.memberType))
+			.flatMap((i) => (i.createKey ? [i.key, i.createKey] : [i.key])),
+	);
 	const cat = allowedKeys.includes(requestedCategory) ? requestedCategory : 'dashboard';
 
 	const [myWorkouts, setMyWorkouts] = useState<Workout[]>([]);
@@ -504,7 +509,7 @@ const MyPage: NextPage = () => {
 										{section.title && <div className="mp-nav-label">{section.title}</div>}
 										{!section.title && sIdx > 0 && <div className="mp-sep" />}
 										{visibleItems.map((item) => {
-											const isActive = cat === item.key;
+											const isActive = cat === item.key || cat === item.createKey;
 											const isBecomeTrainer = item.key === 'becomeTrainer';
 											return (
 												<button
@@ -515,7 +520,19 @@ const MyPage: NextPage = () => {
 													<span className="mp-item-ic">{item.icon}</span>
 													<span className="mp-item-label">{item.label}</span>
 													{item.key === 'notifications' && unreadCount > 0 && <span className="mp-unread">{unreadCount}</span>}
-												{item.key === 'chat' && unreadChatCount > 0 && <span className="mp-unread">{unreadChatCount}</span>}
+													{item.key === 'chat' && unreadChatCount > 0 && <span className="mp-unread">{unreadChatCount}</span>}
+													{item.createKey && (
+														<span
+															className={`mp-add${cat === item.createKey ? ' is-active' : ''}`}
+															title={item.createTitle}
+															onClick={(e) => {
+																e.stopPropagation();
+																menuHandler(item.createKey as string);
+															}}
+														>
+															+
+														</span>
+													)}
 												</button>
 											);
 										})}
@@ -946,7 +963,8 @@ const MyPage: NextPage = () => {
 					{cat === 'writeArticle' && <WriteArticle />}
 
 					{cat === 'chat' && <ChatContent onConversationsRead={refreshConversations} />}
-					{cat === 'nutrition' && <NutritionContent />}
+					{cat === 'nutrition' && <NutritionContent view="plan" />}
+				{cat === 'mealTracker' && <NutritionContent view="tracker" />}
 					{cat === 'progress' && <ProgressContent />}
 					{cat === 'subscription' && <SubscriptionContent />}
 

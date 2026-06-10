@@ -55,6 +55,10 @@
 
 - Subscription is now strictly USER-only: removed 3 stray admin/trainer subscriptions from the DB (and any PENDING), and tightened the dashboard subscription summary to USER-only (admins no longer see it); menu item + route guard already exclude trainers/admins (verified live).
 
+- Trainer sidebar no longer needs scrolling: merged the 3 "Create" nav rows into inline glowing "+" actions on their parent rows (Studio 6→3 rows) and compacted the identity card; fits the viewport at normal heights, + buttons verified on desktop and mobile.
+
+- Nutrition page split into "Nutrition Plan" (calculator + results) and "Meal Tracker" (AI scan, log, today's intake, calorie history, recent meals) via a view prop + new menu item; fixed the meal-delete error (optimistic remove, treat already-gone as success, skipGlobalError context so no scary popup). Verified live.
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

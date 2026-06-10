@@ -1437,7 +1437,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	align-self: start;
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 11px;
 	max-height: calc(100vh - 48px);
 	overflow-y: auto;
 	overscroll-behavior: contain;
@@ -1455,7 +1455,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	flex: none;
 }
 .mp-cover {
-	height: 76px;
+	height: 58px;
 	position: relative;
 	background: radial-gradient(120% 170% at 12% 0%, rgba(0, 220, 229, 0.32) 0%, transparent 55%),
 		radial-gradient(120% 170% at 92% 15%, rgba(102, 218, 186, 0.22) 0%, transparent 55%),
@@ -1469,17 +1469,17 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
 .mp-profile-body {
-	padding: 0 20px 20px;
+	padding: 0 20px 16px;
 	text-align: center;
-	margin-top: -40px;
+	margin-top: -32px;
 	position: relative;
 }
 .mp-ava {
-	width: 78px;
-	height: 78px;
+	width: 62px;
+	height: 62px;
 	border-radius: 50%;
 	overflow: hidden;
-	margin: 0 auto 12px;
+	margin: 0 auto 8px;
 	border: 3px solid rgba(0, 220, 229, 0.5);
 	box-shadow: 0 0 28px rgba(0, 220, 229, 0.25), 0 6px 16px rgba(0, 0, 0, 0.55);
 	background: #0d0d0e;
@@ -1497,10 +1497,10 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 }
 .mp-name {
 	font-family: 'Hanken Grotesk', sans-serif;
-	font-size: 17px;
+	font-size: 16px;
 	font-weight: 800;
 	color: #ffffff;
-	margin: 0 0 8px;
+	margin: 0 0 6px;
 	letter-spacing: -0.01em;
 }
 .mp-chip {
@@ -1527,7 +1527,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	display: flex;
 	justify-content: center;
 	gap: 14px;
-	margin-top: 12px;
+	margin-top: 8px;
 	font-family: 'JetBrains Mono', monospace;
 	font-size: 10.5px;
 	color: rgba(213, 226, 226, 0.7);
@@ -1538,8 +1538,8 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 .mp-mini {
 	display: grid;
 	grid-template-columns: repeat(3, 1fr);
-	margin-top: 15px;
-	padding: 13px 0;
+	margin-top: 11px;
+	padding: 9px 0;
 	border-top: 1px solid rgba(255, 255, 255, 0.06);
 	border-bottom: 1px solid rgba(255, 255, 255, 0.06);
 	> div + div {
@@ -1569,13 +1569,13 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	flex-wrap: wrap;
 	gap: 5px;
 	justify-content: center;
-	margin-top: 13px;
+	margin-top: 9px;
 }
 .mp-socials {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
-	margin-top: 13px;
+	gap: 4px;
+	margin-top: 9px;
 	a {
 		font-family: 'JetBrains Mono', monospace;
 		font-size: 10px;
@@ -1591,9 +1591,9 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
 .mp-public {
-	margin-top: 15px;
+	margin-top: 11px;
 	width: 100%;
-	padding: 10px;
+	padding: 9px;
 	border-radius: 10px;
 	border: 1px solid rgba(255, 255, 255, 0.1);
 	background: rgba(255, 255, 255, 0.03);
@@ -1622,7 +1622,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	letter-spacing: 0.16em;
 	text-transform: uppercase;
 	color: rgba(0, 220, 229, 0.7);
-	padding: 14px 10px 8px;
+	padding: 10px 10px 6px;
 	&::after {
 		content: '';
 		flex: 1;
@@ -1640,7 +1640,7 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	display: flex;
 	align-items: center;
 	gap: 12px;
-	padding: 10px 12px;
+	padding: 9px 12px;
 	border-radius: 12px;
 	border: none;
 	background: transparent;
@@ -1723,6 +1723,35 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		font-family: 'JetBrains Mono', monospace;
 		box-shadow: 0 0 10px rgba(0, 220, 229, 0.35);
 		flex: none;
+	}
+	.mp-add {
+		flex: none;
+		width: 24px;
+		height: 24px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 8px;
+		font-size: 17px;
+		font-weight: 400;
+		line-height: 1;
+		color: #9aabab;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		transition: all 0.2s ease;
+		&:hover {
+			color: #003739;
+			background: linear-gradient(135deg, #00dce5, #00f5ff);
+			border-color: transparent;
+			transform: rotate(90deg) scale(1.08);
+			box-shadow: 0 0 14px rgba(0, 220, 229, 0.45);
+		}
+		&.is-active {
+			color: #003739;
+			background: linear-gradient(135deg, #00dce5, #66daba);
+			border-color: transparent;
+			box-shadow: 0 0 12px rgba(0, 220, 229, 0.4);
+		}
 	}
 }
 

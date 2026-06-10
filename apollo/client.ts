@@ -43,8 +43,11 @@ function createIsomorphicLink() {
 			uri: process.env.REACT_APP_GRAPHQL_URL ?? 'http://localhost:3003/graphql',
 		});
 
-		const errorLink = onError(({ graphQLErrors, networkError }) => {
-			if (graphQLErrors) {
+		const errorLink = onError(({ graphQLErrors, networkError, operation }) => {
+			// Operations can opt out of the global error popup when they handle
+			// errors themselves (e.g. best-effort deletes of stale rows).
+			const skipGlobal = operation.getContext()?.skipGlobalError;
+			if (graphQLErrors && !skipGlobal) {
 				graphQLErrors.map(({ message }) => {
 					if (!message.includes('input')) sweetErrorAlert(message);
 				});
