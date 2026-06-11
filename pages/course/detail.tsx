@@ -46,6 +46,23 @@ const CourseDetail: NextPage = () => {
 	const [lessonProgress, setLessonProgress] = useState<any[]>([]);
 	const [watchingLesson, setWatchingLesson] = useState<string | null>(null);
 
+	// Keep the open lesson video in the URL (?lesson=) so a refresh restores it
+	// instead of collapsing back to the curriculum list.
+	useEffect(() => {
+		const l = router.query.lesson as string | undefined;
+		if (l && l !== watchingLesson) setWatchingLesson(l);
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [router.query.lesson]);
+
+	const toggleWatch = (lessonId: string) => {
+		const next = watchingLesson === lessonId ? null : lessonId;
+		setWatchingLesson(next);
+		const query: any = { ...router.query };
+		if (next) query.lesson = next;
+		else delete query.lesson;
+		router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
+	};
+
 	const { loading, refetch } = useQuery(GET_COURSE, {
 		fetchPolicy: 'network-only',
 		variables: { input: courseId },
@@ -59,13 +76,19 @@ const CourseDetail: NextPage = () => {
 		fetchPolicy: 'network-only',
 		variables: { input: courseId },
 		skip: !courseId,
+		// Empty reviews/progress legitimately throw NO_DATA_FOUND on the backend —
+		// don't surface that as a global error popup.
+		context: { skipGlobalError: true },
 		onCompleted: (d: T) => setReviews(d?.getCourseReviews ?? []),
+		onError: () => setReviews([]),
 	});
 	const { refetch: progressRefetch } = useQuery(GET_LESSON_PROGRESS, {
 		fetchPolicy: 'network-only',
 		variables: { input: courseId },
 		skip: !courseId || !user?._id,
+		context: { skipGlobalError: true },
 		onCompleted: (d: T) => setLessonProgress(d?.getLessonProgress ?? []),
+		onError: () => setLessonProgress([]),
 	});
 
 	const [purchaseCourse] = useMutation(PURCHASE_COURSE);
@@ -191,6 +214,12 @@ const CourseDetail: NextPage = () => {
 	}
 
 	const isEnrolled = user?._id ? course.purchasedMembers?.includes(user._id) : false;
+	// The trainer who created this program owns it — full access, no payment.
+	const isCreator = !!user?._id && !!courseTrainer?.memberId && String(courseTrainer.memberId) === String(user._id);
+	// Admins can view every program for free.
+	const isAdmin = user?.memberType === 'ADMIN';
+	// Anyone with access can watch the videos / curriculum.
+	const hasAccess = isEnrolled || isCreator || isAdmin;
 	const accent = categoryColors[course.courseCategory] || '#00dce5';
 	const totalLessons = course.lessons?.length ?? 0;
 	const completedCount = course.lessons?.filter((l) => isLessonCompleted(l._id)).length ?? 0;
@@ -257,15 +286,29 @@ const CourseDetail: NextPage = () => {
 				{/* Sticky sidebar */}
 				<div className="wd-side">
 					<div className="pd-price-card">
-						<span className="pd-price-label">Lifetime access</span>
-						<span className="pd-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}</span>
-						<button className={`pd-enroll${isEnrolled ? ' is-enrolled' : ''}`} onClick={isEnrolled ? undefined : enrollHandler}>
-							{isEnrolled ? '✓ Enrolled' : course.coursePrice > 0 ? 'Enroll Now' : 'Enroll Free'}
-						</button>
-						{!isEnrolled && course.coursePrice > 0 && <span className="pd-secure">Secure Stripe checkout</span>}
+						<span className="pd-price-label">{isCreator ? 'Your program' : isAdmin && !isEnrolled ? 'Admin access' : 'Lifetime access'}</span>
+						<span className="pd-price">
+							{isCreator || (isAdmin && !isEnrolled) ? 'Free' : course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}
+						</span>
+						{isCreator ? (
+							<button className="pd-enroll is-enrolled" onClick={() => router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } })}>
+								Manage Program
+							</button>
+						) : isAdmin && !isEnrolled ? (
+							<button className="pd-enroll is-enrolled" onClick={undefined}>
+								✓ Full Access
+							</button>
+						) : (
+							<button className={`pd-enroll${isEnrolled ? ' is-enrolled' : ''}`} onClick={isEnrolled ? undefined : enrollHandler}>
+								{isEnrolled ? '✓ Enrolled' : course.coursePrice > 0 ? 'Enroll Now' : 'Enroll Free'}
+							</button>
+						)}
+						{!hasAccess && course.coursePrice > 0 && <span className="pd-secure">Secure Stripe checkout</span>}
+						{isCreator && <span className="pd-secure">You created this program</span>}
+						{isAdmin && !isCreator && !isEnrolled && <span className="pd-secure">Free for admins</span>}
 					</div>
 
-					{/* Progress — only for enrolled members, real lessonProgress data */}
+					{/* Progress — only for real enrolled learners, real lessonProgress data */}
 					{isEnrolled && totalLessons > 0 && (
 						<div className="pd-progress-card">
 							<div className="pd-progress-head">
@@ -358,12 +401,12 @@ const CourseDetail: NextPage = () => {
 													</div>
 													<div className="pd-lesson-right">
 														{l.duration ? <span className="pd-lesson-dur">{Math.round(l.duration)} min</span> : null}
-														{isEnrolled && l.videoUrl && (
+														{hasAccess && l.videoUrl && (
 															<button
 																className="pd-lesson-btn"
 																onClick={(e) => {
 																	e.stopPropagation();
-																	setWatchingLesson(watching ? null : l._id);
+																	toggleWatch(l._id);
 																}}
 															>
 																{watching ? 'Close' : 'Watch'}
@@ -385,7 +428,7 @@ const CourseDetail: NextPage = () => {
 															))}
 													</div>
 												</div>
-												{watching && isEnrolled && l.videoUrl && (
+												{watching && hasAccess && l.videoUrl && (
 													<div style={{ margin: '4px 0 14px', animation: 'fadeInUp 0.3s ease both' }}>
 														<VideoPlayer src={l.videoUrl} title={l.title} />
 													</div>

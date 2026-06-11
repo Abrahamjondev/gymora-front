@@ -59,6 +59,23 @@
 
 - Nutrition page split into "Nutrition Plan" (calculator + results) and "Meal Tracker" (AI scan, log, today's intake, calorie history, recent meals) via a view prop + new menu item; fixed the meal-delete error (optimistic remove, treat already-gone as success, skipGlobalError context so no scary popup). Verified live.
 
+## 2026-06-11
+- Populated all 49 video-less workouts with real, embeddable YouTube videos matched by muscle group, and created 124 lessons (4 weeks each) across 31 programs with category-matched verified videos. Fixed a "No data found" popup on program detail (skipGlobalError on CreatorCard/reviews/progress queries).
+
+- Replaced the leftover Nestar browser-tab favicon with the Gymora mark (cyan G), fixed the wrong svg mime type in _document, and removed the old Nestar favicon.ico.
+
+- Fixed avatar 3D flip clipping (photo spilled into a square past the round frame) by removing preserve-3d and rounding the img.
+
+- MyPage profile avatar now has a 3D coin-flip hover (rotateY 360 + lift + neon glow + shine sweep) instead of a flat scale.
+
+- Fixed chat presence flicker (Last seen ↔ Offline on refresh): presence now lives in a dedicated state fed only by getPartnerOnlineStatus, immune to the conversations refetch race; shows stable "Last seen X" / "Active now". Verified across 4 refreshes.
+
+- Refresh no longer resets interactive views: the open chat conversation (?partner=) and the open program lesson video (?lesson=) now persist in the URL and restore on reload. Verified live.
+
+- Program access fixed: trainers can view/watch/edit their OWN program free (creator detection via courseTrainer.memberId), and admins get free full access to every program; non-enrolled users still see the paid Enroll flow. Verified live on the real $150 program.
+
+- Deep legacy purge: removed all Nestar SCSS (scss/pc + scss/mobile, ~25 partials) and their _app.tsx imports, 8 redirect-stub pages, 6 unused enums, dead type files, libs/utils.ts, and 8 legacy image folders — verified every page still renders. Polished dashboard subscription into a friendly Free/Active card with CTA; notifications now poll live (20s); chat gained real "last seen" (backend lastSeen, in-memory) showing "Active now"/"Last seen Xm ago". All verified live.
+
 ## 2026-06-09
 
 - Investigated workout like persistence against the Gymora backend source.

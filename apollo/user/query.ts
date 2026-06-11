@@ -951,6 +951,7 @@ export const GET_PARTNER_ONLINE_STATUS = gql`
 		getPartnerOnlineStatus(partnerId: $input) {
 			memberId
 			isOnline
+			lastSeen
 		}
 	}
 `;

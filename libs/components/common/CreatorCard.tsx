@@ -27,6 +27,10 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 		fetchPolicy: 'cache-and-network',
 		variables: { input: memberId },
 		skip: !memberId,
+		// A missing/deleted member legitimately throws NO_DATA_FOUND — the card just
+		// hides itself, no global error popup needed.
+		context: { skipGlobalError: true },
+		onError: () => {},
 	});
 	const member: T | undefined = data?.getMember;
 

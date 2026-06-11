@@ -1473,8 +1473,11 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	text-align: center;
 	margin-top: -32px;
 	position: relative;
+	/* 3D stage for the avatar coin-flip */
+	perspective: 800px;
 }
 .mp-ava {
+	position: relative;
 	width: 62px;
 	height: 62px;
 	border-radius: 50%;
@@ -1483,16 +1486,41 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	border: 3px solid rgba(0, 220, 229, 0.5);
 	box-shadow: 0 0 28px rgba(0, 220, 229, 0.25), 0 6px 16px rgba(0, 0, 0, 0.55);
 	background: #0d0d0e;
-	transition: transform 0.4s $wl-ease, box-shadow 0.4s ease;
+	will-change: transform;
+	transition: transform 0.85s cubic-bezier(0.22, 1, 0.36, 1), box-shadow 0.5s ease, border-color 0.5s ease;
+	/* Keep the circular clip intact during the 3D flip (preserve-3d would break
+	   overflow:hidden and let the square photo spill past the round frame). */
 	img {
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
 		display: block;
+		border-radius: 50%;
+	}
+	/* light sweep that streaks across the face on hover (clipped to the circle) */
+	&::after {
+		content: '';
+		position: absolute;
+		top: -25%;
+		left: -60%;
+		width: 45%;
+		height: 150%;
+		background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.75), transparent);
+		transform: translateX(-160%) skewX(-18deg);
+		pointer-events: none;
 	}
 	&:hover {
-		transform: scale(1.05);
-		box-shadow: 0 0 40px rgba(0, 220, 229, 0.4), 0 6px 16px rgba(0, 0, 0, 0.55);
+		transform: rotateY(360deg) scale(1.16) translateZ(22px);
+		border-color: rgba(0, 220, 229, 0.95);
+		box-shadow: 0 0 46px rgba(0, 220, 229, 0.6), 0 0 86px rgba(0, 220, 229, 0.28), 0 16px 34px rgba(0, 0, 0, 0.65);
+		&::after {
+			animation: mpAvaShine 0.85s cubic-bezier(0.22, 1, 0.36, 1) 0.15s;
+		}
+	}
+}
+@keyframes mpAvaShine {
+	to {
+		transform: translateX(360%) skewX(-18deg);
 	}
 }
 .mp-name {

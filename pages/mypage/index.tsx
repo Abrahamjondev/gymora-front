@@ -181,7 +181,7 @@ const MyPage: NextPage = () => {
 	/** APOLLO **/
 	const { refetch: myWorkoutsRefetch } = useQuery(GET_MEMBER_WORKOUTS, { fetchPolicy: 'network-only', skip: !user?._id || user?.memberType !== 'TRAINER', onCompleted: (d: T) => setMyWorkouts(d?.getMemberWorkouts ?? []) });
 	useQuery(GET_DASHBOARD_STATS, { fetchPolicy: 'cache-and-network', skip: !user?._id, onCompleted: (d: T) => setDashboardStats(d?.getDashboardStats) });
-	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
+	const { refetch: notifRefetch } = useQuery(GET_NOTIFICATIONS, { fetchPolicy: 'network-only', skip: !user?._id, pollInterval: 20000, onCompleted: (d: T) => setNotifications(d?.getNotifications ?? []) });
 	const [conversations, setConversations] = useState<any[]>([]);
 	const { refetch: convsRefetch } = useQuery(GET_CONVERSATIONS, { fetchPolicy: 'network-only', skip: !user?._id, pollInterval: 15000, onCompleted: (d: T) => setConversations(d?.getConversations ?? []) });
 	// Called by ChatContent when a conversation is opened/read so the sidebar
@@ -594,11 +594,47 @@ const MyPage: NextPage = () => {
 							)}
 
 							{/* Subscription summary — consumer (USER) feature only */}
-							{user?.memberType === 'USER' && dashboardStats?.subscriptionSummary && (
-								<div style={{ background: 'rgba(255,138,0,0.04)', border: '1px solid rgba(255,138,0,0.12)', borderRadius: '12px', padding: '16px 20px', marginBottom: '20px' }}>
-									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(255,183,127,0.9)' }}>{dashboardStats.subscriptionSummary}</span>
-								</div>
-							)}
+							{user?.memberType === 'USER' && dashboardStats?.subscriptionSummary && (() => {
+								const raw: string = dashboardStats.subscriptionSummary;
+								const active = raw !== 'NO_SUBSCRIPTION';
+								const [plan, status] = active ? raw.split(':') : ['', ''];
+								const planLabel = plan === 'YEARLY' ? 'Yearly plan' : plan === 'MONTHLY' ? 'Monthly plan' : 'Premium plan';
+								const accent = active ? '#66daba' : '#ffb77f';
+								return (
+									<div
+										style={{
+											display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '16px', flexWrap: 'wrap',
+											background: `linear-gradient(135deg, ${accent}14, ${accent}05)`,
+											border: `1px solid ${accent}30`, borderRadius: '14px', padding: '16px 20px', marginBottom: '20px',
+										}}
+									>
+										<div style={{ display: 'flex', alignItems: 'center', gap: '12px', minWidth: 0 }}>
+											<span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}`, flex: 'none' }} />
+											<div>
+												<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#ffffff', display: 'block' }}>
+													{active ? `${planLabel} · ${status === 'ACTIVE' ? 'Active' : status}` : "You're on the Free plan"}
+												</span>
+												<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '12.5px', color: 'rgba(213,226,226,0.6)' }}>
+													{active ? 'Thanks for supporting Gymora.' : 'Upgrade to support free training and back verified trainers.'}
+												</span>
+											</div>
+										</div>
+										<button
+											className={active ? '' : 'lp-btn-primary'}
+											style={{
+												padding: '10px 22px', fontSize: '13px', flex: 'none', cursor: 'pointer',
+												fontFamily: 'Hanken Grotesk, sans-serif', fontWeight: 700, borderRadius: '10px',
+												...(active
+													? { background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.14)', color: '#e9feff' }
+													: {}),
+											}}
+											onClick={() => menuHandler('subscription')}
+										>
+											{active ? 'Manage' : 'Upgrade →'}
+										</button>
+									</div>
+								);
+							})()}
 
 							{/* Quick actions — role-aware */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>

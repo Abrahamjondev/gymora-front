@@ -1,7 +1,0 @@
-export enum NotificationType {
-	SYSTEM = 'SYSTEM',
-	WORKOUT = 'WORKOUT',
-	NUTRITION = 'NUTRITION',
-	SUBSCRIPTION = 'SUBSCRIPTION',
-	CHAT = 'CHAT',
-}

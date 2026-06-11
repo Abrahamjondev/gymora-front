@@ -16,6 +16,9 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 	const { socket, connected } = useSocket();
 	const [conversations, setConversations] = useState<any[]>([]);
 	const [activePartner, setActivePartner] = useState<string | null>(null);
+	// Live presence for the OPEN conversation, kept separate from the conversation
+	// list so a conversations refetch can't wipe the lastSeen we resolved.
+	const [partnerStatus, setPartnerStatus] = useState<{ isOnline: boolean; lastSeen?: string } | null>(null);
 	const [messages, setMessages] = useState<any[]>([]);
 	const [messageText, setMessageText] = useState('');
 	const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -34,6 +37,9 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		onCompleted: (d: any) => {
 			const st = d?.getPartnerOnlineStatus;
 			if (!st?.memberId) return;
+			// Drive the open-room header from this dedicated state (stable across refetches)
+			if (st.memberId === activePartner) setPartnerStatus({ isOnline: st.isOnline, lastSeen: st.lastSeen });
+			// Keep the list dot in sync too (no lastSeen needed there)
 			setConversations((prev) => prev.map((c: any) => (c.partnerId === st.memberId ? { ...c, isOnline: st.isOnline } : c)));
 		},
 	});
@@ -68,6 +74,13 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		setActivePartner(partnerParam);
 	}, [partnerParam, user?._id]);
 
+	// Open a conversation AND persist it in the URL so a refresh restores it
+	// (state alone is lost on reload).
+	const openConversation = (partnerId: string) => {
+		setActivePartner(partnerId);
+		router.push({ pathname: '/mypage', query: { category: 'chat', partner: partnerId } }, undefined, { shallow: true });
+	};
+
 	useEffect(() => {
 		if (!partnerParam || convsLoading || partnerParam === user?._id) return;
 		if (!conversations.some((c: any) => c.partnerId === partnerParam)) {
@@ -84,6 +97,9 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 
 	useEffect(() => {
 		if (activePartner) {
+			// Reset presence for the newly opened conversation until we re-resolve it,
+			// so a previous partner's status never lingers.
+			setPartnerStatus(null);
 			// Opening a conversation marks its incoming messages read on the backend.
 			// Optimistically clear the local unread flag and tell the parent so the
 			// sidebar badge updates without waiting for a refresh/poll.
@@ -168,6 +184,19 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 
 	const activeConv = conversations.find((c: any) => c.partnerId === activePartner);
 
+	const lastSeenLabel = (iso?: string) => {
+		if (!iso) return 'Offline';
+		const diff = Date.now() - new Date(iso).getTime();
+		const m = Math.floor(diff / 60000);
+		if (m < 1) return 'Last seen just now';
+		if (m < 60) return `Last seen ${m}m ago`;
+		const h = Math.floor(m / 60);
+		if (h < 24) return `Last seen ${h}h ago`;
+		const d = Math.floor(h / 24);
+		if (d < 7) return `Last seen ${d}d ago`;
+		return `Last seen ${new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
+	};
+
 	const formatConvTime = (iso?: string) => {
 		if (!iso) return '';
 		const d = new Date(iso);
@@ -219,7 +248,7 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 								<div
 									key={conv.partnerId}
 									className={`ct-conv${activePartner === conv.partnerId ? ' is-active' : ''}`}
-									onClick={() => setActivePartner(conv.partnerId)}
+									onClick={() => openConversation(conv.partnerId)}
 								>
 									<div className="ct-conv-ava">
 										<img src={conv.partnerImage ? `${REACT_APP_API_URL}/${conv.partnerImage}` : '/img/profile/defaultUser.svg'} alt="" />
@@ -247,14 +276,16 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 							<div className="ct-room-head">
 								<div className="ct-room-ava">
 									<img src={activeConv?.partnerImage ? `${REACT_APP_API_URL}/${activeConv.partnerImage}` : '/img/profile/defaultUser.svg'} alt="" />
-									{activeConv?.isOnline && <span className="ct-online" />}
+									{partnerStatus?.isOnline && <span className="ct-online" />}
 								</div>
 								<div className="ct-room-id">
 									<span className="ct-room-name">{activeConv?.partnerNick || 'User'}</span>
-									<span className={`ct-presence${activeConv?.isOnline ? ' is-online' : ''}`}>
-										<span className="ct-presence-dot" />
-										{activeConv?.isOnline ? 'Active now' : 'Offline'}
-									</span>
+									{partnerStatus && (
+										<span className={`ct-presence${partnerStatus.isOnline ? ' is-online' : ''}`}>
+											<span className="ct-presence-dot" />
+											{partnerStatus.isOnline ? 'Active now' : lastSeenLabel(partnerStatus.lastSeen)}
+										</span>
+									)}
 								</div>
 							</div>
 
