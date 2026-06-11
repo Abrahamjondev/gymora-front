@@ -28,6 +28,8 @@ export interface Course {
 	lessons?: Lesson[];
 	courseRating?: number;
 	courseRatingCount?: number;
+	courseLikes?: number;
+	meLiked?: { memberId: string; likeRefId: string; myFavorite: boolean }[];
 	courseRank?: number;
 	createdAt: Date;
 	updatedAt: Date;

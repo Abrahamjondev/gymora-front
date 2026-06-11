@@ -60,6 +60,8 @@
 - Nutrition page split into "Nutrition Plan" (calculator + results) and "Meal Tracker" (AI scan, log, today's intake, calorie history, recent meals) via a view prop + new menu item; fixed the meal-delete error (optimistic remove, treat already-gone as success, skipGlobalError context so no scary popup). Verified live.
 
 ## 2026-06-11
+- Added program likes restricted to purchasers (new backend likeTargetCourse with purchase check + courseLikes/meLiked; review-by-purchasers was already enforced) and surfaced purchase counts as social proof on program list cards and detail. Verified end-to-end.
+
 - Rebranded all SweetAlert popups/toasts to the dark premium theme (glass popup, cyan/danger buttons, recolored icons, smooth animation) via a global app.scss theme — fixes the ugly default white error/confirm popups everywhere.
 
 - Populated all 49 video-less workouts with real, embeddable YouTube videos matched by muscle group, and created 124 lessons (4 weeks each) across 31 programs with category-matched verified videos. Fixed a "No data found" popup on program detail (skipGlobalError on CreatorCard/reviews/progress queries).

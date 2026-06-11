@@ -10,10 +10,11 @@ import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS, GET_TRAINER } from '../../apollo/user/query';
 import CreatorCard from '../../libs/components/common/CreatorCard';
-import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION, CONFIRM_COURSE_PAYMENT } from '../../apollo/user/mutation';
+import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION, CONFIRM_COURSE_PAYMENT, LIKE_TARGET_COURSE } from '../../apollo/user/mutation';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import VideoPlayer from '../../libs/components/common/VideoPlayer';
+import LikeButton from '../../libs/components/common/LikeButton';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
@@ -104,6 +105,7 @@ const CourseDetail: NextPage = () => {
 	const [completeLesson] = useMutation(COMPLETE_LESSON);
 	const [createCheckoutSession] = useMutation(CREATE_COURSE_CHECKOUT_SESSION);
 	const [confirmCoursePayment] = useMutation(CONFIRM_COURSE_PAYMENT);
+	const [likeTargetCourse] = useMutation(LIKE_TARGET_COURSE);
 	const confirmingRef = React.useRef(false);
 
 	useEffect(() => {
@@ -169,6 +171,28 @@ const CourseDetail: NextPage = () => {
 			await sweetMixinSuccessAlert('Enrolled successfully!');
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message.replace('Definer: ', '')).then();
+		}
+	};
+
+	// Like a program — only purchasers can (backend enforces it too)
+	const likeCourseHandler = async () => {
+		try {
+			if (!user?._id) { router.push('/account/join'); return; }
+			if (!isEnrolled) {
+				await sweetMixinErrorAlert('Only members who purchased this program can like it.');
+				return;
+			}
+			const wasLiked = !!course?.meLiked?.[0]?.myFavorite;
+			setCourse((prev: any) => prev ? {
+				...prev,
+				courseLikes: (prev.courseLikes ?? 0) + (wasLiked ? -1 : 1),
+				meLiked: wasLiked ? [] : [{ memberId: user._id, likeRefId: prev._id, myFavorite: true }],
+			} : prev);
+			await likeTargetCourse({ variables: { input: courseId } });
+		} catch (err: any) {
+			const { data } = await refetch({ input: courseId });
+			if (data?.getCourse) setCourse(data.getCourse);
+			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 		}
 	};
 
@@ -271,9 +295,12 @@ const CourseDetail: NextPage = () => {
 							<span>
 								<b>{totalLessons}</b> sessions
 							</span>
-							{enrolledCount > 0 && (
+							<span>
+								<b>{enrolledCount}</b> enrolled
+							</span>
+							{(course.courseLikes ?? 0) > 0 && (
 								<span>
-									<b>{enrolledCount}</b> enrolled
+									<b>{course.courseLikes}</b> likes
 								</span>
 							)}
 						</div>
@@ -306,6 +333,21 @@ const CourseDetail: NextPage = () => {
 						{!hasAccess && course.coursePrice > 0 && <span className="pd-secure">Secure Stripe checkout</span>}
 						{isCreator && <span className="pd-secure">You created this program</span>}
 						{isAdmin && !isCreator && !isEnrolled && <span className="pd-secure">Free for admins</span>}
+
+						{/* Social proof + like (likes only by purchasers) */}
+						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+							<div>
+								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', display: 'block' }}>{enrolledCount}</span>
+								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>members joined</span>
+							</div>
+							{isEnrolled ? (
+								<LikeButton liked={!!course.meLiked?.[0]?.myFavorite} count={course.courseLikes ?? 0} onClick={likeCourseHandler} />
+							) : (
+								<span title="Only members who purchased this program can like it" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'rgba(200,214,214,0.55)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+									♥ {course.courseLikes ?? 0}
+								</span>
+							)}
+						</div>
 					</div>
 
 					{/* Progress — only for real enrolled learners, real lessonProgress data */}

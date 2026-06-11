@@ -109,6 +109,13 @@ export const GET_COURSES = gql`
 				courseVideos
 				courseRating
 				courseRatingCount
+				courseLikes
+				purchasedMembers
+				meLiked {
+					memberId
+					likeRefId
+					myFavorite
+				}
 				courseRank
 				createdAt
 				updatedAt
@@ -148,6 +155,12 @@ export const GET_COURSE = gql`
 			}
 			courseRating
 			courseRatingCount
+			courseLikes
+			meLiked {
+				memberId
+				likeRefId
+				myFavorite
+			}
 			courseRank
 			createdAt
 			updatedAt

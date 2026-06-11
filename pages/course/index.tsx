@@ -269,6 +269,10 @@ const CourseList: NextPage = () => {
 												<div className="cl-card-meta">
 													<span>{course.courseDuration}W</span>
 													<span>{course.courseDifficulty}</span>
+													{(course.purchasedMembers?.length ?? 0) > 0 && (
+														<span style={{ color: '#66daba' }}>{course.purchasedMembers.length} enrolled</span>
+													)}
+													{(course.courseLikes ?? 0) > 0 && <span style={{ color: '#ff8a8a' }}>♥ {course.courseLikes}</span>}
 												</div>
 												<button className="cl-card-cta">View Program →</button>
 											</div>

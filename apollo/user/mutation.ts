@@ -200,6 +200,22 @@ export const LIKE_WORKOUT = gql`
 	}
 `;
 
+export const LIKE_TARGET_COURSE = gql`
+	mutation LikeTargetCourse($input: String!) {
+		likeTargetCourse(courseId: $input) {
+			_id
+			courseLikes
+			purchasedMembers
+			meLiked {
+				memberId
+				likeRefId
+				myFavorite
+			}
+		}
+	}
+`;
+
+
 /**************************
  *      BOARD-ARTICLE     *
  *************************/
