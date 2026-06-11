@@ -143,3 +143,156 @@ html {
 		display: flex;
 	}
 }
+
+/* ============================================================
+   SweetAlert2 — Gymora dark premium theme
+   Styles every popup/toast globally to match the brand.
+   ============================================================ */
+.swal2-container {
+	backdrop-filter: blur(4px);
+	-webkit-backdrop-filter: blur(4px);
+	background: rgba(8, 8, 9, 0.55) !important;
+}
+.swal2-popup {
+	background: linear-gradient(180deg, #18181a 0%, #121213 100%) !important;
+	border: 1px solid rgba(255, 255, 255, 0.09) !important;
+	border-radius: 18px !important;
+	box-shadow: 0 24px 70px rgba(0, 0, 0, 0.65), 0 0 0 1px rgba(0, 220, 229, 0.04) !important;
+	color: #e5e2e3 !important;
+	padding: 26px 24px 24px !important;
+}
+.swal2-title {
+	font-family: 'Hanken Grotesk', sans-serif !important;
+	font-size: 19px !important;
+	font-weight: 800 !important;
+	letter-spacing: -0.01em !important;
+	color: #ffffff !important;
+	padding: 4px 0 0 !important;
+}
+.swal2-html-container,
+.swal2-content {
+	font-family: 'Hanken Grotesk', sans-serif !important;
+	font-size: 14.5px !important;
+	color: #b9caca !important;
+	line-height: 1.5 !important;
+}
+.swal2-actions {
+	gap: 10px !important;
+	margin-top: 20px !important;
+}
+.swal2-styled {
+	border-radius: 11px !important;
+	font-family: 'Hanken Grotesk', sans-serif !important;
+	font-size: 14px !important;
+	font-weight: 700 !important;
+	padding: 11px 26px !important;
+	box-shadow: none !important;
+	transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease !important;
+	&:focus {
+		box-shadow: none !important;
+	}
+}
+.swal2-confirm {
+	background: linear-gradient(135deg, #00dce5 0%, #00f5ff 100%) !important;
+	color: #003739 !important;
+	&:hover {
+		transform: translateY(-1px);
+		box-shadow: 0 8px 22px rgba(0, 220, 229, 0.35) !important;
+	}
+	/* danger variant for destructive confirms */
+	&.swal-danger {
+		background: linear-gradient(135deg, #ff5a6a 0%, #ff8a8a 100%) !important;
+		color: #2b0606 !important;
+		&:hover {
+			box-shadow: 0 8px 22px rgba(255, 90, 106, 0.4) !important;
+		}
+	}
+}
+.swal2-cancel {
+	background: rgba(255, 255, 255, 0.05) !important;
+	border: 1px solid rgba(255, 255, 255, 0.14) !important;
+	color: #e9feff !important;
+	&:hover {
+		transform: translateY(-1px);
+		background: rgba(255, 255, 255, 0.09) !important;
+	}
+}
+.swal2-timer-progress-bar {
+	background: linear-gradient(90deg, #00dce5, #66daba) !important;
+}
+.swal2-close {
+	color: #9aabab !important;
+	&:hover {
+		color: #ff8a8a !important;
+	}
+}
+/* Icons recolored to brand palette */
+.swal2-icon.swal2-success {
+	border-color: rgba(102, 218, 186, 0.45) !important;
+	color: #66daba !important;
+	.swal2-success-ring {
+		border-color: rgba(102, 218, 186, 0.35) !important;
+	}
+	[class^='swal2-success-line'] {
+		background-color: #66daba !important;
+	}
+}
+.swal2-icon.swal2-error {
+	border-color: rgba(255, 138, 138, 0.45) !important;
+	color: #ff8a8a !important;
+	.swal2-x-mark-line-left,
+	.swal2-x-mark-line-right {
+		background-color: #ff8a8a !important;
+	}
+}
+.swal2-icon.swal2-warning {
+	border-color: rgba(255, 183, 127, 0.5) !important;
+	color: #ffb77f !important;
+}
+.swal2-icon.swal2-question {
+	border-color: rgba(0, 220, 229, 0.5) !important;
+	color: #00dce5 !important;
+}
+.swal2-icon.swal2-info {
+	border-color: rgba(0, 220, 229, 0.5) !important;
+	color: #00dce5 !important;
+}
+/* Toast (top-end) */
+.swal2-toast {
+	background: rgba(22, 22, 24, 0.96) !important;
+	border: 1px solid rgba(255, 255, 255, 0.09) !important;
+	border-radius: 12px !important;
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5) !important;
+	.swal2-title {
+		font-size: 14px !important;
+		font-weight: 600 !important;
+		color: #e9feff !important;
+	}
+}
+/* Smooth, tasteful open/close animation (replaces the bounce) */
+.swal2-popup.swal2-show {
+	animation: swalGymoraIn 0.32s cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+.swal2-popup.swal2-hide {
+	animation: swalGymoraOut 0.18s ease-in both !important;
+}
+@keyframes swalGymoraIn {
+	from {
+		opacity: 0;
+		transform: translateY(14px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+@keyframes swalGymoraOut {
+	from {
+		opacity: 1;
+		transform: scale(1);
+	}
+	to {
+		opacity: 0;
+		transform: scale(0.96);
+	}
+}

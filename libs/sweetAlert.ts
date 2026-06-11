@@ -23,9 +23,6 @@ export const sweetTopSuccessAlert = async (msg: string, duration: number = 2000)
 export const sweetContactAlert = async (msg: string, duration: number = 10000) => {
 	await Swal.fire({
 		title: msg,
-		showClass: {
-			popup: 'animate__bounceIn',
-		},
 		showConfirmButton: false,
 		timer: duration,
 	}).then();
@@ -36,13 +33,12 @@ export const sweetConfirmAlert = (msg: string) => {
 		await Swal.fire({
 			icon: 'question',
 			text: msg,
-			showClass: {
-				popup: 'animate__bounceIn',
-			},
 			showCancelButton: true,
 			showConfirmButton: true,
-			confirmButtonColor: '#e92C28',
-			cancelButtonColor: '#bdbdbd',
+			confirmButtonText: 'Yes',
+			cancelButtonText: 'Cancel',
+			// destructive/decisive confirms get the red danger button (themed in app.scss)
+			customClass: { confirmButton: 'swal-danger' },
 		}).then((response) => {
 			if (response?.isConfirmed) resolve(true);
 			else resolve(false);
@@ -56,9 +52,6 @@ export const sweetLoginConfirmAlert = (msg: string) => {
 			text: msg,
 			showCancelButton: true,
 			showConfirmButton: true,
-			color: '#212121',
-			confirmButtonColor: '#e92C28',
-			cancelButtonColor: '#bdbdbd',
 			confirmButtonText: 'Login',
 		}).then((response) => {
 			if (response?.isConfirmed) resolve(true);

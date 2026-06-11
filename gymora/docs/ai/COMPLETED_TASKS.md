@@ -60,6 +60,8 @@
 - Nutrition page split into "Nutrition Plan" (calculator + results) and "Meal Tracker" (AI scan, log, today's intake, calorie history, recent meals) via a view prop + new menu item; fixed the meal-delete error (optimistic remove, treat already-gone as success, skipGlobalError context so no scary popup). Verified live.
 
 ## 2026-06-11
+- Rebranded all SweetAlert popups/toasts to the dark premium theme (glass popup, cyan/danger buttons, recolored icons, smooth animation) via a global app.scss theme — fixes the ugly default white error/confirm popups everywhere.
+
 - Populated all 49 video-less workouts with real, embeddable YouTube videos matched by muscle group, and created 124 lessons (4 weeks each) across 31 programs with category-matched verified videos. Fixed a "No data found" popup on program detail (skipGlobalError on CreatorCard/reviews/progress queries).
 
 - Replaced the leftover Nestar browser-tab favicon with the Gymora mark (cyan G), fixed the wrong svg mime type in _document, and removed the old Nestar favicon.ico.
