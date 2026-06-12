@@ -1,0 +1,37 @@
+{
+	"difficulty": {
+		"BEGINNER": "Beginner",
+		"INTERMEDIATE": "Intermediate",
+		"ADVANCED": "Advanced"
+	},
+	"muscle": {
+		"Chest": "Chest",
+		"Back": "Back",
+		"Legs": "Legs",
+		"Shoulders": "Shoulders",
+		"Arms": "Arms",
+		"Core": "Core",
+		"Full Body": "Full Body",
+		"Glutes": "Glutes",
+		"Upper Body": "Upper Body"
+	},
+	"category": {
+		"STRENGTH": "Strength",
+		"CARDIO": "Cardio",
+		"YOGA": "Yoga",
+		"MOBILITY": "Mobility",
+		"NUTRITION": "Nutrition"
+	},
+	"articleCategory": {
+		"FITNESS_TIPS": "Fitness Tips",
+		"NUTRITION": "Nutrition",
+		"WORKOUT_GUIDE": "Workout Guide",
+		"CHALLENGE": "Challenge",
+		"SUCCESS_STORY": "Success Story"
+	},
+	"memberType": {
+		"USER": "User",
+		"TRAINER": "Trainer",
+		"ADMIN": "Admin"
+	}
+}

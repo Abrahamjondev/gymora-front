@@ -6,10 +6,11 @@ import { useRouter } from 'next/router';
 import { logIn, signUp } from '../../libs/auth';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'auth'])),
 	},
 });
 
@@ -24,6 +25,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 const Join: NextPage = () => {
+	const { t } = useTranslation('auth');
 	const router = useRouter();
 	const device = useDeviceDetect();
 	const [input, setInput] = useState({ nick: '', password: '', phone: '', type: 'USER' });
@@ -44,7 +46,7 @@ const Join: NextPage = () => {
 	const doLogin = useCallback(async () => {
 		try {
 			if (!input.nick || !input.password) {
-				await sweetMixinErrorAlert('Please fill in all fields');
+				await sweetMixinErrorAlert(t('alerts.fillAllFields'));
 				return;
 			}
 			setBusy(true);
@@ -52,15 +54,15 @@ const Join: NextPage = () => {
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
 			setBusy(false);
-			const msg = (err.message || 'Login failed').replace('Definer: ', '');
+			const msg = (err.message || t('alerts.loginFailed')).replace('Definer: ', '');
 			await sweetMixinErrorAlert(msg);
 		}
-	}, [input]);
+	}, [input, t]);
 
 	const doSignUp = useCallback(async () => {
 		try {
 			if (!input.nick || !input.password || !input.phone) {
-				await sweetMixinErrorAlert('Please fill in all fields');
+				await sweetMixinErrorAlert(t('alerts.fillAllFields'));
 				return;
 			}
 			setBusy(true);
@@ -68,10 +70,10 @@ const Join: NextPage = () => {
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
 			setBusy(false);
-			const msg = (err.message || 'Signup failed').replace('Definer: ', '');
+			const msg = (err.message || t('alerts.signupFailed')).replace('Definer: ', '');
 			await sweetMixinErrorAlert(msg);
 		}
-	}, [input]);
+	}, [input, t]);
 
 	const submitDisabled = busy || (loginView ? !input.nick || !input.password : !input.nick || !input.password || !input.phone);
 
@@ -97,51 +99,49 @@ const Join: NextPage = () => {
 				</div>
 
 				<h2 className="au-quote">
-					Every session counts.
+					{t('panel.quoteLine1')}
 					<br />
-					<span className="lp-grad">Make yours today.</span>
+					<span className="lp-grad">{t('panel.quoteLine2')}</span>
 				</h2>
 
-				<span className="au-foot">Elite training platform</span>
+				<span className="au-foot">{t('panel.foot')}</span>
 			</div>
 
 			{/* Form panel */}
 			<div className="au-panel">
 				<div className="au-card">
-					<h1 className="au-title">{loginView ? 'Welcome back' : 'Join Gymora'}</h1>
-					<p className="au-sub">
-						{loginView ? 'Log in to continue your training.' : 'Create a free account — every workout is free from day one.'}
-					</p>
+					<h1 className="au-title">{loginView ? t('form.titleLogin') : t('form.titleSignup')}</h1>
+					<p className="au-sub">{loginView ? t('form.subLogin') : t('form.subSignup')}</p>
 
 					{/* Tabs */}
 					<div className="wl-seg au-seg">
 						<button className={loginView ? 'is-active' : ''} onClick={() => viewChangeHandler(true)}>
-							Login
+							{t('form.tabLogin')}
 						</button>
 						<button className={!loginView ? 'is-active' : ''} onClick={() => viewChangeHandler(false)}>
-							Sign Up
+							{t('form.tabSignup')}
 						</button>
 					</div>
 
 					{/* Form */}
 					<div className="au-fields">
 						<div>
-							<span style={labelStyle}>Nickname</span>
+							<span style={labelStyle}>{t('form.nicknameLabel')}</span>
 							<input
 								className="wd-input"
 								type="text"
-								placeholder="Enter nickname"
+								placeholder={t('form.nicknamePlaceholder')}
 								value={input.nick}
 								onChange={(e) => handleInput('nick', e.target.value)}
 								onKeyDown={onEnter}
 							/>
 						</div>
 						<div>
-							<span style={labelStyle}>Password</span>
+							<span style={labelStyle}>{t('form.passwordLabel')}</span>
 							<input
 								className="wd-input"
 								type="password"
-								placeholder="Enter password"
+								placeholder={t('form.passwordPlaceholder')}
 								value={input.password}
 								onChange={(e) => handleInput('password', e.target.value)}
 								onKeyDown={onEnter}
@@ -149,11 +149,11 @@ const Join: NextPage = () => {
 						</div>
 						{!loginView && (
 							<div>
-								<span style={labelStyle}>Phone</span>
+								<span style={labelStyle}>{t('form.phoneLabel')}</span>
 								<input
 									className="wd-input"
 									type="text"
-									placeholder="Enter phone"
+									placeholder={t('form.phonePlaceholder')}
 									value={input.phone}
 									onChange={(e) => handleInput('phone', e.target.value)}
 									onKeyDown={onEnter}
@@ -164,13 +164,16 @@ const Join: NextPage = () => {
 
 					{/* Submit */}
 					<button className="lp-btn-primary au-submit" onClick={loginView ? doLogin : doSignUp} disabled={submitDisabled} style={{ opacity: submitDisabled ? 0.55 : 1, cursor: submitDisabled ? 'not-allowed' : 'pointer' }}>
-						{busy ? 'Please wait...' : loginView ? 'Log In' : 'Create Free Account'} <span style={{ fontSize: '16px' }}>→</span>
+						{busy ? t('form.submitBusy') : loginView ? t('form.submitLogin') : t('form.submitSignup')}{' '}
+						<span style={{ fontSize: '16px' }}>→</span>
 					</button>
 
 					{/* Switch */}
 					<p className="au-switch">
-						{loginView ? "Don't have an account? " : 'Already have an account? '}
-						<span onClick={() => viewChangeHandler(!loginView)}>{loginView ? 'Sign Up' : 'Log In'}</span>
+						{loginView ? t('form.switchToSignupPrompt') : t('form.switchToLoginPrompt')}{' '}
+						<span onClick={() => viewChangeHandler(!loginView)}>
+							{loginView ? t('form.switchToSignupAction') : t('form.switchToLoginAction')}
+						</span>
 					</p>
 				</div>
 			</div>

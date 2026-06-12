@@ -1,23 +1,26 @@
 import React from 'react';
 import moment from 'moment';
 import Link from 'next/link';
+import { useTranslation } from 'next-i18next';
 
 const GymFooter = () => {
+	const { t } = useTranslation('common');
+
 	const columns = [
 		{
-			title: 'Platform',
+			title: t('footer.platform'),
 			links: [
-				{ label: 'Workouts', href: '/workout' },
-				{ label: 'Community', href: '/community' },
-				{ label: 'Support', href: '/cs' },
+				{ label: t('nav.workouts'), href: '/workout' },
+				{ label: t('nav.community'), href: '/community' },
+				{ label: t('footer.support'), href: '/cs' },
 			],
 		},
 		{
-			title: 'Company',
+			title: t('footer.company'),
 			links: [
-				{ label: 'About Us', href: '/about' },
-				{ label: 'Privacy', href: '/privacy' },
-				{ label: 'Terms', href: '/terms' },
+				{ label: t('footer.aboutUs'), href: '/about' },
+				{ label: t('footer.privacy'), href: '/privacy' },
+				{ label: t('footer.terms'), href: '/terms' },
 			],
 		},
 	];
@@ -57,7 +60,7 @@ const GymFooter = () => {
 							maxWidth: '320px',
 						}}
 					>
-						The elite platform for high-performance training and athletic development.
+						{t('footer.tagline')}
 					</p>
 				</div>
 				{columns.map((col) => (
@@ -113,7 +116,7 @@ const GymFooter = () => {
 						textTransform: 'uppercase',
 					}}
 				>
-					© {moment().year()} GYMORA. ALL RIGHTS RESERVED.
+					© {moment().year()} {t('footer.rightsReserved')}
 				</span>
 			</div>
 		</footer>

@@ -2,9 +2,12 @@ import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
 import moment from 'moment';
+import { useTranslation } from 'next-i18next';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+
+const ARTICLE_DATE_FORMAT = 'MMM D';
 
 interface ArticleItem {
 	_id: string;
@@ -18,6 +21,7 @@ interface ArticleItem {
 
 const CommunityPulse = () => {
 	const router = useRouter();
+	const { t } = useTranslation('landing');
 	const [articles, setArticles] = useState<ArticleItem[]>([]);
 	const sectionRef = useReveal<HTMLElement>(articles.length > 0);
 
@@ -34,11 +38,11 @@ const CommunityPulse = () => {
 			<div className="lp-container">
 				<div className="lp-section-head">
 					<div>
-						<span className="lp-eyebrow lp-eyebrow--violet">Community pulse</span>
-						<h2 className="lp-h2">Knowledge from the floor</h2>
+						<span className="lp-eyebrow lp-eyebrow--violet">{t('community.eyebrow')}</span>
+						<h2 className="lp-h2">{t('community.title')}</h2>
 					</div>
 					<button className="lp-view-btn" onClick={() => router.push('/community')}>
-						Join the conversation →
+						{t('community.join')} →
 					</button>
 				</div>
 
@@ -49,12 +53,17 @@ const CommunityPulse = () => {
 							className="lp-article-card"
 							onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
 						>
-							<span className="lp-article-cat">{article.articleCategory?.replace(/_/g, ' ')}</span>
+							<span className="lp-article-cat">
+								{t(`enums:articleCategory.${article.articleCategory}`, {
+									defaultValue: article.articleCategory?.replace(/_/g, ' '),
+								})}
+							</span>
 							<h3>{article.articleTitle}</h3>
 							<div className="lp-article-meta">
-								<span>{article.memberData?.memberNick ?? 'Member'}</span>
+								<span>{article.memberData?.memberNick ?? t('community.memberFallback')}</span>
 								<span>
-									{article.articleViews} views · ♥ {article.articleLikes} · {moment(article.createdAt).format('MMM D')}
+									{article.articleViews} {t('common:stats.views')} · ♥ {article.articleLikes} ·{' '}
+									{moment(article.createdAt).format(ARTICLE_DATE_FORMAT)}
 								</span>
 							</div>
 						</div>

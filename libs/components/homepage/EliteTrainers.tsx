@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import { GET_TRAINER_MEMBERS } from '../../../apollo/user/query';
 import { Member } from '../../types/member/member';
 import { REACT_APP_API_URL } from '../../config';
@@ -9,6 +10,7 @@ import useReveal from '../../hooks/useReveal';
 
 const EliteTrainers = () => {
 	const router = useRouter();
+	const { t } = useTranslation('landing');
 	const [trainers, setTrainers] = useState<Member[]>([]);
 	const [activeIdx, setActiveIdx] = useState<number>(0);
 	const sectionRef = useReveal<HTMLElement>(trainers.length > 0);
@@ -29,11 +31,11 @@ const EliteTrainers = () => {
 			<div className="lp-container">
 				<div className="lp-section-head">
 					<div>
-						<span className="lp-eyebrow lp-eyebrow--green">Verified professionals</span>
-						<h2 className="lp-h2">Elite Trainers</h2>
+						<span className="lp-eyebrow lp-eyebrow--green">{t('eliteTrainers.eyebrow')}</span>
+						<h2 className="lp-h2">{t('eliteTrainers.title')}</h2>
 					</div>
 					<button className="lp-view-btn" onClick={() => router.push('/trainer')}>
-						View all →
+						{t('common:actions.viewAll')} →
 					</button>
 				</div>
 
@@ -52,8 +54,8 @@ const EliteTrainers = () => {
 									{trainer.memberFullName || trainer.memberNick}
 								</span>
 								<span className="lp-trainer-meta">
-									<span>{trainer.memberWorkouts} workouts</span>
-									<span>{trainer.memberFollowers} followers</span>
+									<span>{t('eliteTrainers.workoutsCount', { count: trainer.memberWorkouts })}</span>
+									<span>{t('eliteTrainers.followersCount', { count: trainer.memberFollowers })}</span>
 								</span>
 							</div>
 						))}
@@ -66,7 +68,7 @@ const EliteTrainers = () => {
 								lineHeight: 1.6,
 							}}
 						>
-							Ranked by performance. Every trainer is verified before publishing programs.
+							{t('eliteTrainers.note')}
 						</p>
 					</div>
 

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { CircularProgress, Stack } from '@mui/material';
 import { useLazyQuery, useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION, GET_AI_ANALYZE_HISTORY, GET_NUTRITION_HISTORY } from '../../../apollo/user/query';
 import { ADD_MEAL_LOG, DELETE_MEAL_LOG, ANALYZE_FOOD_IMAGE } from '../../../apollo/user/mutation';
@@ -14,6 +15,8 @@ const mealTypeColors: Record<string, string> = {
 	DINNER: '#ddb7ff',
 	SNACK: '#66daba',
 };
+
+const MACRO_FIELDS = ['calories', 'protein', 'carbs', 'fats'];
 
 const inputStyle: React.CSSProperties = {
 	padding: '13px 15px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.09)',
@@ -45,6 +48,7 @@ const loadSaved = (key: string, fallback: any) => {
 };
 
 const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
+	const { t } = useTranslation('mypage');
 	const user = useReactiveVar(userVar);
 
 	const defaultForm = { gender: 'MALE', age: '', heightCm: '', weightKg: '', activityLevel: 'MODERATELY_ACTIVE', goal: 'MAINTENANCE' };
@@ -157,7 +161,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				setAiHistory((prev) => [result, ...prev]);
 			}
 		} catch (err: any) {
-			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message || 'Analysis failed').then();
+			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message || t('nutrition.alerts.analysisFailed')).then();
 		} finally {
 			setScanning(false);
 		}
@@ -181,7 +185,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				},
 			});
 			await reloadMeals();
-			await sweetMixinSuccessAlert(`Logged as ${mealType.toLowerCase()}!`);
+			await sweetMixinSuccessAlert(t('nutrition.alerts.loggedAs', { type: mealTypeLabels[mealType] || mealType }));
 			setScanResult(null);
 			setScanPreview(null);
 		} catch (err: any) {
@@ -197,7 +201,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 
 	const calculatePlan = () => {
 		if (!planForm.age || !planForm.heightCm || !planForm.weightKg) {
-			sweetMixinErrorAlert('Please fill in age, height, and weight').then();
+			sweetMixinErrorAlert(t('nutrition.alerts.fillBasics')).then();
 			return;
 		}
 		fetchRecommendation({
@@ -223,17 +227,17 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 	const addMealHandler = async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			if (!newMeal.mealName) throw new Error('Meal name required');
+			if (!newMeal.mealName) throw new Error(t('nutrition.alerts.mealNameRequired'));
 			await addMealLog({ variables: { input: { ...newMeal, calories: Number(newMeal.calories), protein: Number(newMeal.protein), carbs: Number(newMeal.carbs), fats: Number(newMeal.fats) } } });
 			await reloadMeals();
 			setShowAddMeal(false);
 			setNewMeal({ mealType: 'BREAKFAST', mealName: '', calories: 0, protein: 0, carbs: 0, fats: 0, mealDate: new Date().toISOString() });
-			await sweetMixinSuccessAlert('Meal logged!');
+			await sweetMixinSuccessAlert(t('nutrition.alerts.mealLogged'));
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
 	const deleteMealHandler = async (id: string) => {
-		if (!(await sweetConfirmAlert('Delete this meal?'))) return;
+		if (!(await sweetConfirmAlert(t('nutrition.alerts.deleteMealConfirm')))) return;
 		// Optimistically drop the row so the UI feels instant and stale rows can't
 		// be deleted twice.
 		setMeals((prev: any[]) => prev.filter((m: any) => m._id !== id));
@@ -243,7 +247,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 			// Already gone (e.g. deleted in another tab / stale list) — treat as success
 			const msg = err?.graphQLErrors?.[0]?.message || err?.message || '';
 			if (!/not found|access denied/i.test(msg)) {
-				sweetMixinErrorAlert(msg || 'Could not delete meal').then();
+				sweetMixinErrorAlert(msg || t('nutrition.alerts.deleteMealFailed')).then();
 			}
 		}
 		await reloadMeals();
@@ -300,11 +304,61 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 	const historyActiveDays = historyData.filter((d) => d.calories > 0).length;
 	const historyAvg = historyActiveDays > 0 ? Math.round(historyTotal / historyActiveDays) : 0;
 
-	const goalLabels: Record<string, string> = { WEIGHT_LOSS: 'Weight Loss', MAINTENANCE: 'Maintenance', MUSCLE_GAIN: 'Muscle Gain' };
-	const activityLabels: Record<string, string> = {
-		SEDENTARY: 'Sedentary', LIGHTLY_ACTIVE: 'Lightly Active',
-		MODERATELY_ACTIVE: 'Moderately Active', VERY_ACTIVE: 'Very Active', EXTRA_ACTIVE: 'Extra Active',
+	const goalLabels: Record<string, string> = {
+		WEIGHT_LOSS: t('nutrition.calc.goals.WEIGHT_LOSS'),
+		MAINTENANCE: t('nutrition.calc.goals.MAINTENANCE'),
+		MUSCLE_GAIN: t('nutrition.calc.goals.MUSCLE_GAIN'),
 	};
+	const activityLabels: Record<string, string> = {
+		SEDENTARY: t('nutrition.calc.activity.SEDENTARY'), LIGHTLY_ACTIVE: t('nutrition.calc.activity.LIGHTLY_ACTIVE'),
+		MODERATELY_ACTIVE: t('nutrition.calc.activity.MODERATELY_ACTIVE'), VERY_ACTIVE: t('nutrition.calc.activity.VERY_ACTIVE'), EXTRA_ACTIVE: t('nutrition.calc.activity.EXTRA_ACTIVE'),
+	};
+	const mealTypeLabels: Record<string, string> = {
+		BREAKFAST: t('nutrition.mealTypes.BREAKFAST'),
+		LUNCH: t('nutrition.mealTypes.LUNCH'),
+		DINNER: t('nutrition.mealTypes.DINNER'),
+		SNACK: t('nutrition.mealTypes.SNACK'),
+	};
+
+	// Stat card definitions are built OUTSIDE the JSX below (display data only)
+	const scanStats = scanResult
+		? [
+				{ label: t('nutrition.macros.calories'), value: Math.round(scanResult.estimatedCalories), unit: t('nutrition.units.kcal'), color: '#e9feff' },
+				{ label: t('nutrition.macros.protein'), value: `${Math.round(scanResult.protein)}${t('nutrition.units.g')}`, unit: '', color: '#00dce5' },
+				{ label: t('nutrition.macros.carbs'), value: `${Math.round(scanResult.carbs)}${t('nutrition.units.g')}`, unit: '', color: '#ff8a00' },
+				{ label: t('nutrition.macros.fats'), value: `${Math.round(scanResult.fats)}${t('nutrition.units.g')}`, unit: '', color: '#ddb7ff' },
+		  ]
+		: [];
+	const planStats = recommendation
+		? [
+				{ label: t('nutrition.results.dailyCalories'), value: Math.round(recommendation.dailyCalories), unit: t('nutrition.units.kcal'), color: '#e9feff' },
+				{ label: t('nutrition.macros.protein'), value: `${Math.round(recommendation.dailyProtein)}${t('nutrition.units.g')}`, unit: t('nutrition.units.perDay'), color: '#00dce5' },
+				{ label: t('nutrition.macros.carbs'), value: `${Math.round(recommendation.dailyCarbs)}${t('nutrition.units.g')}`, unit: t('nutrition.units.perDay'), color: '#ff8a00' },
+				{ label: t('nutrition.macros.fats'), value: `${Math.round(recommendation.dailyFats)}${t('nutrition.units.g')}`, unit: t('nutrition.units.perDay'), color: '#ddb7ff' },
+		  ]
+		: [];
+	const bodyMetricStats = recommendation
+		? [
+				{ label: t('nutrition.results.bmi'), value: recommendation.bmi?.toFixed(1), sub: recommendation.bmiCategory },
+				{ label: t('nutrition.results.bmr'), value: `${Math.round(recommendation.bmr)}`, sub: t('nutrition.units.kcalPerDay') },
+				{ label: t('nutrition.results.tdee'), value: `${Math.round(recommendation.tdee)}`, sub: t('nutrition.units.kcalPerDay') },
+				{ label: t('nutrition.results.goal'), value: goalLabels[recommendation.goal] || recommendation.goal, sub: t('nutrition.results.mealsPerDay', { n: recommendation.mealsPerDay }) },
+		  ]
+		: [];
+	const eatenStats = recommendation
+		? [
+				{ label: t('nutrition.tracker.eaten'), value: Math.round(totalCalories), target: Math.round(recommendation.dailyCalories), unit: t('nutrition.units.kcal'), color: '#e9feff' },
+				{ label: t('nutrition.macros.protein'), value: Math.round(totalProtein), target: Math.round(recommendation.dailyProtein), unit: t('nutrition.units.g'), color: '#00dce5' },
+				{ label: t('nutrition.macros.carbs'), value: Math.round(totalCarbs), target: Math.round(recommendation.dailyCarbs), unit: t('nutrition.units.g'), color: '#ff8a00' },
+				{ label: t('nutrition.macros.fats'), value: Math.round(totalFats), target: Math.round(recommendation.dailyFats), unit: t('nutrition.units.g'), color: '#ddb7ff' },
+		  ]
+		: [];
+	const todayStats = [
+		{ label: t('nutrition.macros.calories'), value: `${Math.round(totalCalories)}`, unit: t('nutrition.units.kcal'), color: '#e9feff' },
+		{ label: t('nutrition.macros.protein'), value: `${Math.round(totalProtein)}${t('nutrition.units.g')}`, unit: '', color: '#00dce5' },
+		{ label: t('nutrition.macros.carbs'), value: `${Math.round(totalCarbs)}${t('nutrition.units.g')}`, unit: '', color: '#ff8a00' },
+		{ label: t('nutrition.macros.fats'), value: `${Math.round(totalFats)}${t('nutrition.units.g')}`, unit: '', color: '#ddb7ff' },
+	];
 
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
@@ -312,26 +366,26 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>
-						{view === 'plan' ? (planCalculated ? 'Your plan' : 'Fuel your training') : 'Track your intake'}
+						{view === 'plan' ? (planCalculated ? t('nutrition.eyebrowYourPlan') : t('nutrition.eyebrowPlan')) : t('nutrition.eyebrowTracker')}
 					</span>
-					<h2>{view === 'plan' ? 'Nutrition Plan' : 'Meal Tracker'}</h2>
+					<h2>{view === 'plan' ? t('nutrition.planTitle') : t('nutrition.trackerTitle')}</h2>
 				</div>
 				<div className="nt-tools">
 					{view === 'plan' && planCalculated && (
 						<button className="nt-markall" onClick={resetPlan}>
-							Recalculate
+							{t('nutrition.recalculate')}
 						</button>
 					)}
 					{view === 'tracker' && (
 						<>
 							<button className="nm-scan-btn" onClick={() => fileInputRef.current?.click()} disabled={scanning}>
 								<span className="nm-scan-dot" />
-								{scanning ? 'Scanning...' : 'AI Scan Food'}
+								{scanning ? t('nutrition.scanning') : t('nutrition.scanFood')}
 							</button>
 							<input ref={fileInputRef} type="file" accept="image/*" style={{ display: 'none' }}
 								onChange={(e) => { const f = e.target.files?.[0]; if (f) handleScanFood(f); }} />
 							<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => setShowAddMeal(!showAddMeal)}>
-								+ Log Meal
+								{t('nutrition.logMealBtn')}
 							</button>
 						</>
 					)}
@@ -351,8 +405,8 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 								<img src={scanPreview} alt="" style={{ width: '80px', height: '80px', borderRadius: '12px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
 							)}
 							<div>
-								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '6px' }}>Analyzing food...</h4>
-								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: '#9aabab' }}>AI is identifying nutritional content</p>
+								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '6px' }}>{t('nutrition.analyzing')}</h4>
+								<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: '#9aabab' }}>{t('nutrition.analyzingSub')}</p>
 								<CircularProgress sx={{ color: '#66daba', mt: 1 }} size={20} />
 							</div>
 						</div>
@@ -366,7 +420,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 										<img src={scanPreview} alt="" style={{ width: '72px', height: '72px', borderRadius: '12px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.1)' }} />
 									)}
 									<div>
-										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '4px' }}>AI Detected</span>
+										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '4px' }}>{t('nutrition.aiDetected')}</span>
 										<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e9feff' }}>{scanResult.foodName}</h3>
 									</div>
 								</div>
@@ -375,12 +429,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 
 							{/* Nutrition breakdown */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '10px', marginBottom: '20px' }}>
-								{[
-									{ label: 'Calories', value: Math.round(scanResult.estimatedCalories), unit: 'kcal', color: '#e9feff' },
-									{ label: 'Protein', value: `${Math.round(scanResult.protein)}g`, unit: '', color: '#00dce5' },
-									{ label: 'Carbs', value: `${Math.round(scanResult.carbs)}g`, unit: '', color: '#ff8a00' },
-									{ label: 'Fats', value: `${Math.round(scanResult.fats)}g`, unit: '', color: '#ddb7ff' },
-								].map((s) => (
+								{scanStats.map((s) => (
 									<div key={s.label} style={{ background: 'rgba(255,255,255,0.04)', borderRadius: '10px', padding: '14px', textAlign: 'center' }}>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9px', color: '#9aabab', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>{s.label}</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 800, color: s.color }}>{s.value}</span>
@@ -391,7 +440,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 
 							{/* Log as meal buttons */}
 							<div>
-								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '10px' }}>Log as</span>
+								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', letterSpacing: '0.06em', display: 'block', marginBottom: '10px' }}>{t('nutrition.logAs')}</span>
 								<div style={{ display: 'flex', gap: '8px' }}>
 									{(['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'] as const).map((type) => (
 										<button key={type} onClick={() => logScanAsMeal(type)} style={{
@@ -403,7 +452,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 											transition: 'all 0.2s ease',
 											textAlign: 'center',
 										}}>
-											{type.charAt(0) + type.slice(1).toLowerCase()}
+											{mealTypeLabels[type]}
 										</button>
 									))}
 								</div>
@@ -422,17 +471,17 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				}}>
 					<div style={{ marginBottom: '24px' }}>
 						<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e9feff', marginBottom: '6px' }}>
-							Calculate Your Nutrition Plan
+							{t('nutrition.calc.title')}
 						</h3>
 						<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#9aabab' }}>
-							Enter your details to get personalized daily calorie and macro targets
+							{t('nutrition.calc.subtitle')}
 						</p>
 					</div>
 
 					{/* Row 1: Gender + Age */}
 					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
 						<div>
-							<span style={labelStyle}>Gender</span>
+							<span style={labelStyle}>{t('nutrition.calc.gender')}</span>
 							<div style={{ display: 'flex', gap: '8px' }}>
 								{(['MALE', 'FEMALE'] as const).map((g) => (
 									<button key={g} onClick={() => setPlanForm({ ...planForm, gender: g })} style={{
@@ -443,14 +492,14 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 										color: planForm.gender === g ? '#e9feff' : '#9aabab',
 										transition: 'all 0.2s ease',
 									}}>
-										{g === 'MALE' ? 'Male' : 'Female'}
+										{g === 'MALE' ? t('nutrition.calc.male') : t('nutrition.calc.female')}
 									</button>
 								))}
 							</div>
 						</div>
 						<div>
-							<span style={labelStyle}>Age</span>
-							<input type="number" placeholder="e.g. 25" value={planForm.age}
+							<span style={labelStyle}>{t('nutrition.calc.age')}</span>
+							<input type="number" placeholder={t('nutrition.calc.agePlaceholder')} value={planForm.age}
 								onChange={(e) => setPlanForm({ ...planForm, age: e.target.value })} style={inputStyle} />
 						</div>
 					</div>
@@ -458,20 +507,20 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 					{/* Row 2: Height + Weight */}
 					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
 						<div>
-							<span style={labelStyle}>Height (cm)</span>
-							<input type="number" placeholder="e.g. 175" value={planForm.heightCm}
+							<span style={labelStyle}>{t('nutrition.calc.height')}</span>
+							<input type="number" placeholder={t('nutrition.calc.heightPlaceholder')} value={planForm.heightCm}
 								onChange={(e) => setPlanForm({ ...planForm, heightCm: e.target.value })} style={inputStyle} />
 						</div>
 						<div>
-							<span style={labelStyle}>Weight (kg)</span>
-							<input type="number" placeholder="e.g. 75" value={planForm.weightKg}
+							<span style={labelStyle}>{t('nutrition.calc.weight')}</span>
+							<input type="number" placeholder={t('nutrition.calc.weightPlaceholder')} value={planForm.weightKg}
 								onChange={(e) => setPlanForm({ ...planForm, weightKg: e.target.value })} style={inputStyle} />
 						</div>
 					</div>
 
 					{/* Row 3: Activity Level */}
 					<div style={{ marginBottom: '16px' }}>
-						<span style={labelStyle}>Activity Level</span>
+						<span style={labelStyle}>{t('nutrition.calc.activityLevel')}</span>
 						<select value={planForm.activityLevel}
 							onChange={(e) => setPlanForm({ ...planForm, activityLevel: e.target.value })} style={selectStyle}>
 							{Object.entries(activityLabels).map(([val, label]) => (
@@ -482,7 +531,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 
 					{/* Row 4: Goal */}
 					<div style={{ marginBottom: '24px' }}>
-						<span style={labelStyle}>Goal</span>
+						<span style={labelStyle}>{t('nutrition.calc.goal')}</span>
 						<div style={{ display: 'flex', gap: '8px' }}>
 							{Object.entries(goalLabels).map(([val, label]) => {
 								const isActive = planForm.goal === val;
@@ -518,7 +567,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 						boxShadow: '0 0 24px rgba(0,220,229,0.15)',
 						transition: 'all 0.3s ease',
 					}}>
-						{recLoading ? 'Calculating...' : 'Calculate My Plan'}
+						{recLoading ? t('nutrition.calc.calculating') : t('nutrition.calc.calculate')}
 					</button>
 				</div>
 			)}
@@ -528,12 +577,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				<div style={{ marginBottom: '32px' }}>
 					{/* Overview cards */}
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '20px' }}>
-						{[
-							{ label: 'Daily Calories', value: Math.round(recommendation.dailyCalories), unit: 'kcal', color: '#e9feff' },
-							{ label: 'Protein', value: `${Math.round(recommendation.dailyProtein)}g`, unit: '/day', color: '#00dce5' },
-							{ label: 'Carbs', value: `${Math.round(recommendation.dailyCarbs)}g`, unit: '/day', color: '#ff8a00' },
-							{ label: 'Fats', value: `${Math.round(recommendation.dailyFats)}g`, unit: '/day', color: '#ddb7ff' },
-						].map((s) => (
+						{planStats.map((s) => (
 							<div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px' }}>
 								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>{s.label}</span>
 								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '26px', fontWeight: 800, color: s.color }}>{s.value}</span>
@@ -545,14 +589,9 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 					<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '20px' }}>
 						{/* Body metrics */}
 						<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '24px' }}>
-							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>Body Metrics</h4>
+							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>{t('nutrition.results.bodyMetrics')}</h4>
 							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-								{[
-									{ label: 'BMI', value: recommendation.bmi?.toFixed(1), sub: recommendation.bmiCategory },
-									{ label: 'BMR', value: `${Math.round(recommendation.bmr)}`, sub: 'kcal/day' },
-									{ label: 'TDEE', value: `${Math.round(recommendation.tdee)}`, sub: 'kcal/day' },
-									{ label: 'Goal', value: goalLabels[recommendation.goal] || recommendation.goal, sub: `${recommendation.mealsPerDay} meals/day` },
-								].map((s) => (
+								{bodyMetricStats.map((s) => (
 									<div key={s.label}>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', display: 'block', marginBottom: '4px' }}>{s.label}</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e9feff', display: 'block' }}>{s.value}</span>
@@ -565,7 +604,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 						{/* Tips */}
 						{recommendation.tips?.length > 0 && (
 							<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '24px' }}>
-								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>Tips</h4>
+								<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>{t('nutrition.results.tips')}</h4>
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
 									{recommendation.tips.map((tip: string, i: number) => (
 										<div key={i} style={{ display: 'flex', gap: '10px', alignItems: 'flex-start' }}>
@@ -581,7 +620,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 					{/* Meal Plan */}
 					{recommendation.mealPlan?.length > 0 && (
 						<div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '14px', padding: '24px', marginBottom: '20px' }}>
-							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>Suggested Meal Plan</h4>
+							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 700, color: '#e9feff', marginBottom: '16px' }}>{t('nutrition.results.suggestedMealPlan')}</h4>
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '12px' }}>
 								{recommendation.mealPlan.map((meal: any, i: number) => (
 									<div key={i} style={{
@@ -594,16 +633,16 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 												color: mealTypeColors[meal.mealType] || '#00dce5',
 												textTransform: 'uppercase', letterSpacing: '0.06em',
 											}}>
-												{meal.mealType}
+												{mealTypeLabels[meal.mealType] || meal.mealType}
 											</span>
 											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495' }}>
-												{Math.round(meal.targetCalories)} kcal
+												{t('nutrition.units.kcalValue', { n: Math.round(meal.targetCalories) })}
 											</span>
 										</div>
 										<div style={{ display: 'flex', gap: '12px', marginBottom: '12px' }}>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5' }}>P:{Math.round(meal.targetProtein)}g</span>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#ff8a00' }}>C:{Math.round(meal.targetCarbs)}g</span>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#ddb7ff' }}>F:{Math.round(meal.targetFats)}g</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5' }}>{t('nutrition.macroShort.protein', { n: Math.round(meal.targetProtein) })}</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#ff8a00' }}>{t('nutrition.macroShort.carbs', { n: Math.round(meal.targetCarbs) })}</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#ddb7ff' }}>{t('nutrition.macroShort.fats', { n: Math.round(meal.targetFats) })}</span>
 										</div>
 										{meal.suggestedFoods?.length > 0 && (
 											<div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
@@ -633,12 +672,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 					{/* Macro summary (today's eaten) */}
 					{planCalculated && recommendation && (
 						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-							{[
-								{ label: 'Eaten', value: Math.round(totalCalories), target: Math.round(recommendation.dailyCalories), unit: 'kcal', color: '#e9feff' },
-								{ label: 'Protein', value: Math.round(totalProtein), target: Math.round(recommendation.dailyProtein), unit: 'g', color: '#00dce5' },
-								{ label: 'Carbs', value: Math.round(totalCarbs), target: Math.round(recommendation.dailyCarbs), unit: 'g', color: '#ff8a00' },
-								{ label: 'Fats', value: Math.round(totalFats), target: Math.round(recommendation.dailyFats), unit: 'g', color: '#ddb7ff' },
-							].map((s) => {
+							{eatenStats.map((s) => {
 								const pct = s.target > 0 ? Math.min((s.value / s.target) * 100, 100) : 0;
 								return (
 									<div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '16px' }}>
@@ -656,12 +690,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 
 					{!planCalculated && (
 						<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-							{[
-								{ label: 'Calories', value: `${Math.round(totalCalories)}`, unit: 'kcal', color: '#e9feff' },
-								{ label: 'Protein', value: `${Math.round(totalProtein)}g`, unit: '', color: '#00dce5' },
-								{ label: 'Carbs', value: `${Math.round(totalCarbs)}g`, unit: '', color: '#ff8a00' },
-								{ label: 'Fats', value: `${Math.round(totalFats)}g`, unit: '', color: '#ddb7ff' },
-							].map((s) => (
+							{todayStats.map((s) => (
 								<div key={s.label} style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '12px', padding: '20px' }}>
 									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab', textTransform: 'uppercase', display: 'block', marginBottom: '8px' }}>{s.label}</span>
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '24px', fontWeight: 800, color: s.color }}>{s.value}</span>
@@ -675,7 +704,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				{nutritionHistory.length > 0 && (
 					<div className="pg-chart" style={{ marginBottom: '24px' }}>
 						<div className="pg-chart-head" style={{ alignItems: 'center' }}>
-							<span>Calorie history</span>
+							<span>{t('nutrition.history.title')}</span>
 							<div className="wl-seg" style={{ padding: '2px' }}>
 								{(['WEEK', 'MONTH', 'YEAR'] as const).map((p) => (
 									<button
@@ -684,7 +713,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 										style={{ padding: '6px 13px', fontSize: '11.5px' }}
 										onClick={() => setHistoryPeriod(p)}
 									>
-										{p === 'WEEK' ? 'Week' : p === 'MONTH' ? 'Month' : 'Year'}
+										{p === 'WEEK' ? t('nutrition.history.week') : p === 'MONTH' ? t('nutrition.history.month') : t('nutrition.history.year')}
 									</button>
 								))}
 							</div>
@@ -696,7 +725,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 								const h = Math.max(d.calories > 0 ? 6 : 2, Math.round((d.calories / historyMax) * 100));
 								const isToday = historyPeriod !== 'YEAR' && i === historyData.length - 1;
 								return (
-									<div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', minWidth: 0 }} title={`${d.label}: ${Math.round(d.calories)} kcal`}>
+									<div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', minWidth: 0 }} title={t('nutrition.history.barTitle', { label: d.label, n: Math.round(d.calories) })}>
 										<div
 											style={{
 												width: '100%',
@@ -723,13 +752,13 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 						{/* Period summary */}
 						<div style={{ display: 'flex', gap: '22px', marginTop: '14px', paddingTop: '12px', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
 							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-								<b style={{ color: '#ffffff' }}>{Math.round(historyTotal).toLocaleString()}</b> kcal total
+								<b style={{ color: '#ffffff' }}>{Math.round(historyTotal).toLocaleString()}</b> {t('nutrition.history.kcalTotal')}
 							</span>
 							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-								<b style={{ color: '#00dce5' }}>{historyAvg.toLocaleString()}</b> avg / active day
+								<b style={{ color: '#00dce5' }}>{historyAvg.toLocaleString()}</b> {t('nutrition.history.avgPerActiveDay')}
 							</span>
 							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-								<b style={{ color: '#66daba' }}>{historyActiveDays}</b> {historyPeriod === 'YEAR' ? 'active months' : 'days logged'}
+								<b style={{ color: '#66daba' }}>{historyActiveDays}</b> {historyPeriod === 'YEAR' ? t('nutrition.history.activeMonths') : t('nutrition.history.daysLogged')}
 							</span>
 						</div>
 					</div>
@@ -738,34 +767,34 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				{/* Add meal form */}
 					{showAddMeal && (
 						<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)' }}>
-							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}>Log a Meal</h4>
+							<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', marginBottom: '16px' }}>{t('nutrition.form.title')}</h4>
 							<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px', marginBottom: '12px' }}>
 								<select value={newMeal.mealType} onChange={(e) => setNewMeal({ ...newMeal, mealType: e.target.value })} style={selectStyle}>
-									{['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map((t) => <option key={t} value={t}>{t}</option>)}
+									{['BREAKFAST', 'LUNCH', 'DINNER', 'SNACK'].map((mt) => <option key={mt} value={mt}>{mealTypeLabels[mt]}</option>)}
 								</select>
-								<input placeholder="Meal name" value={newMeal.mealName} onChange={(e) => setNewMeal({ ...newMeal, mealName: e.target.value })} style={inputStyle} />
+								<input placeholder={t('nutrition.form.mealNamePlaceholder')} value={newMeal.mealName} onChange={(e) => setNewMeal({ ...newMeal, mealName: e.target.value })} style={inputStyle} />
 							</div>
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '16px' }}>
-								{['calories', 'protein', 'carbs', 'fats'].map((f) => (
-									<input key={f} type="number" placeholder={f} value={(newMeal as any)[f] || ''} onChange={(e) => setNewMeal({ ...newMeal, [f]: e.target.value })} style={{ ...inputStyle, fontFamily: 'JetBrains Mono', fontSize: '13px' }} />
+								{MACRO_FIELDS.map((f) => (
+									<input key={f} type="number" placeholder={t(`nutrition.macros.${f}`)} value={(newMeal as any)[f] || ''} onChange={(e) => setNewMeal({ ...newMeal, [f]: e.target.value })} style={{ ...inputStyle, fontFamily: 'JetBrains Mono', fontSize: '13px' }} />
 								))}
 							</div>
-							<button className="wd-btn" onClick={addMealHandler}>Save Meal</button>
+							<button className="wd-btn" onClick={addMealHandler}>{t('nutrition.form.save')}</button>
 						</div>
 					)}
 
 					{/* Meal list */}
 					<div className="wd-section-head" style={{ marginBottom: '14px' }}>
-						<h3 style={{ fontSize: '20px' }}>Recent Meals</h3>
-						<span className="wd-section-count">{meals.length} logged</span>
+						<h3 style={{ fontSize: '20px' }}>{t('nutrition.recentMeals')}</h3>
+						<span className="wd-section-count">{meals.length === 1 ? t('nutrition.loggedCountOne', { count: meals.length }) : t('nutrition.loggedCount', { count: meals.length })}</span>
 					</div>
 					{mealsLoading ? (
 						<Stack sx={{ py: 4, alignItems: 'center' }}><CircularProgress sx={{ color: '#00dce5' }} /></Stack>
 					) : meals.length === 0 ? (
 						<div className="nt-empty" style={{ padding: '40px 0' }}>
 							<div className="nt-empty-ic">◑</div>
-							<h4>No meals logged yet</h4>
-							<p>Log a meal manually or scan your food with AI.</p>
+							<h4>{t('nutrition.emptyTitle')}</h4>
+							<p>{t('nutrition.emptyDesc')}</p>
 						</div>
 					) : (
 						<div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
@@ -776,13 +805,13 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 											<img src={`${REACT_APP_API_URL}/${meal.mealImage}`} alt="" style={{ width: '46px', height: '46px', borderRadius: '10px', objectFit: 'cover', border: '1px solid rgba(255,255,255,0.08)', flexShrink: 0 }} />
 										)}
 										<div style={{ minWidth: 0 }}>
-											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', fontWeight: 700, color: mealTypeColors[meal.mealType] || '#849495', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '3px' }}>{meal.mealType}</span>
+											<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', fontWeight: 700, color: mealTypeColors[meal.mealType] || '#849495', textTransform: 'uppercase', letterSpacing: '0.08em', display: 'block', marginBottom: '3px' }}>{mealTypeLabels[meal.mealType] || meal.mealType}</span>
 											<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#ffffff', margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{meal.mealName}</h4>
 										</div>
 									</div>
 									<div style={{ display: 'flex', alignItems: 'center', gap: '14px', flexShrink: 0 }}>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-											<b style={{ color: '#ffffff' }}>{meal.calories}</b> kcal · {meal.protein}g P
+											<b style={{ color: '#ffffff' }}>{meal.calories}</b> {t('nutrition.units.kcal')} · {t('nutrition.units.proteinGrams', { n: meal.protein })}
 										</span>
 										<button className="nm-del" onClick={() => deleteMealHandler(meal._id)}>✕</button>
 									</div>
@@ -796,7 +825,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				{aiHistory.length > 0 && (
 					<div>
 						<div style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(102,218,186,0.15)', borderRadius: '16px', padding: '22px', position: 'sticky', top: '86px' }}>
-							<h4 style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(102,218,186,0.8)', marginBottom: '14px' }}>AI Scan History</h4>
+							<h4 style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', fontWeight: 700, letterSpacing: '0.14em', textTransform: 'uppercase', color: 'rgba(102,218,186,0.8)', marginBottom: '14px' }}>{t('nutrition.aiHistoryTitle')}</h4>
 							{aiHistory.slice(0, 5).map((ai: any) => (
 								<div key={ai._id} style={{ padding: '12px 0', borderBottom: '1px solid rgba(58,73,74,0.3)' }}>
 									<div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '6px' }}>
@@ -806,10 +835,10 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 										<div style={{ flex: 1 }}>
 											<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600, color: '#e5e2e3', display: 'block', marginBottom: '2px' }}>{ai.foodName}</span>
 											<div style={{ display: 'flex', gap: '8px' }}>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5' }}>{Math.round(ai.estimatedCalories)} kcal</span>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>P:{Math.round(ai.protein)}g</span>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>C:{Math.round(ai.carbs)}g</span>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>F:{Math.round(ai.fats)}g</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#00dce5' }}>{t('nutrition.units.kcalValue', { n: Math.round(ai.estimatedCalories) })}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>{t('nutrition.macroShort.protein', { n: Math.round(ai.protein) })}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>{t('nutrition.macroShort.carbs', { n: Math.round(ai.carbs) })}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#9aabab' }}>{t('nutrition.macroShort.fats', { n: Math.round(ai.fats) })}</span>
 											</div>
 										</div>
 									</div>
@@ -831,7 +860,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 														},
 													});
 													await reloadMeals();
-													await sweetMixinSuccessAlert(`Logged as ${type.toLowerCase()}!`);
+													await sweetMixinSuccessAlert(t('nutrition.alerts.loggedAs', { type: mealTypeLabels[type] }));
 												} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 											}} style={{
 												flex: 1, padding: '4px', borderRadius: '5px', cursor: 'pointer',
@@ -839,7 +868,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 												background: 'transparent', border: `1px solid ${mealTypeColors[type]}25`,
 												color: mealTypeColors[type], textTransform: 'uppercase',
 											}}>
-												{type.slice(0, 1)}
+												{mealTypeLabels[type].slice(0, 1)}
 											</button>
 										))}
 									</div>

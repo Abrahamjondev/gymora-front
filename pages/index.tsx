@@ -14,7 +14,7 @@ import LandingFooter from '../libs/components/homepage/LandingFooter';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'landing', 'enums'])),
 	},
 });
 

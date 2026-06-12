@@ -7,6 +7,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { T } from '../../libs/types/common';
 import LikeButton from '../../libs/components/common/LikeButton';
+import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
 import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
@@ -20,18 +21,20 @@ import { notifyMember } from '../../libs/notify';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'community', 'enums'])),
 	},
 });
 
 const categories = [
-	{ value: 'ALL', label: 'All Posts', accent: '#00dce5' },
-	{ value: 'FITNESS_TIPS', label: 'Fitness Tips', accent: '#00dce5' },
-	{ value: 'NUTRITION', label: 'Nutrition', accent: '#ffb77f' },
-	{ value: 'WORKOUT_GUIDE', label: 'Workout Guide', accent: '#ddb7ff' },
-	{ value: 'CHALLENGE', label: 'Challenge', accent: '#ff8a8a' },
-	{ value: 'SUCCESS_STORY', label: 'Success Story', accent: '#66daba' },
+	{ value: 'ALL', accent: '#00dce5' },
+	{ value: 'FITNESS_TIPS', accent: '#00dce5' },
+	{ value: 'NUTRITION', accent: '#ffb77f' },
+	{ value: 'WORKOUT_GUIDE', accent: '#ddb7ff' },
+	{ value: 'CHALLENGE', accent: '#ff8a8a' },
+	{ value: 'SUCCESS_STORY', accent: '#66daba' },
 ];
+
+const DEFAULT_ACCENT = '#00dce5';
 
 const categoryAccent: Record<string, string> = {
 	FITNESS_TIPS: '#00dce5',
@@ -42,6 +45,7 @@ const categoryAccent: Record<string, string> = {
 };
 
 const Community: NextPage = ({ initialInput, ...props }: T) => {
+	const { t } = useTranslation('community');
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -131,9 +135,9 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const sortOptions = [
-		{ value: 'createdAt', label: 'Newest' },
-		{ value: 'articleViews', label: 'Most Viewed' },
-		{ value: 'articleLikes', label: 'Most Liked' },
+		{ value: 'createdAt', label: t('list.sort.newest') },
+		{ value: 'articleViews', label: t('list.sort.mostViewed') },
+		{ value: 'articleLikes', label: t('list.sort.mostLiked') },
 	];
 
 	return (
@@ -144,16 +148,16 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 					<div className="wl-hero-glow" />
 					<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', gap: '24px', flexWrap: 'wrap' }}>
 						<div>
-							<span className="lp-eyebrow lp-eyebrow--violet">Community</span>
+							<span className="lp-eyebrow lp-eyebrow--violet">{t('list.eyebrow')}</span>
 							<h1 className="wl-title">
-								Knowledge from <span className="lp-grad">the floor</span>
+								{t('list.titleLead')} <span className="lp-grad">{t('list.titleAccent')}</span>
 							</h1>
 							<p className="lp-sub" style={{ margin: 0 }}>
-								Share your achievements, ask trainers, and connect with athletes.
+								{t('list.subtitle')}
 							</p>
 							<div className="wl-badge">
 								<span className="wl-badge-dot" />
-								<span>{totalCount > 0 ? `${totalCount} posts published` : 'Loading posts'}</span>
+								<span>{totalCount > 0 ? t('list.postsPublished', { count: totalCount }) : t('list.loadingPosts')}</span>
 							</div>
 						</div>
 						{user?._id && (user?.memberType === 'TRAINER' || user?.memberType === 'ADMIN') && (
@@ -162,7 +166,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 								style={{ padding: '13px 26px', fontSize: '14px' }}
 								onClick={() => router.push({ pathname: '/mypage', query: { category: 'writeArticle' } })}
 							>
-								Write Article →
+								{t('list.writeArticle')}
 							</button>
 						)}
 					</div>
@@ -186,7 +190,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 										onClick={() => tabChangeHandler(cat.value)}
 									>
 										<span className="cl-cat-dot" style={{ background: cat.accent }} />
-										{cat.label}
+										{cat.value === 'ALL' ? t('list.allPosts') : t(`enums:articleCategory.${cat.value}`)}
 									</button>
 								);
 							})}
@@ -217,14 +221,14 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 					</div>
 				) : boardArticles.length === 0 ? (
 					<div className="wl-empty">
-						<span className="wl-empty-label">No posts</span>
-						<h3>Nothing in this category yet.</h3>
-						<p>Be the first to start the conversation.</p>
+						<span className="wl-empty-label">{t('list.empty.label')}</span>
+						<h3>{t('list.empty.title')}</h3>
+						<p>{t('list.empty.subtitle')}</p>
 					</div>
 				) : (
 					<div className="cm-list">
 						{boardArticles.map((article) => {
-							const accent = categoryAccent[article.articleCategory] || '#00dce5';
+							const accent = categoryAccent[article.articleCategory] || DEFAULT_ACCENT;
 							return (
 								<div
 									key={article._id}
@@ -241,7 +245,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 									<div className="cm-body">
 										<div className="cm-meta-top">
 											<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}30`, color: accent }}>
-												{article.articleCategory?.replace(/_/g, ' ')}
+												{article.articleCategory ? t(`enums:articleCategory.${article.articleCategory}`) : ''}
 											</span>
 											{article.memberData && (
 												<span className="cm-author">
@@ -273,8 +277,8 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 												count={article.articleLikes ?? 0}
 												onClick={(e) => likeArticleHandler(e, article._id)}
 											/>
-											<span className="cm-stat">{article.articleViews ?? 0} views</span>
-											<span className="cm-stat">{article.articleComments ?? 0} comments</span>
+											<span className="cm-stat">{article.articleViews ?? 0} {t('common:stats.views')}</span>
+											<span className="cm-stat">{article.articleComments ?? 0} {t('common:stats.comments')}</span>
 											<span className="cm-arrow">→</span>
 										</div>
 									</div>

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { GET_MEMBER_SUBSCRIPTIONS, GET_PAYMENT_HISTORY } from '../../../apollo/user/query';
 import { INITIATE_PAYMENT, CREATE_SUBSCRIPTION } from '../../../apollo/user/mutation';
@@ -13,26 +14,7 @@ import { Elements, CardElement, useStripe, useElements } from '@stripe/react-str
 const stripePublishableKey = process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY;
 const stripePromise = stripePublishableKey ? loadStripe(stripePublishableKey) : null;
 
-// Honest membership framing — programs are one-time purchases; the
-// subscription supports the platform (nothing on the backend gates on it)
-const plans = [
-	{
-		key: 'MONTHLY',
-		name: 'Monthly',
-		price: 14.99,
-		period: '/month',
-		features: ['Support free training for everyone', 'Back verified trainers directly', 'Billed monthly, cancel anytime', 'Secured by Stripe'],
-	},
-	{
-		key: 'YEARLY',
-		name: 'Yearly',
-		price: 119.88,
-		period: '/year',
-		sub: '$9.99/mo — Save 33%',
-		featured: true,
-		features: ['Everything in Monthly', 'Best value — $9.99 a month', 'One payment for the whole year', 'Founding supporter of the platform'],
-	},
-];
+const paymentStatusColors: Record<string, string> = { PAID: '#66daba', PENDING: '#ffb77f', DEFAULT: '#9aabab' };
 
 /* ─── Card payment form (inside Stripe Elements provider) ─── */
 const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }: {
@@ -42,6 +24,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 	planName: string;
 	price: number;
 }) => {
+	const { t } = useTranslation('mypage');
 	const stripe = useStripe();
 	const elements = useElements();
 	const [processing, setProcessing] = useState(false);
@@ -62,12 +45,12 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 		});
 
 		if (stripeError) {
-			setError(stripeError.message ?? 'Payment failed');
+			setError(stripeError.message ?? t('subscription.modal.paymentFailed'));
 			setProcessing(false);
 		} else if (paymentIntent?.status === 'succeeded') {
 			onSuccess();
 		} else {
-			setError('Payment was not completed. Please try again.');
+			setError(t('subscription.modal.notCompleted'));
 			setProcessing(false);
 		}
 	};
@@ -90,9 +73,9 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 			}}>
 				{/* Header */}
 				<div style={{ textAlign: 'center', marginBottom: '28px' }}>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(0,220,229,0.7)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Secure Payment</span>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(0,220,229,0.7)', textTransform: 'uppercase', letterSpacing: '0.1em' }}>{t('subscription.modal.securePayment')}</span>
 					<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '22px', fontWeight: 700, color: '#e9feff', marginTop: '8px' }}>
-						{planName} Plan — ${price}
+						{t('subscription.modal.heading', { plan: planName, price })}
 					</h3>
 				</div>
 
@@ -125,7 +108,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 
 					{/* Test card hint */}
 					<p style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)', textAlign: 'center', marginBottom: '20px' }}>
-						Test: 4242 4242 4242 4242 | Any future date | Any CVC
+						{t('subscription.modal.testHint')}
 					</p>
 
 					{/* Buttons */}
@@ -142,7 +125,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 								transition: 'all 0.25s ease',
 							}}
 						>
-							Cancel
+							{t('common:actions.cancel')}
 						</button>
 						<button
 							type="submit"
@@ -156,7 +139,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 								transition: 'all 0.25s ease',
 							}}
 						>
-							{processing ? 'Processing...' : `Pay $${price}`}
+							{processing ? t('subscription.processing') : t('subscription.modal.pay', { price })}
 						</button>
 					</div>
 				</form>
@@ -164,7 +147,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 				{/* Security note */}
 				<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '6px', marginTop: '20px' }}>
 					<svg width="12" height="14" viewBox="0 0 12 14" fill="none"><path d="M10 5H9V3.5C9 1.57 7.43 0 5.5 0S2 1.57 2 3.5V5H1C0.45 5 0 5.45 0 6V13C0 13.55 0.45 14 1 14H10C10.55 14 11 13.55 11 13V6C11 5.45 10.55 5 10 5ZM5.5 10.5C4.95 10.5 4.5 10.05 4.5 9.5S4.95 8.5 5.5 8.5 6.5 8.95 6.5 9.5 6.05 10.5 5.5 10.5ZM7.5 5H3.5V3.5C3.5 2.4 4.4 1.5 5.5 1.5S7.5 2.4 7.5 3.5V5Z" fill="rgba(185,202,202,0.3)" /></svg>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>Secured by Stripe</span>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{t('subscription.modal.securedByStripe')}</span>
 				</div>
 			</div>
 		</div>
@@ -173,8 +156,41 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 
 /* ─── Main Content ─── */
 const SubscriptionContent = () => {
+	const { t } = useTranslation('mypage');
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
+
+	// Honest membership framing — programs are one-time purchases; the
+	// subscription supports the platform (nothing on the backend gates on it)
+	const plans = [
+		{
+			key: 'MONTHLY',
+			name: t('subscription.plans.monthly.name'),
+			price: 14.99,
+			period: t('subscription.perMonth'),
+			features: [
+				t('subscription.plans.monthly.features.0'),
+				t('subscription.plans.monthly.features.1'),
+				t('subscription.plans.monthly.features.2'),
+				t('subscription.plans.monthly.features.3'),
+			],
+		},
+		{
+			key: 'YEARLY',
+			name: t('subscription.plans.yearly.name'),
+			price: 119.88,
+			period: t('subscription.perYear'),
+			sub: t('subscription.yearlySub'),
+			featured: true,
+			features: [
+				t('subscription.plans.yearly.features.0'),
+				t('subscription.plans.yearly.features.1'),
+				t('subscription.plans.yearly.features.2'),
+				t('subscription.plans.yearly.features.3'),
+			],
+		},
+	];
+	const statusLabels: Record<string, string> = { PAID: t('subscription.status.PAID'), PENDING: t('subscription.status.PENDING') };
 	const [subscriptions, setSubscriptions] = useState<any[]>([]);
 	const [payments, setPayments] = useState<any[]>([]);
 	const [loading, setLoading] = useState<string | null>(null);
@@ -194,7 +210,7 @@ const SubscriptionContent = () => {
 	const startSubscription = async (planKey: string, price: number) => {
 		try {
 			if (!user?._id) { await sweetMixinErrorAlert(Messages.error2); router.push('/account/join'); return; }
-			if (activeSub) { await sweetMixinErrorAlert('You already have an active subscription'); return; }
+			if (activeSub) { await sweetMixinErrorAlert(t('subscription.alerts.alreadyActive')); return; }
 
 			setLoading(planKey);
 
@@ -213,7 +229,7 @@ const SubscriptionContent = () => {
 			});
 
 			const paymentResult = paymentData?.initiatePayment;
-			if (!paymentResult?.paymentId) throw new Error('Payment initiation failed');
+			if (!paymentResult?.paymentId) throw new Error(t('subscription.alerts.initiationFailed'));
 
 			if (paymentResult.clientSecret && paymentResult.clientSecret !== 'mock_paid' && stripePromise) {
 				setPaymentModal({
@@ -248,7 +264,7 @@ const SubscriptionContent = () => {
 			if (pd?.getPaymentHistory) setPayments(pd.getPaymentHistory);
 
 			setPaymentModal(null);
-			await sweetMixinSuccessAlert('Subscription activated!');
+			await sweetMixinSuccessAlert(t('subscription.alerts.activated'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message.replace('Definer: ', '')).then();
 		} finally {
@@ -260,9 +276,9 @@ const SubscriptionContent = () => {
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 			{/* Header */}
 			<div style={{ textAlign: 'center', marginBottom: '44px' }}>
-				<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '8px' }}>Membership</span>
+				<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '8px' }}>{t('subscription.eyebrow')}</span>
 				<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: 'clamp(26px, 3vw, 34px)', fontWeight: 800, color: '#ffffff', letterSpacing: '-0.02em', margin: 0 }}>
-					Invest in <span className="lp-grad">Performance</span>
+					{t('subscription.titlePrefix')} <span className="lp-grad">{t('subscription.titleHighlight')}</span>
 				</h2>
 			</div>
 
@@ -274,20 +290,20 @@ const SubscriptionContent = () => {
 						<div>
 							<span className="ct-live" style={{ marginBottom: '8px' }}>
 								<span className="ct-live-dot" />
-								Active Plan
+								{t('subscription.activePlan')}
 							</span>
 							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '21px', fontWeight: 800, color: '#ffffff', margin: '8px 0 0' }}>
-								{activeSub.subscriptionPlan === 'MONTHLY' ? 'Monthly' : 'Yearly'} — ${activeSub.price}
+								{activeSub.subscriptionPlan === 'MONTHLY' ? t('subscription.plans.monthly.name') : t('subscription.plans.yearly.name')} — ${activeSub.price}
 							</h3>
 						</div>
 						<div style={{ textAlign: 'right' }}>
 							{daysLeft !== null && (
 								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '22px', fontWeight: 800, color: '#66daba', display: 'block', lineHeight: 1 }}>
-									{daysLeft} <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(185,202,202,0.55)' }}>days left</span>
+									{daysLeft} <span style={{ fontSize: '12px', fontWeight: 600, color: 'rgba(185,202,202,0.55)' }}>{t('subscription.daysLeftSuffix')}</span>
 								</span>
 							)}
 							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)', display: 'block', marginTop: '6px' }}>
-								Expires {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : 'N/A'}
+								{t('subscription.expires')} {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : t('subscription.notAvailable')}
 							</span>
 						</div>
 					</div>
@@ -312,7 +328,7 @@ const SubscriptionContent = () => {
 							onMouseOver={(e) => { if (!activeSub) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-4px)'; (e.currentTarget as HTMLElement).style.boxShadow = isSelected ? '0 16px 48px rgba(0,220,229,0.1)' : '0 12px 40px rgba(0,0,0,0.4)'; } }}
 							onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = isSelected ? '0 0 24px rgba(0,220,229,0.06)' : 'none'; }}
 						>
-							{plan.featured && <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', padding: '4px 14px', fontFamily: 'JetBrains Mono', fontSize: '9px', fontWeight: 700, borderRadius: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>Best Value</div>}
+							{plan.featured && <div style={{ position: 'absolute', top: '-10px', left: '50%', transform: 'translateX(-50%)', background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', padding: '4px 14px', fontFamily: 'JetBrains Mono', fontSize: '9px', fontWeight: 700, borderRadius: '6px', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{t('subscription.bestValue')}</div>}
 
 							{/* Selection indicator */}
 							<div style={{ position: 'absolute', top: '16px', right: '16px', width: '22px', height: '22px', borderRadius: '50%', border: isSelected ? '2px solid #00dce5' : '2px solid rgba(255,255,255,0.1)', background: isSelected ? '#00dce5' : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.25s ease' }}>
@@ -359,7 +375,11 @@ const SubscriptionContent = () => {
 						onMouseOver={(e) => { if (!loading) { (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 50px rgba(0,220,229,0.35)'; } }}
 						onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; (e.currentTarget as HTMLElement).style.boxShadow = '0 0 30px rgba(0,220,229,0.2)'; }}
 					>
-						{loading ? 'Processing...' : `Subscribe to ${selectedPlan === 'MONTHLY' ? 'Monthly' : 'Yearly'} Plan`}
+						{loading
+							? t('subscription.processing')
+							: t('subscription.subscribe', {
+									plan: selectedPlan === 'MONTHLY' ? t('subscription.plans.monthly.name') : t('subscription.plans.yearly.name'),
+							  })}
 					</button>
 				</div>
 			)}
@@ -368,12 +388,12 @@ const SubscriptionContent = () => {
 			{payments.length > 0 && (
 				<div>
 					<div className="wd-section-head" style={{ marginBottom: '14px' }}>
-						<h3 style={{ fontSize: '20px' }}>Payment History</h3>
-						<span className="wd-section-count">{payments.length} payment{payments.length === 1 ? '' : 's'}</span>
+						<h3 style={{ fontSize: '20px' }}>{t('subscription.paymentHistory')}</h3>
+						<span className="wd-section-count">{payments.length === 1 ? t('subscription.paymentsCountOne', { count: payments.length }) : t('subscription.paymentsCount', { count: payments.length })}</span>
 					</div>
 					<div style={{ display: 'flex', flexDirection: 'column', gap: '9px' }}>
 						{payments.map((p: any) => {
-							const statusColor = p.paymentStatus === 'PAID' ? '#66daba' : p.paymentStatus === 'PENDING' ? '#ffb77f' : '#9aabab';
+							const statusColor = paymentStatusColors[p.paymentStatus] ?? paymentStatusColors.DEFAULT;
 							return (
 								<div key={p._id} className="nm-row">
 									<div style={{ display: 'flex', alignItems: 'center', gap: '14px', minWidth: 0 }}>
@@ -392,7 +412,7 @@ const SubscriptionContent = () => {
 												flexShrink: 0,
 											}}
 										>
-											{p.paymentStatus}
+											{statusLabels[p.paymentStatus] || p.paymentStatus}
 										</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff' }}>${p.paymentAmount}</span>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.5)' }}>{p.paymentProvider}</span>
@@ -412,7 +432,7 @@ const SubscriptionContent = () => {
 				<Elements stripe={stripePromise} options={{ clientSecret: paymentModal.clientSecret, appearance: { theme: 'night', variables: { colorPrimary: '#00dce5' } } }}>
 					<CardPaymentForm
 						clientSecret={paymentModal.clientSecret}
-						planName={paymentModal.planKey === 'MONTHLY' ? 'Monthly' : 'Yearly'}
+						planName={paymentModal.planKey === 'MONTHLY' ? t('subscription.plans.monthly.name') : t('subscription.plans.yearly.name')}
 						price={paymentModal.price}
 						onSuccess={() => finalizeSubscription(paymentModal.paymentId, paymentModal.planKey, paymentModal.price)}
 						onCancel={() => setPaymentModal(null)}

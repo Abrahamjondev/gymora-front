@@ -1,6 +1,7 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { GET_MEMBER } from '../../../apollo/user/query';
 import { userVar } from '../../../apollo/store';
 import { REACT_APP_API_URL } from '../../config';
@@ -19,9 +20,11 @@ const mono: React.CSSProperties = { fontFamily: 'JetBrains Mono, monospace' };
 const grotesk: React.CSSProperties = { fontFamily: 'Hanken Grotesk, sans-serif' };
 
 /** Compact creator/trainer profile card for workout & program detail sidebars. */
-const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCount, trainerExperience }: CreatorCardProps) => {
+const CreatorCard = ({ memberId, title, trainerRating, trainerRatingCount, trainerExperience }: CreatorCardProps) => {
 	const router = useRouter();
+	const { t } = useTranslation(['common', 'enums']);
 	const user = useReactiveVar(userVar);
+	const cardTitle = title ?? t('creator.coach');
 
 	const { data } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'cache-and-network',
@@ -74,7 +77,7 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 					marginBottom: '14px',
 				}}
 			>
-				{title}
+				{cardTitle}
 			</span>
 
 			<div style={{ display: 'flex', alignItems: 'center', gap: '13px', cursor: 'pointer' }} onClick={goProfile}>
@@ -109,7 +112,7 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 							marginTop: '5px',
 						}}
 					>
-						{isTrainer ? 'TRAINER' : member.memberType}
+						{t(`enums:memberType.${member.memberType}`)}
 					</span>
 				</div>
 			</div>
@@ -118,13 +121,13 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 				<div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '13px' }}>
 					{trainerRating !== undefined && (
 						<span style={{ ...mono, fontSize: '11.5px', fontWeight: 600, color: '#ffb77f', background: 'rgba(255,183,127,0.08)', border: '1px solid rgba(255,183,127,0.25)', borderRadius: '8px', padding: '5px 10px' }}>
-							★ {trainerRating > 0 ? trainerRating.toFixed(1) : 'New'}
+							★ {trainerRating > 0 ? trainerRating.toFixed(1) : t('creator.newTrainer')}
 							{trainerRatingCount ? ` (${trainerRatingCount})` : ''}
 						</span>
 					)}
 					{trainerExperience !== undefined && trainerExperience > 0 && (
 						<span style={{ ...mono, fontSize: '11.5px', fontWeight: 600, color: '#ddb7ff', background: 'rgba(221,183,255,0.07)', border: '1px solid rgba(221,183,255,0.25)', borderRadius: '8px', padding: '5px 10px' }}>
-							{trainerExperience}y experience
+							{t('creator.experienceYears', { count: trainerExperience })}
 						</span>
 					)}
 				</div>
@@ -133,15 +136,15 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 			<div style={{ display: 'flex', gap: '8px', marginTop: '15px', borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '15px' }}>
 				<div style={{ flex: 1 }}>
 					<span style={{ ...grotesk, fontSize: '17px', fontWeight: 800, color: '#e9feff', display: 'block' }}>{member.memberWorkouts ?? 0}</span>
-					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>Workouts</span>
+					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>{t('stats.workouts')}</span>
 				</div>
 				<div style={{ flex: 1 }}>
 					<span style={{ ...grotesk, fontSize: '17px', fontWeight: 800, color: '#e9feff', display: 'block' }}>{member.memberFollowers ?? 0}</span>
-					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>Followers</span>
+					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>{t('stats.followers')}</span>
 				</div>
 				<div style={{ flex: 1 }}>
 					<span style={{ ...grotesk, fontSize: '17px', fontWeight: 800, color: '#e9feff', display: 'block' }}>{member.memberLikes ?? 0}</span>
-					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>Likes</span>
+					<span style={{ ...mono, fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>{t('stats.likes')}</span>
 				</div>
 			</div>
 
@@ -162,7 +165,7 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 						transition: 'border-color 0.2s ease, background 0.2s ease',
 					}}
 				>
-					View Profile
+					{t('actions.viewProfile')}
 				</button>
 				{!isSelf && (
 					<button
@@ -181,7 +184,7 @@ const CreatorCard = ({ memberId, title = 'Coach', trainerRating, trainerRatingCo
 							transition: 'background 0.2s ease',
 						}}
 					>
-						Message
+						{t('actions.message')}
 					</button>
 				)}
 			</div>

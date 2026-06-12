@@ -1,0 +1,112 @@
+{
+	"nav": {
+		"workouts": "Mashqlar",
+		"programs": "Dasturlar",
+		"trainers": "Murabbiylar",
+		"community": "Hamjamiyat",
+		"login": "Kirish",
+		"getStarted": "Boshlash",
+		"logout": "Chiqish",
+		"myPage": "Sahifam",
+		"menu": "Menyu",
+		"profileAlt": "profil"
+	},
+	"footer": {
+		"tagline": "Yuqori samarali mashg'ulotlar va sportiv rivojlanish uchun elita platforma.",
+		"platform": "Platforma",
+		"account": "Akkaunt",
+		"company": "Kompaniya",
+		"joinFree": "Bepul qo'shilish",
+		"membership": "Obuna",
+		"about": "Biz haqimizda",
+		"aboutUs": "Biz haqimizda",
+		"support": "Yordam",
+		"privacy": "Maxfiylik",
+		"terms": "Shartlar",
+		"rightsReserved": "Gymora. Barcha huquqlar himoyalangan.",
+		"backToTop": "Yuqoriga ↑"
+	},
+	"language": {
+		"label": "Til",
+		"en": "English",
+		"ru": "Русский",
+		"uz": "O'zbekcha"
+	},
+	"actions": {
+		"save": "Saqlash",
+		"cancel": "Bekor qilish",
+		"delete": "O'chirish",
+		"edit": "Tahrirlash",
+		"close": "Yopish",
+		"search": "Qidirish",
+		"clearAll": "Hammasini tozalash",
+		"viewAll": "Hammasini ko'rish",
+		"loading": "Yuklanmoqda...",
+		"yes": "Ha",
+		"confirmLogout": "Chiqishni xohlaysizmi?",
+		"viewProfile": "Profil",
+		"message": "Yozish",
+		"follow": "Obuna bo'lish",
+		"following": "Obunasiz",
+		"post": "Yuborish",
+		"backToTop": "Yuqoriga",
+		"like": "Yoqdi",
+		"liked": "Yoqdi"
+	},
+	"stats": {
+		"views": "ko'rishlar",
+		"likes": "layklar",
+		"workouts": "Mashqlar",
+		"programs": "Dasturlar",
+		"followers": "Obunachilar",
+		"following": "Obunalar",
+		"articles": "Maqolalar",
+		"rating": "Reyting",
+		"experience": "Tajriba",
+		"years": "{{count}} yil",
+		"enrolled": "yozilgan",
+		"comments": "izohlar",
+		"weeks": "{{count}} hafta",
+		"sessions": "{{count}} mashg'ulot",
+		"minRead": "{{count}} daqiqa o'qish"
+	},
+	"creator": {
+		"coach": "Murabbiy",
+		"yourTrainer": "Sizning murabbiyingiz",
+		"newTrainer": "Yangi",
+		"experienceYears": "{{count}} yil tajriba"
+	},
+	"empty": {
+		"noResults": "Hech narsa topilmadi",
+		"tryAdjusting": "Filtr yoki qidiruvni o'zgartirib ko'ring."
+	},
+	"videoPlayer": {
+		"title": "Video"
+	},
+	"alerts": {
+		"somethingWrong": "Nimadir noto'g'ri ketdi!",
+		"loginFirst": "Avval tizimga kiring!",
+		"fillAllInputs": "Barcha maydonlarni to'ldiring!",
+		"messageEmpty": "Xabar bo'sh!",
+		"imageFormatOnly": "Faqat jpeg, jpg, png formatdagi rasmlar qabul qilinadi!"
+	},
+	"titles": {
+		"home": "Gymora — Elita mashg'ulot platformasi",
+		"default": "Gymora",
+		"workoutList": "Mashqlar kutubxonasi — Gymora",
+		"workoutDetail": "Mashq — Gymora",
+		"programList": "Mashg'ulot dasturlari — Gymora",
+		"programDetail": "Dastur — Gymora",
+		"trainerList": "Murabbiylar — Gymora",
+		"trainerDetail": "Murabbiy profili — Gymora",
+		"community": "Hamjamiyat — Gymora",
+		"article": "Maqola — Gymora",
+		"memberProfile": "A'zo profili — Gymora",
+		"signIn": "Kirish — Gymora",
+		"myPage": "Sahifam — Gymora",
+		"support": "Yordam — Gymora",
+		"about": "Biz haqimizda — Gymora",
+		"privacy": "Maxfiylik siyosati — Gymora",
+		"terms": "Foydalanish shartlari — Gymora"
+	}
+}

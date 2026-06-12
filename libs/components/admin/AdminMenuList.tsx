@@ -116,57 +116,104 @@ const AdminMenuList = (props: any) => {
 		Community: [{ title: 'List', url: '/_admin/community' }],
 	};
 
+	// The legacy admin.scss that used to style this menu was removed — all
+	// styling lives here now, matching the dark #101012 drawer.
+	const isMenuActive = (title: string) => clickMenu.includes(title);
+	const isRouteActive = (title: string) => {
+		const target = sub_menu_set[title]?.[0]?.url;
+		return target ? pathname.startsWith(target) : false;
+	};
+
 	return (
 		<>
-			{menu_set.map((item, index) => (
-				<List className={'menu_wrap'} key={index} disablePadding>
-					<ListItemButton
-						onClick={item.on_click}
-						component={'li'}
-						className={clickMenu[0] === item.title ? 'menu on' : 'menu'}
-						sx={{
-							minHeight: 48,
-							justifyContent: openMenu ? 'initial' : 'center',
-							px: 2.5,
-						}}
-					>
-						<ListItemIcon
+			{menu_set.map((item, index) => {
+				const open = isMenuActive(item.title);
+				const routeOn = isRouteActive(item.title);
+				return (
+					<List key={index} disablePadding sx={{ mb: '2px' }}>
+						<ListItemButton
+							onClick={item.on_click}
+							component={'li'}
 							sx={{
-								minWidth: 0,
-								mr: openMenu ? 3 : 'auto',
-								justifyContent: 'center',
+								minHeight: 46,
+								borderRadius: '10px',
+								mx: 1.25,
+								px: 1.75,
+								background: routeOn && !open ? 'rgba(0,220,229,0.06)' : 'transparent',
+								'&:hover': { background: 'rgba(255,255,255,0.05)' },
 							}}
 						>
-							{item.icon}
-						</ListItemIcon>
-						<ListItemText>{item.title}</ListItemText>
-						{clickMenu.find((menu: string) => item.title === menu) ? <ExpandLess /> : <ExpandMore />}
-					</ListItemButton>
-					<Collapse
-						in={!!clickMenu.find((menu: string) => menu === item.title)}
-						className="menu"
-						timeout="auto"
-						component="li"
-						unmountOnExit
-					>
-						<List className="menu-list" disablePadding>
-							{sub_menu_set[item.title] &&
-								sub_menu_set[item.title].map((sub: any, i: number) => (
-									<Link href={sub.url} shallow={true} replace={true} key={i}>
-										<ListItemButton
-											component="li"
-											className={clickMenu[0] === item.title && clickSubMenu === sub.title ? 'li on' : 'li'}
-										>
-											<Typography variant={sub.title} component={'span'}>
-												{sub.title}
-											</Typography>
-										</ListItemButton>
-									</Link>
-								))}
-						</List>
-					</Collapse>
-				</List>
-			))}
+							<ListItemIcon sx={{ minWidth: 0, mr: 1.75, justifyContent: 'center', opacity: routeOn ? 1 : 0.75 }}>
+								{item.icon}
+							</ListItemIcon>
+							<ListItemText
+								primaryTypographyProps={{
+									fontFamily: 'Hanken Grotesk',
+									fontSize: '14.5px',
+									fontWeight: 700,
+									color: routeOn ? '#e9feff' : 'rgba(213,226,226,0.8)',
+								}}
+							>
+								{item.title}
+							</ListItemText>
+							{open ? (
+								<ExpandLess sx={{ fontSize: 18, color: 'rgba(185,202,202,0.55)' }} />
+							) : (
+								<ExpandMore sx={{ fontSize: 18, color: 'rgba(185,202,202,0.55)' }} />
+							)}
+						</ListItemButton>
+						<Collapse in={open} timeout="auto" component="li" unmountOnExit>
+							<List disablePadding sx={{ py: 0.5 }}>
+								{sub_menu_set[item.title] &&
+									sub_menu_set[item.title].map((sub: any, i: number) => {
+										const subOn = routeOn && clickSubMenu === sub.title;
+										return (
+											<Link href={sub.url} shallow={true} replace={true} key={i} style={{ textDecoration: 'none' }}>
+												<ListItemButton
+													component="li"
+													sx={{
+														minHeight: 38,
+														borderRadius: '9px',
+														mx: 1.25,
+														ml: 5.5,
+														px: 1.5,
+														position: 'relative',
+														background: subOn ? 'rgba(0,220,229,0.1)' : 'transparent',
+														'&:hover': { background: subOn ? 'rgba(0,220,229,0.13)' : 'rgba(255,255,255,0.05)' },
+														'&::before': {
+															content: '""',
+															position: 'absolute',
+															left: '-14px',
+															top: '50%',
+															transform: 'translateY(-50%)',
+															width: '5px',
+															height: '5px',
+															borderRadius: '50%',
+															background: subOn ? '#00dce5' : 'rgba(255,255,255,0.18)',
+															boxShadow: subOn ? '0 0 8px rgba(0,220,229,0.6)' : 'none',
+														},
+													}}
+												>
+													<Typography
+														component={'span'}
+														sx={{
+															fontFamily: 'Hanken Grotesk',
+															fontSize: '13.5px',
+															fontWeight: 600,
+															color: subOn ? '#00dce5' : 'rgba(185,202,202,0.75)',
+														}}
+													>
+														{sub.title}
+													</Typography>
+												</ListItemButton>
+											</Link>
+										);
+									})}
+							</List>
+						</Collapse>
+					</List>
+				);
+			})}
 		</>
 	);
 };

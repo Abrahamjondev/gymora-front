@@ -11,6 +11,7 @@ import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_WORKOUTS } from '../../apollo/user/query';
 import { LIKE_WORKOUT } from '../../apollo/user/mutation';
@@ -21,7 +22,7 @@ import { notifyMember } from '../../libs/notify';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'workout', 'enums'])),
 	},
 });
 
@@ -34,6 +35,7 @@ const difficultyColor: Record<string, string> = {
 const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
+	const { t } = useTranslation('workout');
 	const user = useReactiveVar(userVar);
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
@@ -181,11 +183,11 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const filters = ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
 	const muscles = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'];
 	const sortOptions = [
-		{ value: 'createdAt', label: 'Newest' },
-		{ value: 'workoutLikes', label: 'Most Liked' },
-		{ value: 'workoutViews', label: 'Most Viewed' },
-		{ value: 'workoutRank', label: 'Top Ranked' },
-		{ value: 'estimatedCaloriesBurned', label: 'Highest Burn' },
+		{ value: 'createdAt', label: t('list.sort.newest') },
+		{ value: 'workoutLikes', label: t('list.sort.mostLiked') },
+		{ value: 'workoutViews', label: t('list.sort.mostViewed') },
+		{ value: 'workoutRank', label: t('list.sort.topRanked') },
+		{ value: 'estimatedCaloriesBurned', label: t('list.sort.highestBurn') },
 	];
 
 	const hasActiveFilters = activeFilter !== 'ALL' || activeMuscle || searchText;
@@ -196,16 +198,16 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				{/* Hero */}
 				<div className="wl-hero">
 					<div className="wl-hero-glow" />
-					<span className="lp-eyebrow lp-eyebrow--orange">Performance Protocol</span>
+					<span className="lp-eyebrow lp-eyebrow--orange">{t('list.eyebrow')}</span>
 					<h1 className="wl-title">
-						Workout <span className="lp-grad">Library</span>
+						{t('list.titleLead')} <span className="lp-grad">{t('list.titleAccent')}</span>
 					</h1>
 					<p className="lp-sub" style={{ margin: 0 }}>
-						Precision-engineered routines designed for elite athletes and performance-driven individuals.
+						{t('list.subtitle')}
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? `${total} protocols available` : 'Loading protocols'}</span>
+						<span>{total > 0 ? t('list.protocolsAvailable', { count: total }) : t('list.loadingProtocols')}</span>
 					</div>
 				</div>
 
@@ -217,7 +219,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
-								placeholder="Search workouts..."
+								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
 								<span
@@ -244,14 +246,14 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 						<div className="wl-seg">
 							{filters.map((f) => (
 								<button key={f} className={activeFilter === f ? 'is-active' : ''} onClick={() => filterHandler(f)}>
-									{f === 'ALL' ? 'All Levels' : f.charAt(0) + f.slice(1).toLowerCase()}
+									{f === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${f}`)}
 								</button>
 							))}
 						</div>
 						<div className="wl-muscles">
 							{muscles.map((m) => (
 								<button key={m} className={activeMuscle === m ? 'is-active' : ''} onClick={() => muscleHandler(m)}>
-									{m}
+									{t(`enums:muscle.${m}`)}
 								</button>
 							))}
 						</div>
@@ -261,12 +263,12 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				{/* Active filters summary */}
 				{hasActiveFilters && (
 					<div className="wl-active-row">
-						<span className="wl-active-label">ACTIVE:</span>
-						{activeFilter !== 'ALL' && <span className="wl-active-chip">{activeFilter}</span>}
-						{activeMuscle && <span className="wl-active-chip">{activeMuscle}</span>}
+						<span className="wl-active-label">{t('list.activeLabel')}</span>
+						{activeFilter !== 'ALL' && <span className="wl-active-chip">{t(`enums:difficulty.${activeFilter}`)}</span>}
+						{activeMuscle && <span className="wl-active-chip">{t(`enums:muscle.${activeMuscle}`)}</span>}
 						{searchText && <span className="wl-active-chip">"{searchText}"</span>}
 						<button className="wl-active-clear" onClick={clearAllHandler}>
-							✕ Clear all
+							✕ {t('common:actions.clearAll')}
 						</button>
 					</div>
 				)}
@@ -297,9 +299,13 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 										/>
 										<div className="wl-card-shade" />
 										<div className="wl-card-chips">
-											{workout.targetMuscle && <span className="lp-chip lp-chip--cyan">{workout.targetMuscle}</span>}
+											{workout.targetMuscle && (
+												<span className="lp-chip lp-chip--cyan">
+													{t(`enums:muscle.${workout.targetMuscle}`, { defaultValue: workout.targetMuscle })}
+												</span>
+											)}
 										</div>
-										<span className="wl-kcal">{workout.estimatedCaloriesBurned} KCAL</span>
+										<span className="wl-kcal">{t('list.kcal', { count: workout.estimatedCaloriesBurned })}</span>
 									</div>
 
 									<div className="wl-card-body">
@@ -310,10 +316,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 													className="wl-diff-dot"
 													style={{ background: difficultyColor[workout.workoutDifficulty] || '#00dce5' }}
 												/>
-												{workout.workoutDifficulty}
+												{t(`enums:difficulty.${workout.workoutDifficulty}`)}
 											</span>
 											<div className="wl-card-side">
-												<span className="wl-views">{workout.workoutViews ?? 0} views</span>
+												<span className="wl-views">{workout.workoutViews ?? 0} {t('common:stats.views')}</span>
 												<LikeButton
 													liked={!!workout.meLiked?.[0]?.myFavorite}
 													count={workout.workoutLikes ?? 0}
@@ -330,9 +336,9 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				{/* No results */}
 				{!loading && workouts.length === 0 && (
 					<div className="wl-empty">
-						<span className="wl-empty-label">No results</span>
-						<h3>Nothing matches this protocol.</h3>
-						<p>Try a different muscle group, level or search term.</p>
+						<span className="wl-empty-label">{t('common:empty.noResults')}</span>
+						<h3>{t('list.empty.title')}</h3>
+						<p>{t('list.empty.subtitle')}</p>
 					</div>
 				)}
 

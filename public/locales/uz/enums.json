@@ -1,0 +1,37 @@
+{
+	"difficulty": {
+		"BEGINNER": "Boshlang'ich",
+		"INTERMEDIATE": "O'rta",
+		"ADVANCED": "Yuqori"
+	},
+	"muscle": {
+		"Chest": "Ko'krak",
+		"Back": "Orqa",
+		"Legs": "Oyoqlar",
+		"Shoulders": "Yelkalar",
+		"Arms": "Qo'llar",
+		"Core": "Korpus",
+		"Full Body": "Butun tana",
+		"Glutes": "Dumba",
+		"Upper Body": "Tananing yuqori qismi"
+	},
+	"category": {
+		"STRENGTH": "Kuch",
+		"CARDIO": "Kardio",
+		"YOGA": "Yoga",
+		"MOBILITY": "Harakatchanlik",
+		"NUTRITION": "Ovqatlanish"
+	},
+	"articleCategory": {
+		"FITNESS_TIPS": "Fitnes maslahatlar",
+		"NUTRITION": "Ovqatlanish",
+		"WORKOUT_GUIDE": "Mashq qo'llanmasi",
+		"CHALLENGE": "Chellenj",
+		"SUCCESS_STORY": "Muvaffaqiyat tarixi"
+	},
+	"memberType": {
+		"USER": "Foydalanuvchi",
+		"TRAINER": "Murabbiy",
+		"ADMIN": "Admin"
+	}
+}

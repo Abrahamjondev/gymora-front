@@ -1,0 +1,37 @@
+{
+	"difficulty": {
+		"BEGINNER": "Начальный",
+		"INTERMEDIATE": "Средний",
+		"ADVANCED": "Продвинутый"
+	},
+	"muscle": {
+		"Chest": "Грудь",
+		"Back": "Спина",
+		"Legs": "Ноги",
+		"Shoulders": "Плечи",
+		"Arms": "Руки",
+		"Core": "Кор",
+		"Full Body": "Всё тело",
+		"Glutes": "Ягодицы",
+		"Upper Body": "Верх тела"
+	},
+	"category": {
+		"STRENGTH": "Сила",
+		"CARDIO": "Кардио",
+		"YOGA": "Йога",
+		"MOBILITY": "Мобильность",
+		"NUTRITION": "Питание"
+	},
+	"articleCategory": {
+		"FITNESS_TIPS": "Фитнес-советы",
+		"NUTRITION": "Питание",
+		"WORKOUT_GUIDE": "Гид по тренировкам",
+		"CHALLENGE": "Челлендж",
+		"SUCCESS_STORY": "История успеха"
+	},
+	"memberType": {
+		"USER": "Пользователь",
+		"TRAINER": "Тренер",
+		"ADMIN": "Админ"
+	}
+}

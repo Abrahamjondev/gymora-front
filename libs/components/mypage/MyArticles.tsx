@@ -11,6 +11,7 @@ import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
 import { Messages, REACT_APP_API_URL } from '../../config';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 
 const categoryAccent: Record<string, string> = {
 	FITNESS_TIPS: '#00dce5',
@@ -19,9 +20,11 @@ const categoryAccent: Record<string, string> = {
 	CHALLENGE: '#ff8a8a',
 	SUCCESS_STORY: '#66daba',
 };
+const accentFor = (category: string) => categoryAccent[category] || '#00dce5';
 
 const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
+	const { t } = useTranslation('mypage');
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const [searchCommunity, setSearchCommunity] = useState({ ...initialInput, search: { memberId: user._id } });
@@ -54,12 +57,12 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 		e.stopPropagation();
 		try {
 			if (!id || !user?._id) throw new Error(Messages.error2);
-			if (!(await sweetConfirmAlert('Delete this article permanently?'))) return;
+			if (!(await sweetConfirmAlert(t('alerts.deleteArticleConfirm')))) return;
 			await updateBoardArticle({ variables: { input: { _id: id, articleStatus: 'DELETE' } } });
 			const { data } = await refetch({ input: searchCommunity });
 			setBoardArticles(data?.getBoardArticles?.list ?? []);
 			setTotalCount(data?.getBoardArticles?.metaCounter?.[0]?.total ?? 0);
-			await sweetTopSmallSuccessAlert('Deleted', 750);
+			await sweetTopSmallSuccessAlert(t('alerts.deleted'), 750);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 		}
@@ -72,7 +75,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 			await likeTargetBoardArticle({ variables: { input: id } });
 			const { data } = await refetch({ input: searchCommunity });
 			if (data?.getBoardArticles?.list) setBoardArticles(data.getBoardArticles.list);
-			await sweetTopSmallSuccessAlert('Success!', 750);
+			await sweetTopSmallSuccessAlert(t('alerts.success'), 750);
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -83,14 +86,14 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow lp-eyebrow--violet" style={{ marginBottom: '6px' }}>
-						Community
+						{t('articles.eyebrow')}
 					</span>
-					<h2>My Articles</h2>
+					<h2>{t('articles.title')}</h2>
 				</div>
 				<div className="nt-tools">
-					<span className="wd-section-count">{totalCount} published</span>
+					<span className="wd-section-count">{t('articles.publishedCount', { count: totalCount })}</span>
 					<button className="wd-btn" style={{ padding: '11px 20px', fontSize: '13.5px' }} onClick={() => router.push({ pathname: '/mypage', query: { category: 'writeArticle' } }, undefined, { shallow: true })}>
-						+ Write Article
+						{t('articles.writeShortcut')}
 					</button>
 				</div>
 			</div>
@@ -98,7 +101,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 			{boardArticles?.length > 0 ? (
 				<div className="cm-list">
 					{boardArticles.map((article) => {
-						const accent = categoryAccent[article.articleCategory] || '#00dce5';
+						const accent = accentFor(article.articleCategory);
 						return (
 							<div
 								key={article._id}
@@ -114,7 +117,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 								<div className="cm-body">
 									<div className="cm-meta-top">
 										<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}30`, color: accent }}>
-											{article.articleCategory?.replace(/_/g, ' ')}
+											{t(`enums:articleCategory.${article.articleCategory}`, { defaultValue: article.articleCategory?.replace(/_/g, ' ') })}
 										</span>
 										<span className="cm-date">{new Date(article.createdAt).toLocaleDateString()}</span>
 									</div>
@@ -127,13 +130,13 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 										>
 											{article.meLiked?.[0]?.myFavorite ? '♥' : '♡'} {article.articleLikes ?? 0}
 										</span>
-										<span className="cm-stat">{article.articleViews ?? 0} views</span>
-										<span className="cm-stat">{article.articleComments ?? 0} comments</span>
+										<span className="cm-stat">{article.articleViews ?? 0} {t('common:stats.views')}</span>
+										<span className="cm-stat">{article.articleComments ?? 0} {t('common:stats.comments')}</span>
 										<button className="wl-active-chip" style={{ cursor: 'pointer', border: '1px solid rgba(0,220,229,0.35)', background: 'rgba(0,220,229,0.08)', color: '#00dce5' }} onClick={(e) => editHandler(e, article._id)}>
-											Edit
+											{t('common:actions.edit')}
 										</button>
 										<button className="wl-active-chip" style={{ cursor: 'pointer', border: '1px solid rgba(255,138,138,0.35)', background: 'rgba(255,138,138,0.07)', color: '#ff8a8a' }} onClick={(e) => deleteHandler(e, article._id)}>
-											Delete
+											{t('common:actions.delete')}
 										</button>
 										<span className="cm-arrow">→</span>
 									</div>
@@ -146,8 +149,8 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 				!loading && (
 					<div className="nt-empty">
 						<div className="nt-empty-ic">▤</div>
-						<h4>No articles yet</h4>
-						<p>Share your first piece of knowledge with the community.</p>
+						<h4>{t('articles.emptyTitle')}</h4>
+						<p>{t('articles.emptyDesc')}</p>
 					</div>
 				)
 			)}

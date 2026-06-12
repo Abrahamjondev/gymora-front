@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { useRouter } from 'next/router';
 import { useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { logOut } from '../../auth';
 import { REACT_APP_API_URL } from '../../config';
 import { sweetConfirmAlert } from '../../sweetAlert';
+import LanguageSwitcher from './LanguageSwitcher';
 import Link from 'next/link';
 
 interface GymNavbarProps {
@@ -14,6 +16,7 @@ interface GymNavbarProps {
 
 const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 	const router = useRouter();
+	const { t } = useTranslation('common');
 	const user = useReactiveVar(userVar);
 	const [scrolled, setScrolled] = useState(false);
 	const [menuOpen, setMenuOpen] = useState(false);
@@ -30,14 +33,14 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 	}, [router.asPath]);
 
 	const logoutHandler = async () => {
-		if (await sweetConfirmAlert('Do you want to log out?')) logOut();
+		if (await sweetConfirmAlert(t('actions.confirmLogout'))) logOut();
 	};
 
 	const navLinks = [
-		{ href: '/workout', label: 'Workouts' },
-		{ href: '/course', label: 'Programs' },
-		{ href: '/trainer', label: 'Trainers' },
-		{ href: '/community', label: 'Community' },
+		{ href: '/workout', label: t('nav.workouts') },
+		{ href: '/course', label: t('nav.programs') },
+		{ href: '/trainer', label: t('nav.trainers') },
+		{ href: '/community', label: t('nav.community') },
 	];
 
 	const isActive = (href: string) => router.pathname.startsWith(href);
@@ -74,33 +77,34 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 
 					{/* Right */}
 					<div className="gnav-right">
+						<LanguageSwitcher />
 						{user?._id ? (
 							<div className="gnav-user">
 								<Link href="/mypage" className="gnav-user-link">
 									<img
 										src={user.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'}
-										alt="profile"
+										alt={t('nav.profileAlt')}
 									/>
 									<span>{user.memberNick}</span>
 								</Link>
 								<span className="gnav-user-divider" />
 								<button className="gnav-logout" onClick={logoutHandler}>
-									Log out
+									{t('nav.logout')}
 								</button>
 							</div>
 						) : (
 							<>
 								<button className="gnav-login" onClick={() => router.push('/account/join')}>
-									Log in
+									{t('nav.login')}
 								</button>
 								<button className="gnav-cta" onClick={() => router.push('/account/join')}>
-									Get Started
+									{t('nav.getStarted')}
 								</button>
 							</>
 						)}
 						<button
 							className={`gnav-burger${menuOpen ? ' is-open' : ''}`}
-							aria-label="Menu"
+							aria-label={t('nav.menu')}
 							onClick={() => setMenuOpen((v) => !v)}
 						>
 							<span />
@@ -125,26 +129,27 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 						))}
 					</nav>
 					<div className="gnav-mobile-foot">
+						<LanguageSwitcher variant="row" />
 						{user?._id ? (
 							<>
 								<Link href="/mypage" className="gnav-mobile-account">
 									<img
 										src={user.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'}
-										alt="profile"
+										alt={t('nav.profileAlt')}
 									/>
-									<span>My Page</span>
+									<span>{t('nav.myPage')}</span>
 								</Link>
 								<button className="gnav-mobile-logout" onClick={logoutHandler}>
-									Log out
+									{t('nav.logout')}
 								</button>
 							</>
 						) : (
 							<>
 								<button className="gnav-login" onClick={() => router.push('/account/join')}>
-									Log in
+									{t('nav.login')}
 								</button>
 								<button className="gnav-cta" onClick={() => router.push('/account/join')}>
-									Get Started
+									{t('nav.getStarted')}
 								</button>
 							</>
 						)}

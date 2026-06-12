@@ -1,6 +1,10 @@
 import Swal from 'sweetalert2';
 import 'animate.css';
+import { i18n } from 'next-i18next';
 import { Messages } from './config';
+
+// Localized button labels for non-React Swal calls (common ns is always loaded)
+const btn = (key: string, fallback: string) => i18n?.t(`common:${key}`, { defaultValue: fallback }) ?? fallback;
 
 export const sweetErrorHandling = async (err: any) => {
 	await Swal.fire({
@@ -35,8 +39,8 @@ export const sweetConfirmAlert = (msg: string) => {
 			text: msg,
 			showCancelButton: true,
 			showConfirmButton: true,
-			confirmButtonText: 'Yes',
-			cancelButtonText: 'Cancel',
+			confirmButtonText: btn('actions.yes', 'Yes'),
+			cancelButtonText: btn('actions.cancel', 'Cancel'),
 			// destructive/decisive confirms get the red danger button (themed in app.scss)
 			customClass: { confirmButton: 'swal-danger' },
 		}).then((response) => {
@@ -52,7 +56,7 @@ export const sweetLoginConfirmAlert = (msg: string) => {
 			text: msg,
 			showCancelButton: true,
 			showConfirmButton: true,
-			confirmButtonText: 'Login',
+			confirmButtonText: btn('nav.login', 'Login'),
 		}).then((response) => {
 			if (response?.isConfirmed) resolve(true);
 			else resolve(false);

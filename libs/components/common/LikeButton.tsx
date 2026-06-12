@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'next-i18next';
 
 interface LikeButtonProps {
 	liked: boolean;
@@ -11,6 +12,7 @@ interface LikeButtonProps {
 const HEART_PATH = 'M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z';
 
 const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButtonProps) => {
+	const { t } = useTranslation('common');
 	if (variant === 'full') {
 		return (
 			<button onClick={onClick} style={{
@@ -42,7 +44,7 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 						style={{ transition: 'all 0.35s cubic-bezier(0.22,1,0.36,1)' }}
 					/>
 				</svg>
-				<span>{liked ? 'Liked' : (label || 'Like')}</span>
+				<span>{liked ? t('actions.liked') : label || t('actions.like')}</span>
 				{count > 0 && (
 					<span style={{
 						fontFamily: 'JetBrains Mono', fontSize: '11px',

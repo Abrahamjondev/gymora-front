@@ -1,0 +1,113 @@
+{
+	"about": {
+		"eyebrow": "Gymora haqida",
+		"titlePre": "Sizni atletdek",
+		"titleAccent": "ko'radigan mashg'ulotlar.",
+		"subtitle": "Gymora tasdiqlangan murabbiylarni natijaga jiddiy yondashadigan insonlar bilan bog'laydi — barchaga bepul mashqlar, chuqurroq shug'ullanmoqchi bo'lganlar uchun tizimli dasturlar va mehnat samara berayotganini isbotlovchi AI kuzatuvi.",
+		"stats": {
+			"freeWorkouts": "Bepul mashqlar",
+			"verifiedTrainers": "Tasdiqlangan murabbiylar",
+			"trainingPrograms": "Trening dasturlari",
+			"platformAccess": "Platformadan foydalanish"
+		},
+		"valuesTitle": "Bizning qadriyatlarimiz",
+		"values": {
+			"v1Title": "Bepul mashqlar — abadiy",
+			"v1Desc": "Gymora'dagi har bir mashq bepul. Sifatli murabbiylik bilimi pullik to'siq emas, boshlang'ich nuqta bo'lishi kerak deb hisoblaymiz.",
+			"v2Title": "Tasdiqlangan tajriba",
+			"v2Desc": "Murabbiylar nishon olishdan oldin tekshiruvdan o'tadi, har bir baho esa ular bilan haqiqatan shug'ullangan a'zo tomonidan qo'yiladi.",
+			"v3Title": "Taxmin emas — ma'lumotlar",
+			"v3Desc": "AI orqali taom skanerlash, hisoblangan ozuqa maqsadlari va o'lchanadigan progress jadvali — sizning raqamlaringizga asoslangan qarorlar."
+		},
+		"cta": {
+			"title": "Eng kuchli mavsumingiz uchun yaratilgan.",
+			"subtitle": "Bepul qo'shiling, tasdiqlangan mutaxassislar bilan shug'ullaning — natijangizni esa ma'lumotlar ko'rsatsin.",
+			"primary": "Bepul mashg'ulotni boshlash →",
+			"secondary": "Murabbiylar bilan tanishish"
+		}
+	},
+	"cs": {
+		"eyebrow": "Yordam",
+		"titlePre": "Sizga qanday",
+		"titleAccent": "yordam bera olamiz?",
+		"subtitle": "Mashg'ulotlar, dasturlar va akkauntingiz bo'yicha eng ko'p so'raladigan savollarga javoblar.",
+		"faq": {
+			"q1": "Gymora haqiqatan ham bepulmi?",
+			"a1": "Ha — platformadagi har bir mashq ro'yxatdan o'tgan a'zolar uchun butunlay bepul. Murabbiylar mashqlarini ochiq e'lon qiladi; siz faqat ko'p haftalik tizimli dasturga yozilsangizgina to'laysiz.",
+			"q2": "Dastur xaridi qanday ishlaydi?",
+			"a2": "Dasturlar bir martalik xarid bo'lib, umrbod foydalanish huquqini beradi; to'lov Stripe xavfsiz to'lov sahifasi orqali amalga oshiriladi. Birinchi dars yozilganingizdan so'ng darhol ochiladi, keyingi darslar esa avvalgilarini tugatganingiz sari ochilib boradi.",
+			"q3": "Qanday qilib murabbiy bo'laman?",
+			"a3": "Sahifam bo'limini oching va «Murabbiy bo'lish» formasidan foydalaning — bio, mutaxassisliklaringiz va tajribangizni qo'shing. Akkauntingiz murabbiy profiliga ko'tariladi, platforma administratorlari esa nishon yashil rangga o'tishidan oldin murabbiylarni tekshiradi.",
+			"q4": "Kimlar sharh qoldira oladi?",
+			"a4": "Mashqlarga sharh qoldirish barcha a'zolar uchun ochiq. Dasturga sharh yozish uchun unga yozilgan bo'lishingiz, murabbiyga sharh yozish uchun esa uning dasturlaridan birini sotib olgan bo'lishingiz kerak — bu har bir bahoni haqiqiy saqlaydi.",
+			"q5": "AI taom skaneri qanday ishlaydi?",
+			"a5": "Sahifam → Ozuqa bo'limida «AI Scan Food» tugmasini bosing va taomingiz suratini yuklang. AI kaloriya, oqsil, uglevod va yog'larni baholaydi, natijani esa darhol nonushta, tushlik, kechki ovqat yoki yengil tamaddi sifatida qayd etishingiz mumkin.",
+			"q6": "A'zolik obunasi qanday ishlaydi?",
+			"a6": "A'zolik oyiga $14.99 yoki yiliga $119.88 turadi (bu oyiga $9.99 ga teng). To'lovlarni Stripe amalga oshiradi, hammasini esa Sahifam → Obuna bo'limidan boshqarishingiz mumkin.",
+			"q7": "Murabbiylarga to'g'ridan-to'g'ri yozsam bo'ladimi?",
+			"a7": "Ha — Sahifam → Xabarlar real vaqtdagi chat. Kim onlayn ekanini ko'rasiz va ikkalangiz ham platformada bo'lsangiz, javoblarni bir zumda olasiz."
+		},
+		"cta": {
+			"title": "Yana savolingiz bormi?",
+			"subtitle": "Hamjamiyat aynan siz turgan bosqichdan o'tgan murabbiy va atletlarga to'la.",
+			"primary": "Hamjamiyatdan so'rash →",
+			"secondary": "Murabbiy topish"
+		}
+	},
+	"privacy": {
+		"eyebrow": "Huquqiy ma'lumot",
+		"titlePre": "Maxfiylik",
+		"titleAccent": "siyosati",
+		"subtitle": "Gymora ma'lumotlaringiz bilan qanday ishlashi — sodda tilda.",
+		"sections": {
+			"collectH": "Nimalarni yig'amiz",
+			"collectP": "Akkaunt ma'lumotlaringiz (taxallus, telefon), siz e'lon qiladigan kontent (mashqlar, dasturlar, maqolalar, izohlar), qayd etadigan trening faoliyatingiz (taomlar, tana o'lchovlari, darslar bo'yicha progress) va AI skaneriga yuboradigan taom suratlaringiz.",
+			"useH": "Ulardan qanday foydalanamiz",
+			"useP": "Ma'lumotlaringiz mahsulotning o'ziga xizmat qiladi — boshqaruv panelingiz, progress jadvalingiz, ozuqa maqsadlaringiz va tavsiyalar. Biz shaxsiy ma'lumotlarni uchinchi shaxslarga sotmaymiz.",
+			"paymentsH": "To'lovlar",
+			"paymentsP": "Karta to'lovlarini Stripe amalga oshiradi. Karta ma'lumotlaringiz hech qachon Gymora serverlariga tushmaydi — biz faqat xaridlar tarixingiz uchun zarur bo'lgan to'lov holati va summasini saqlaymiz.",
+			"contentH": "Sizning kontentingiz",
+			"contentP": "Siz e'lon qilgan mashqlar, dasturlar va maqolalar boshqa a'zolarga ko'rinadi. O'z kontentingizni istalgan vaqtda Sahifam orqali tahrirlashingiz yoki o'chirishingiz mumkin.",
+			"contactH": "Bog'lanish",
+			"contactP": "Ma'lumotlaringiz haqida savollaringiz bormi? Yordam sahifasi orqali jamoaga murojaat qiling yoki hamjamiyatda so'rang."
+		},
+		"ctaSupport": "Savollaringiz bormi? Yordam sahifasiga o'tish →"
+	},
+	"terms": {
+		"eyebrow": "Huquqiy ma'lumot",
+		"titlePre": "Foydalanish",
+		"titleAccent": "shartlari",
+		"subtitle": "Gymora'da mashq qilish, kontent e'lon qilish va xarid qilish bo'yicha asosiy qoidalar.",
+		"sections": {
+			"accountH": "Sizning akkauntingiz",
+			"accountP": "Har bir insonga bitta akkaunt. Akkauntingizdan e'lon qilingan narsalar uchun siz javobgarsiz; bloklangan yoki o'chirilgan akkauntlar platformaga kirish huquqini yo'qotadi.",
+			"freePaidH": "Bepul mashqlar, pullik dasturlar",
+			"freePaidP": "Gymora'dagi har bir mashq ro'yxatdan o'tgan a'zolar uchun bepul. Tizimli dasturlar bir martalik xarid bo'lib, umrbod foydalanish huquqini beradi; darslar avvalgilarini tugatganingiz sari ochilib boradi.",
+			"trainersH": "Murabbiylar va kontent",
+			"trainersP": "Murabbiylar o'zlari e'lon qilgan kontentga egalik qiladi va uni ulashish huquqiga ega bo'lishi shart. Gymora zararli, chalg'ituvchi yoki ushbu shartlarni buzuvchi kontentni olib tashlashi mumkin.",
+			"reviewsH": "Sharhlar",
+			"reviewsP": "Sharhlar haqiqiy faoliyatga bog'langan: faqat o'zingiz yozilgan dasturga va dasturini sotib olgan murabbiyingizga sharh qoldira olasiz. Har bir obyektga bitta sharh — u halol tajribangizni aks ettirishi kerak.",
+			"healthH": "Sog'liq bo'yicha ogohlantirish",
+			"healthP": "Gymora'dagi trening va ozuqa kontenti umumiy yo'l-yo'riq bo'lib, tibbiy maslahat emas. Yangi dasturni boshlashdan oldin, ayniqsa mavjud sog'liq muammolari bo'lsa, mutaxassis bilan maslahatlashing.",
+			"paymentsH": "To'lovlar va qaytarishlar",
+			"paymentsP": "To'lovlarni Stripe xavfsiz amalga oshiradi. A'zolik obunasini istalgan vaqtda bekor qilish mumkin — u to'langan davr oxirigacha faol qoladi."
+		},
+		"ctaSupport": "Savollaringiz bormi? Yordam sahifasiga o'tish →"
+	},
+	"notFound": {
+		"chip": "Xatolik 404",
+		"titlePre": "Bu sahifa",
+		"titleAccent": "oyoq kunini o'tkazib yuborgan",
+		"subtitle": "Siz izlayotgan sahifa mavjud emas yoki ko'chirilgan.",
+		"backHome": "Bosh sahifaga qaytish",
+		"browseWorkouts": "Mashqlarni ko'rish"
+	},
+	"serverError": {
+		"chip": "Xatolik 500",
+		"titlePre": "Biz",
+		"titleAccent": "shtangani tushirib yubordik",
+		"subtitle": "Bizning tomonda nimadir xato ketdi. Birozdan so'ng qayta urinib ko'ring.",
+		"tryAgain": "Qayta urinish",
+		"backHome": "Bosh sahifaga qaytish"
+	}
+}

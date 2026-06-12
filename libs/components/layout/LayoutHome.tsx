@@ -1,7 +1,10 @@
 import React, { useEffect } from 'react';
+import { useRouter } from 'next/router';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import Head from 'next/head';
+import { useTranslation } from 'next-i18next';
 import GymNavbar from '../common/GymNavbar';
+import hrefLangLinks from '../common/HrefLangLinks';
 import { Stack } from '@mui/material';
 import { userVar } from '../../../apollo/store';
 import { useReactiveVar } from '@apollo/client';
@@ -13,8 +16,12 @@ import 'swiper/css/navigation';
 
 const withLayoutMain = (Component: any) => {
 	return (props: any) => {
+		const router = useRouter();
 		const device = useDeviceDetect();
+		const { t } = useTranslation('common');
 		const user = useReactiveVar(userVar);
+
+		const pageTitle = t('titles.home');
 
 		/** LIFECYCLES **/
 		useEffect(() => {
@@ -26,8 +33,9 @@ const withLayoutMain = (Component: any) => {
 			return (
 				<>
 					<Head>
-						<title>Gymora — Elite Training Platform</title>
-						<meta name={'title'} content={'Gymora — Elite Training Platform'} />
+						<title>{pageTitle}</title>
+						<meta name={'title'} content={pageTitle} />
+						{hrefLangLinks(router)}
 					</Head>
 					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />
@@ -41,8 +49,9 @@ const withLayoutMain = (Component: any) => {
 			return (
 				<>
 					<Head>
-						<title>Gymora — Elite Training Platform</title>
-						<meta name={'title'} content={'Gymora — Elite Training Platform'} />
+						<title>{pageTitle}</title>
+						<meta name={'title'} content={pageTitle} />
+						{hrefLangLinks(router)}
 					</Head>
 					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />

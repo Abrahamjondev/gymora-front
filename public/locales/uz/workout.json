@@ -1,0 +1,60 @@
+{
+	"list": {
+		"eyebrow": "Samaradorlik protokoli",
+		"titleLead": "Mashqlar",
+		"titleAccent": "kutubxonasi",
+		"subtitle": "Elita sportchilar va natijaga intiluvchilar uchun aniq ishlab chiqilgan mashq dasturlari.",
+		"protocolsAvailable": "{{count}} ta protokol mavjud",
+		"loadingProtocols": "Protokollar yuklanmoqda",
+		"searchPlaceholder": "Mashqlarni qidirish...",
+		"sort": {
+			"newest": "Eng yangi",
+			"mostLiked": "Eng ko'p yoqtirilgan",
+			"mostViewed": "Eng ko'p ko'rilgan",
+			"topRanked": "Eng yuqori reyting",
+			"highestBurn": "Eng ko'p kaloriya"
+		},
+		"allLevels": "Barcha darajalar",
+		"activeLabel": "Faol:",
+		"kcal": "{{count}} KKAL",
+		"empty": {
+			"title": "Bu protokolga mos natija topilmadi.",
+			"subtitle": "Boshqa mushak guruhi, daraja yoki qidiruv so'zini sinab ko'ring."
+		}
+	},
+	"detail": {
+		"back": "Kutubxona",
+		"notFound": "Mashq topilmadi.",
+		"kcal": "{{count}} KKAL",
+		"exercises": "ta mashq",
+		"exercisesCount": "{{count}} ta mashq",
+		"summary": {
+			"title": "Mashq xulosasi",
+			"estCal": "Taxm. kkal",
+			"difficulty": "Qiyinlik",
+			"views": "Ko'rishlar",
+			"likes": "Yoqtirishlar"
+		},
+		"likeThisWorkout": "Bu mashqni yoqtirish",
+		"about": "Mashq haqida",
+		"trainingPlan": "Mashq rejasi",
+		"sets": "{{count}} SET",
+		"reps": "{{count}} TAKROR",
+		"video": "Video",
+		"comments": "Izohlar",
+		"commentsTotal": "Jami: {{count}}",
+		"commentPlaceholder": "Tajribangiz bilan bo'lishing...",
+		"postComment": "Izoh qoldirish",
+		"anonymous": "Anonim",
+		"userFallback": "Foydalanuvchi",
+		"noCommentsYet": "Hozircha izohlar yo'q. Birinchi bo'ling!",
+		"athleteReviews": "Sportchilar sharhlari",
+		"reviewsCount": "{{count}} ta sharh",
+		"reviewPlaceholder": "Sharh yozing...",
+		"noReviewsYet": "Hozircha yulduzli sharhlar yo'q."
+	},
+	"alerts": {
+		"reviewTextRequired": "Sharh matnini kiriting",
+		"reviewPosted": "Sharh joylandi!"
+	}
+}

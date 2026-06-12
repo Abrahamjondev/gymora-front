@@ -1,0 +1,78 @@
+{
+	"list": {
+		"eyebrow": "Tasdiqlangan professionallar",
+		"titlePre": "Elita",
+		"titleAccent": "murabbiylar",
+		"subtitle": "Jahon darajasidagi sportchilar va sizni yangi marralarga undaydigan sertifikatlangan professionallar bilan shug'ullaning.",
+		"rosterCount": "Ro'yxatda {{count}} murabbiy",
+		"loadingRoster": "Ro'yxat yuklanmoqda",
+		"searchPlaceholder": "Ism yoki kalit so'z bo'yicha qidiring...",
+		"sort": {
+			"topRanked": "Eng yuqori reyting",
+			"mostLiked": "Eng ko'p yoqtirilgan",
+			"mostViewed": "Eng ko'p ko'rilgan",
+			"newest": "Eng yangi"
+		},
+		"defaultBio": "Professional fitnes murabbiyi",
+		"card": {
+			"workouts": "mashq",
+			"followers": "obunachi"
+		},
+		"empty": {
+			"label": "Natija yo'q",
+			"title": "Bu qidiruvga mos murabbiy topilmadi.",
+			"hint": "Boshqa ism yoki kalit so'zni sinab ko'ring."
+		},
+		"stats": {
+			"totalTrainers": "Jami murabbiylar",
+			"workoutsPublished": "Chop etilgan mashqlar",
+			"followers": "Obunachilar",
+			"likes": "Layklar"
+		}
+	},
+	"detail": {
+		"back": "← Murabbiylar",
+		"notFound": "Murabbiy topilmadi.",
+		"verified": "Tasdiqlangan murabbiy",
+		"pending": "Murabbiy",
+		"rank": "Daraja",
+		"experienceShort": "{{count}} yil",
+		"weeksShort": "{{count}} hafta",
+		"free": "Bepul",
+		"sections": {
+			"freeWorkouts": "Bepul mashqlar",
+			"publishedCount": "{{count}} ta chop etilgan",
+			"programsCountOne": "{{count}} ta dastur",
+			"programsCount": "{{count}} ta dastur",
+			"latestCount": "So'nggi {{count}} ta",
+			"athleteReviews": "Sportchilar sharhlari",
+			"reviewsCountOne": "{{count}} ta sharh",
+			"reviewsCount": "{{count}} ta sharh"
+		},
+		"people": {
+			"noFollowers": "Hozircha obunachilar yo'q.",
+			"noFollowings": "Hozircha hech kimga obuna emas."
+		},
+		"review": {
+			"placeholder": "{{name}} bilan tajribangiz haqida yozing...",
+			"eligibilityNote": "Faqat {{name}} kurslaridan birini sotib olgan sportchilar sharh qoldira oladi.",
+			"alreadyReviewed": "Siz bu murabbiyga allaqachon sharh qoldirgansiz.",
+			"empty": "Hozircha sharhlar yo'q.",
+			"anonymous": "Foydalanuvchi"
+		}
+	},
+	"member": {
+		"notFound": "A'zo topilmadi.",
+		"empty": {
+			"workouts": "Hozircha mashqlar yo'q.",
+			"articles": "Hozircha maqolalar yo'q.",
+			"followers": "Hozircha obunachilar yo'q.",
+			"followings": "Hozircha hech kimga obuna emas."
+		}
+	},
+	"alerts": {
+		"success": "Muvaffaqiyatli",
+		"reviewTextRequired": "Sharh matnini kiriting",
+		"reviewPosted": "Sharh chop etildi!"
+	}
+}

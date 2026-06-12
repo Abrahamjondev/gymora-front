@@ -7,7 +7,9 @@
 		"dev": "next dev",
 		"build": "next build",
 		"start": "next start",
-		"lint": "next lint",
+		"lint": "next lint && yarn i18n:check",
+		"i18n:check": "node scripts/check-locales.js",
+		"i18n:report": "node scripts/check-locales.js --report",
 		"changelog": "standard-version --skip.tag"
 	},
 	"dependencies": {
@@ -101,6 +103,7 @@
 		"babel-plugin-styled-components": "^2.0.6",
 		"eslint": "8.9.0",
 		"eslint-config-next": "12.1.0",
+		"eslint-plugin-i18next": "^6.1.4",
 		"prettier": "2.7.1",
 		"standard-version": "^9.5.0",
 		"typescript": "4.6.2"

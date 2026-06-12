@@ -1,0 +1,36 @@
+{
+	"list": {
+		"eyebrow": "Сообщество",
+		"titleLead": "Знания",
+		"titleAccent": "прямо из зала",
+		"subtitle": "Делитесь достижениями, задавайте вопросы тренерам и общайтесь с атлетами.",
+		"postsPublished": "{{count}} постов опубликовано",
+		"loadingPosts": "Загрузка постов",
+		"writeArticle": "Написать статью →",
+		"allPosts": "Все посты",
+		"sort": {
+			"newest": "Сначала новые",
+			"mostViewed": "По просмотрам",
+			"mostLiked": "По лайкам"
+		},
+		"empty": {
+			"label": "Нет постов",
+			"title": "В этой категории пока пусто.",
+			"subtitle": "Начните обсуждение первым."
+		}
+	},
+	"detail": {
+		"back": "← Сообщество",
+		"notFound": "Статья не найдена.",
+		"commentsTitle": "Комментарии",
+		"commentsTotal": "Всего: {{count}}",
+		"commentPlaceholder": "Присоединяйтесь к обсуждению...",
+		"anonymous": "Аноним",
+		"emptyComments": "Пока нет комментариев. Будьте первым!"
+	},
+	"alerts": {
+		"commentPosted": "Комментарий опубликован!",
+		"deleteCommentConfirm": "Удалить этот комментарий?",
+		"deleted": "Удалено!"
+	}
+}

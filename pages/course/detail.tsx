@@ -7,6 +7,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Course, Lesson } from '../../libs/types/course/course';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS, GET_TRAINER } from '../../apollo/user/query';
 import CreatorCard from '../../libs/components/common/CreatorCard';
@@ -18,7 +19,7 @@ import LikeButton from '../../libs/components/common/LikeButton';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: { ...(await serverSideTranslations(locale, ['common'])) },
+	props: { ...(await serverSideTranslations(locale, ['common', 'program', 'enums'])) },
 });
 
 const categoryColors: Record<string, string> = {
@@ -38,6 +39,7 @@ const difficultyColor: Record<string, string> = {
 const CourseDetail: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
+	const { t } = useTranslation('program');
 	const user = useReactiveVar(userVar);
 	const [courseId, setCourseId] = useState<string | null>(null);
 	const [course, setCourse] = useState<Course | null>(null);
@@ -126,7 +128,7 @@ const CourseDetail: NextPage = () => {
 				await confirmCoursePayment({ variables: { sessionId, courseId: id } });
 				const { data } = await refetch({ input: id });
 				if (data?.getCourse) setCourse(data.getCourse);
-				await sweetMixinSuccessAlert('Payment confirmed — you are enrolled!');
+				await sweetMixinSuccessAlert(t('alerts.paymentConfirmed'));
 			} catch (err: any) {
 				sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 			} finally {
@@ -144,7 +146,7 @@ const CourseDetail: NextPage = () => {
 			await completeLesson({ variables: { input: lessonId } });
 			const { data } = await progressRefetch({ input: courseId });
 			if (data?.getLessonProgress) setLessonProgress(data.getLessonProgress);
-			await sweetMixinSuccessAlert('Lesson completed!');
+			await sweetMixinSuccessAlert(t('alerts.lessonCompleted'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message.replace('Definer: ', '')).then();
 		}
@@ -168,7 +170,7 @@ const CourseDetail: NextPage = () => {
 			await purchaseCourse({ variables: { input: courseId } });
 			const { data } = await refetch({ input: courseId });
 			if (data?.getCourse) setCourse(data.getCourse);
-			await sweetMixinSuccessAlert('Enrolled successfully!');
+			await sweetMixinSuccessAlert(t('alerts.enrolled'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message.replace('Definer: ', '')).then();
 		}
@@ -179,7 +181,7 @@ const CourseDetail: NextPage = () => {
 		try {
 			if (!user?._id) { router.push('/account/join'); return; }
 			if (!isEnrolled) {
-				await sweetMixinErrorAlert('Only members who purchased this program can like it.');
+				await sweetMixinErrorAlert(t('alerts.likeGate'));
 				return;
 			}
 			const wasLiked = !!course?.meLiked?.[0]?.myFavorite;
@@ -199,12 +201,12 @@ const CourseDetail: NextPage = () => {
 	const reviewHandler = async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			if (!reviewText) throw new Error('Review text required');
+			if (!reviewText) throw new Error(t('alerts.reviewTextRequired'));
 			await createReview({ variables: { input: { courseId, reviewRating, reviewText } } });
 			setReviewText('');
 			const { data } = await reviewsRefetch({ input: courseId });
 			if (data?.getCourseReviews) setReviews(data.getCourseReviews);
-			await sweetMixinSuccessAlert('Review posted!');
+			await sweetMixinSuccessAlert(t('alerts.reviewPosted'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 		}
@@ -232,7 +234,7 @@ const CourseDetail: NextPage = () => {
 	if (!course) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
-				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk' }}>Program not found.</p>
+				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk' }}>{t('detail.notFound')}</p>
 			</Stack>
 		);
 	}
@@ -266,15 +268,15 @@ const CourseDetail: NextPage = () => {
 				<div className="lp-hero-grain" />
 				<div className="lp-container wd-hero-inner">
 					<button className="wd-back" onClick={() => router.push('/course')}>
-						← Programs
+						{t('detail.back')}
 					</button>
 					<div>
 						<div className="wd-chips">
 							<span className="lp-chip" style={{ background: `${accent}20`, borderColor: `${accent}35`, color: accent }}>
-								{course.courseCategory}
+								{t(`enums:category.${course.courseCategory}`)}
 							</span>
 							<span className="lp-chip" style={{ color: difficultyColor[course.courseDifficulty] || '#00dce5' }}>
-								{course.courseDifficulty}
+								{t(`enums:difficulty.${course.courseDifficulty}`)}
 							</span>
 							{course.courseRating && course.courseRating > 0 ? (
 								<span className="lp-chip" style={{ color: '#ffb77f', borderColor: 'rgba(255,138,0,0.3)' }}>
@@ -290,17 +292,17 @@ const CourseDetail: NextPage = () => {
 						)}
 						<div className="wd-meta">
 							<span>
-								<b>{course.courseDuration}</b> weeks
+								<b>{course.courseDuration}</b> {t('detail.weeksWord')}
 							</span>
 							<span>
-								<b>{totalLessons}</b> sessions
+								<b>{totalLessons}</b> {t('detail.sessionsWord')}
 							</span>
 							<span>
-								<b>{enrolledCount}</b> enrolled
+								<b>{enrolledCount}</b> {t('common:stats.enrolled')}
 							</span>
 							{(course.courseLikes ?? 0) > 0 && (
 								<span>
-									<b>{course.courseLikes}</b> likes
+									<b>{course.courseLikes}</b> {t('common:stats.likes')}
 								</span>
 							)}
 						</div>
@@ -313,37 +315,37 @@ const CourseDetail: NextPage = () => {
 				{/* Sticky sidebar */}
 				<div className="wd-side">
 					<div className="pd-price-card">
-						<span className="pd-price-label">{isCreator ? 'Your program' : isAdmin && !isEnrolled ? 'Admin access' : 'Lifetime access'}</span>
+						<span className="pd-price-label">{isCreator ? t('detail.yourProgram') : isAdmin && !isEnrolled ? t('detail.adminAccess') : t('detail.lifetimeAccess')}</span>
 						<span className="pd-price">
-							{isCreator || (isAdmin && !isEnrolled) ? 'Free' : course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}
+							{isCreator || (isAdmin && !isEnrolled) ? t('detail.free') : course.coursePrice > 0 ? `$${course.coursePrice}` : t('detail.free')}
 						</span>
 						{isCreator ? (
 							<button className="pd-enroll is-enrolled" onClick={() => router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } })}>
-								Manage Program
+								{t('detail.manageProgram')}
 							</button>
 						) : isAdmin && !isEnrolled ? (
 							<button className="pd-enroll is-enrolled" onClick={undefined}>
-								✓ Full Access
+								{t('detail.fullAccess')}
 							</button>
 						) : (
 							<button className={`pd-enroll${isEnrolled ? ' is-enrolled' : ''}`} onClick={isEnrolled ? undefined : enrollHandler}>
-								{isEnrolled ? '✓ Enrolled' : course.coursePrice > 0 ? 'Enroll Now' : 'Enroll Free'}
+								{isEnrolled ? t('detail.enrolled') : course.coursePrice > 0 ? t('detail.enrollNow') : t('detail.enrollFree')}
 							</button>
 						)}
-						{!hasAccess && course.coursePrice > 0 && <span className="pd-secure">Secure Stripe checkout</span>}
-						{isCreator && <span className="pd-secure">You created this program</span>}
-						{isAdmin && !isCreator && !isEnrolled && <span className="pd-secure">Free for admins</span>}
+						{!hasAccess && course.coursePrice > 0 && <span className="pd-secure">{t('detail.secureCheckout')}</span>}
+						{isCreator && <span className="pd-secure">{t('detail.youCreated')}</span>}
+						{isAdmin && !isCreator && !isEnrolled && <span className="pd-secure">{t('detail.freeForAdmins')}</span>}
 
 						{/* Social proof + like (likes only by purchasers) */}
 						<div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '12px', marginTop: '16px', paddingTop: '16px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
 							<div>
 								<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '17px', fontWeight: 800, color: '#ffffff', display: 'block' }}>{enrolledCount}</span>
-								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>members joined</span>
+								<span style={{ fontFamily: 'JetBrains Mono', fontSize: '9.5px', letterSpacing: '0.08em', color: '#849495', textTransform: 'uppercase' }}>{t('detail.membersJoined')}</span>
 							</div>
 							{isEnrolled ? (
 								<LikeButton liked={!!course.meLiked?.[0]?.myFavorite} count={course.courseLikes ?? 0} onClick={likeCourseHandler} />
 							) : (
-								<span title="Only members who purchased this program can like it" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'rgba(200,214,214,0.55)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
+								<span title={t('detail.likeGate')} style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '6px 12px', borderRadius: '20px', fontFamily: 'JetBrains Mono', fontSize: '12px', color: 'rgba(200,214,214,0.55)', background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)' }}>
 									♥ {course.courseLikes ?? 0}
 								</span>
 							)}
@@ -354,7 +356,7 @@ const CourseDetail: NextPage = () => {
 					{isEnrolled && totalLessons > 0 && (
 						<div className="pd-progress-card">
 							<div className="pd-progress-head">
-								<span>Your progress</span>
+								<span>{t('detail.yourProgress')}</span>
 								<span>
 									{completedCount}/{totalLessons}
 								</span>
@@ -366,24 +368,24 @@ const CourseDetail: NextPage = () => {
 					)}
 
 					<div className="wd-stats">
-						<h4>Program Summary</h4>
+						<h4>{t('detail.programSummary')}</h4>
 						<div className="wd-stats-grid">
 							<div>
-								<span className="wd-stat-label">Duration</span>
-								<span className="wd-stat-value">{course.courseDuration}w</span>
+								<span className="wd-stat-label">{t('detail.duration')}</span>
+								<span className="wd-stat-value">{t('detail.weeksShortValue', { count: course.courseDuration })}</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Sessions</span>
+								<span className="wd-stat-label">{t('detail.sessions')}</span>
 								<span className="wd-stat-value">{totalLessons}</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Category</span>
+								<span className="wd-stat-label">{t('detail.category')}</span>
 								<span className="wd-stat-value" style={{ fontSize: '14px', color: accent }}>
-									{course.courseCategory}
+									{t(`enums:category.${course.courseCategory}`)}
 								</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Level</span>
+								<span className="wd-stat-label">{t('detail.level')}</span>
 								<span className="wd-stat-value" style={{ fontSize: '14px' }}>
 									<span
 										style={{
@@ -394,7 +396,7 @@ const CourseDetail: NextPage = () => {
 											background: difficultyColor[course.courseDifficulty] || '#00dce5',
 										}}
 									/>
-									{course.courseDifficulty}
+									{t(`enums:difficulty.${course.courseDifficulty}`)}
 								</span>
 							</div>
 						</div>
@@ -403,7 +405,7 @@ const CourseDetail: NextPage = () => {
 					{/* Trainer profile */}
 					<CreatorCard
 						memberId={courseTrainer?.memberId}
-						title="Your Trainer"
+						title={t('common:creator.yourTrainer')}
 						trainerRating={courseTrainer?.trainerRating}
 						trainerRatingCount={courseTrainer?.trainerRatingCount}
 						trainerExperience={courseTrainer?.trainerExperience}
@@ -415,9 +417,9 @@ const CourseDetail: NextPage = () => {
 					{/* Curriculum */}
 					<div className="wd-section">
 						<div className="wd-section-head">
-							<h3>Curriculum</h3>
+							<h3>{t('detail.curriculum')}</h3>
 							<span className="wd-section-count">
-								{course.courseDuration} weeks · {totalLessons} sessions
+								{t('common:stats.weeks', { count: course.courseDuration })} · {t('common:stats.sessions', { count: totalLessons })}
 							</span>
 						</div>
 
@@ -426,7 +428,7 @@ const CourseDetail: NextPage = () => {
 								<div key={wn}>
 									<div className="pd-week">
 										<span className="pd-week-num">W{String(wn).padStart(2, '0')}</span>
-										<h3>Week {wn}</h3>
+										<h3>{t('detail.week', { number: wn })}</h3>
 										<span className="pd-week-line" />
 									</div>
 									{lessonsByWeek[wn].map((l) => {
@@ -442,7 +444,7 @@ const CourseDetail: NextPage = () => {
 														{l.description && <p>{l.description}</p>}
 													</div>
 													<div className="pd-lesson-right">
-														{l.duration ? <span className="pd-lesson-dur">{Math.round(l.duration)} min</span> : null}
+														{l.duration ? <span className="pd-lesson-dur">{t('detail.minutes', { count: Math.round(l.duration) })}</span> : null}
 														{hasAccess && l.videoUrl && (
 															<button
 																className="pd-lesson-btn"
@@ -451,12 +453,12 @@ const CourseDetail: NextPage = () => {
 																	toggleWatch(l._id);
 																}}
 															>
-																{watching ? 'Close' : 'Watch'}
+																{watching ? t('common:actions.close') : t('detail.watch')}
 															</button>
 														)}
 														{isEnrolled &&
 															(done ? (
-																<span className="pd-lesson-done">Completed</span>
+																<span className="pd-lesson-done">{t('detail.completed')}</span>
 															) : (
 																<button
 																	className="pd-lesson-btn"
@@ -465,7 +467,7 @@ const CourseDetail: NextPage = () => {
 																		completeLessonHandler(l._id);
 																	}}
 																>
-																	Mark done
+																	{t('detail.markDone')}
 																</button>
 															))}
 													</div>
@@ -481,16 +483,16 @@ const CourseDetail: NextPage = () => {
 								</div>
 							))
 						) : (
-							<p className="wd-empty-line">Curriculum coming soon.</p>
+							<p className="wd-empty-line">{t('detail.curriculumSoon')}</p>
 						)}
 					</div>
 
 					{/* Reviews */}
 					<div className="wd-section">
 						<div className="wd-section-head">
-							<h3>Athlete Reviews</h3>
+							<h3>{t('detail.athleteReviews')}</h3>
 							<span className="wd-section-count">
-								{reviews.length} review{reviews.length === 1 ? '' : 's'}
+								{reviews.length === 1 ? t('detail.oneReview') : t('detail.reviewCount', { count: reviews.length })}
 							</span>
 						</div>
 
@@ -498,7 +500,7 @@ const CourseDetail: NextPage = () => {
 						{user?._id && (
 							<>
 								{alreadyReviewed ? (
-									<div className="td-review-note is-done">You have already reviewed this program.</div>
+									<div className="td-review-note is-done">{t('detail.alreadyReviewed')}</div>
 								) : isEnrolled ? (
 									<div className="wd-form-card">
 										<div className="wd-stars">
@@ -514,21 +516,21 @@ const CourseDetail: NextPage = () => {
 												style={{ flex: 1 }}
 												value={reviewText}
 												onChange={(e) => setReviewText(e.target.value)}
-												placeholder="Share your results..."
+												placeholder={t('detail.reviewPlaceholder')}
 											/>
 											<button className="wd-btn" onClick={reviewHandler}>
-												Post
+												{t('common:actions.post')}
 											</button>
 										</div>
 									</div>
 								) : (
-									<div className="td-review-note">Only enrolled athletes can review this program.</div>
+									<div className="td-review-note">{t('detail.reviewGate')}</div>
 								)}
 							</>
 						)}
 
 						{reviews.length === 0 ? (
-							<p className="wd-empty-line">No reviews yet.</p>
+							<p className="wd-empty-line">{t('detail.noReviews')}</p>
 						) : (
 							reviews.map((r: any) => (
 								<div key={r._id} className="wd-comment">
@@ -538,7 +540,7 @@ const CourseDetail: NextPage = () => {
 									/>
 									<div className="wd-comment-body">
 										<div className="wd-comment-head">
-											<span className="wd-comment-nick">{r.memberData?.memberNick ?? 'User'}</span>
+											<span className="wd-comment-nick">{r.memberData?.memberNick ?? t('detail.userFallback')}</span>
 											<span className="wd-comment-stars">
 												{'★'.repeat(r.reviewRating)}
 												{'☆'.repeat(5 - r.reviewRating)}

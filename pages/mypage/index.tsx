@@ -14,6 +14,7 @@ import SubscriptionContent from '../../libs/components/mypage/SubscriptionConten
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { getJwtToken, updateUserInfo, logOut } from '../../libs/auth';
 import { REACT_APP_API_URL, Messages } from '../../libs/config';
 import {
@@ -32,7 +33,7 @@ import { T } from '../../libs/types/common';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: { ...(await serverSideTranslations(locale, ['common'])) },
+	props: { ...(await serverSideTranslations(locale, ['common', 'mypage', 'enums'])) },
 });
 
 type MenuItem = {
@@ -53,45 +54,57 @@ const menuSections: { title: string | null; items: MenuItem[] }[] = [
 	{
 		title: null,
 		items: [
-			{ key: 'dashboard', label: 'Dashboard', icon: '◫' },
-			{ key: 'myProfile', label: 'My Profile', icon: '○' },
+			{ key: 'dashboard', label: 'menu.dashboard', icon: '◫' },
+			{ key: 'myProfile', label: 'menu.myProfile', icon: '○' },
 		],
 	},
 	{
-		title: 'Studio',
+		title: 'menu.sections.studio',
 		items: [
-			{ key: 'myWorkouts', label: 'My Workouts', icon: '◈', trainerOnly: true, createKey: 'createWorkout', createTitle: 'Create workout' },
-			{ key: 'trainerCourses', label: 'My Programs', icon: '◧', trainerOnly: true, createKey: 'createCourse', createTitle: 'Create program' },
-			{ key: 'myArticles', label: 'My Articles', icon: '▤', trainerOnly: true, createKey: 'writeArticle', createTitle: 'Write article' },
+			{ key: 'myWorkouts', label: 'menu.myWorkouts', icon: '◈', trainerOnly: true, createKey: 'createWorkout', createTitle: 'menu.createWorkout' },
+			{ key: 'trainerCourses', label: 'menu.myPrograms', icon: '◧', trainerOnly: true, createKey: 'createCourse', createTitle: 'menu.createProgram' },
+			{ key: 'myArticles', label: 'menu.myArticles', icon: '▤', trainerOnly: true, createKey: 'writeArticle', createTitle: 'menu.writeArticle' },
 		],
 	},
 	{
-		title: 'Training',
-		items: [{ key: 'myCourses', label: 'My Programs', icon: '▦', userOnly: true }],
+		title: 'menu.sections.training',
+		items: [{ key: 'myCourses', label: 'menu.myPrograms', icon: '▦', userOnly: true }],
 	},
 	{
-		title: 'Activity',
+		title: 'menu.sections.activity',
 		items: [
-			{ key: 'notifications', label: 'Notifications', icon: '◉' },
-			{ key: 'chat', label: 'Messages', icon: '◬' },
+			{ key: 'notifications', label: 'menu.notifications', icon: '◉' },
+			{ key: 'chat', label: 'menu.messages', icon: '◬' },
 		],
 	},
 	{
-		title: 'Health',
+		title: 'menu.sections.health',
 		items: [
-			{ key: 'nutrition', label: 'Nutrition Plan', icon: '◑', userOnly: true },
-			{ key: 'mealTracker', label: 'Meal Tracker', icon: '▥', userOnly: true },
-			{ key: 'progress', label: 'Progress', icon: '△', userOnly: true },
+			{ key: 'nutrition', label: 'menu.nutritionPlan', icon: '◑', userOnly: true },
+			{ key: 'mealTracker', label: 'menu.mealTracker', icon: '▥', userOnly: true },
+			{ key: 'progress', label: 'menu.progress', icon: '△', userOnly: true },
 		],
 	},
 	{
 		title: null,
 		items: [
-			{ key: 'subscription', label: 'Subscription', icon: '◇', userOnly: true },
-			{ key: 'becomeTrainer', label: 'Become Trainer', icon: '→', userOnly: true },
+			{ key: 'subscription', label: 'menu.subscription', icon: '◇', userOnly: true },
+			{ key: 'becomeTrainer', label: 'menu.becomeTrainer', icon: '→', userOnly: true },
 		],
 	},
 ];
+
+/** Raw preset values — displayed via enums:muscle.* / enums:category.* */
+const musclePresets = ['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'];
+const courseCategoryOptions = [
+	{ v: 'STRENGTH', c: '#ff8a00' },
+	{ v: 'CARDIO', c: '#00dce5' },
+	{ v: 'YOGA', c: '#ddb7ff' },
+	{ v: 'MOBILITY', c: '#66daba' },
+	{ v: 'NUTRITION', c: '#ffb77f' },
+];
+const statColors = { cyan: '#00dce5', orange: '#ff8a00', mint: '#66daba', violet: '#ddb7ff' };
+const subAccents = { active: '#66daba', free: '#ffb77f' };
 
 const notifTypeMeta: Record<string, { icon: string; color: string }> = {
 	SYSTEM: { icon: '◉', color: '#9aabab' },
@@ -101,15 +114,15 @@ const notifTypeMeta: Record<string, { icon: string; color: string }> = {
 	CHAT: { icon: '◬', color: '#66daba' },
 };
 
-const notifTimeAgo = (iso: string) => {
+const notifTimeAgo = (iso: string, t: (key: string, opts?: Record<string, unknown>) => string) => {
 	const diff = Date.now() - new Date(iso).getTime();
 	const m = Math.floor(diff / 60000);
-	if (m < 1) return 'now';
-	if (m < 60) return `${m}m ago`;
+	if (m < 1) return t('notifications.time.now');
+	if (m < 60) return t('notifications.time.minutesAgo', { n: m });
 	const h = Math.floor(m / 60);
-	if (h < 24) return `${h}h ago`;
+	if (h < 24) return t('notifications.time.hoursAgo', { n: h });
 	const d = Math.floor(h / 24);
-	if (d < 7) return `${d}d ago`;
+	if (d < 7) return t('notifications.time.daysAgo', { n: d });
 	return new Date(iso).toLocaleDateString();
 };
 
@@ -123,6 +136,7 @@ const isItemVisible = (item: MenuItem, memberType?: string) => {
 
 const MyPage: NextPage = () => {
 	const device = useDeviceDetect();
+	const { t } = useTranslation('mypage');
 	const user = useReactiveVar(userVar);
 	const router = useRouter();
 	const requestedCategory: string = (router.query?.category as string) ?? 'dashboard';
@@ -166,7 +180,7 @@ const MyPage: NextPage = () => {
 			const url = isVideo ? await uploadVideoFile(file) : await uploadImageFile(file, kind.toLowerCase().includes('course') ? 'course' : 'workout');
 			apply(url);
 		} catch (err: any) {
-			sweetMixinErrorAlert(err.message || 'Upload failed').then();
+			sweetMixinErrorAlert(err.message || t('alerts.uploadFailed')).then();
 		} finally {
 			setUploadBusy(null);
 		}
@@ -215,7 +229,7 @@ const MyPage: NextPage = () => {
 	/** Owner edit handlers — backend updateWorkout/updateCourse verify ownership */
 	const saveWorkoutEdit = async () => {
 		try {
-			if (!editWorkout?.workoutTitle || !editWorkout?.targetMuscle) throw new Error('Title and target muscle required');
+			if (!editWorkout?.workoutTitle || !editWorkout?.targetMuscle) throw new Error(t('alerts.titleMuscleRequired'));
 			await updateWorkoutMut({
 				variables: {
 					input: {
@@ -234,7 +248,7 @@ const MyPage: NextPage = () => {
 			const { data } = await myWorkoutsRefetch();
 			if (data?.getMemberWorkouts) setMyWorkouts(data.getMemberWorkouts);
 			setEditWorkout(null);
-			await sweetMixinSuccessAlert('Workout updated!');
+			await sweetMixinSuccessAlert(t('alerts.workoutUpdated'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 		}
@@ -242,7 +256,7 @@ const MyPage: NextPage = () => {
 
 	const saveCourseEdit = async () => {
 		try {
-			if (!editCourse?.courseTitle) throw new Error('Title required');
+			if (!editCourse?.courseTitle) throw new Error(t('alerts.titleRequired'));
 			await updateCourseMut({
 				variables: {
 					input: {
@@ -260,7 +274,7 @@ const MyPage: NextPage = () => {
 			const { data } = await trainerCoursesRefetch();
 			if (data?.getTrainerCourses) setTrainerCourses(data.getTrainerCourses);
 			setEditCourse(null);
-			await sweetMixinSuccessAlert('Program updated!');
+			await sweetMixinSuccessAlert(t('alerts.programUpdated'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
 		}
@@ -295,7 +309,7 @@ const MyPage: NextPage = () => {
 
 	const createWorkoutHandler = async () => {
 		try {
-			if (!newWorkout.workoutTitle || !newWorkout.targetMuscle) throw new Error('Title and target muscle required');
+			if (!newWorkout.workoutTitle || !newWorkout.targetMuscle) throw new Error(t('alerts.titleMuscleRequired'));
 			await createWorkout({
 				variables: {
 					input: {
@@ -313,14 +327,14 @@ const MyPage: NextPage = () => {
 			setNewWorkout({ workoutTitle: '', workoutDesc: '', workoutDifficulty: 'BEGINNER', targetMuscle: '', estimatedCaloriesBurned: 300, workoutThumbnail: '', videoUrl: '', exercises: [] });
 			const { data: wd } = await myWorkoutsRefetch();
 			if (wd?.getMemberWorkouts) setMyWorkouts(wd.getMemberWorkouts);
-			await sweetMixinSuccessAlert('Workout created!');
+			await sweetMixinSuccessAlert(t('alerts.workoutCreated'));
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
 	const createCourseHandler = async () => {
 		try {
-			if (!newCourse.courseTitle) throw new Error('Course title required');
+			if (!newCourse.courseTitle) throw new Error(t('alerts.programTitleRequired'));
 			const { data: created } = await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration), courseThumbnail: newCourse.courseThumbnail || undefined } } });
 			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4, courseThumbnail: '' });
 			const { data: rd } = await trainerCoursesRefetch();
@@ -328,16 +342,16 @@ const MyPage: NextPage = () => {
 			// jump straight into the Lesson Manager so videos can be added now
 			const newId = created?.createCourse?._id;
 			if (newId) setLessonCourse({ id: newId, title: created.createCourse.courseTitle });
-			await sweetMixinSuccessAlert('Program created! Now add your lessons and videos below.');
+			await sweetMixinSuccessAlert(t('alerts.programCreated'));
 			router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } }, undefined, { shallow: true });
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
 	const becomeTrainerHandler = async () => {
 		try {
-			if (!trainerForm.trainerBio) throw new Error('Bio is required');
+			if (!trainerForm.trainerBio) throw new Error(t('alerts.bioRequired'));
 			await createTrainer({ variables: { input: { trainerBio: trainerForm.trainerBio, trainerSpecializations: trainerForm.trainerSpecializations.split(',').map((s: string) => s.trim()).filter(Boolean), trainerExperience: Number(trainerForm.trainerExperience) } } });
-			await sweetMixinSuccessAlert('Trainer profile created! Please log in again to activate your Studio.');
+			await sweetMixinSuccessAlert(t('alerts.trainerCreated'));
 			logOut();
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
@@ -351,7 +365,7 @@ const MyPage: NextPage = () => {
 					{obj[thumbField] ? (
 						<img src={`${REACT_APP_API_URL}/${obj[thumbField]}`} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
 					) : (
-						<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono', fontSize: '8.5px', color: 'rgba(185,202,202,0.4)', letterSpacing: '0.08em' }}>NO IMAGE</div>
+						<div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'JetBrains Mono', fontSize: '8.5px', color: 'rgba(185,202,202,0.4)', letterSpacing: '0.08em' }}>{t('workouts.media.noImage')}</div>
 					)}
 				</div>
 				<button
@@ -359,7 +373,7 @@ const MyPage: NextPage = () => {
 					disabled={uploadBusy === kind + 'Img'}
 					onClick={() => pickFile('image/*', (f) => uploadTo(kind + 'Img', f, false, (url) => setObj({ ...obj, [thumbField]: url })))}
 				>
-					{uploadBusy === kind + 'Img' ? 'Uploading...' : obj[thumbField] ? 'Change Thumbnail' : 'Upload Thumbnail'}
+					{uploadBusy === kind + 'Img' ? t('workouts.media.uploading') : obj[thumbField] ? t('workouts.media.changeThumbnail') : t('workouts.media.uploadThumbnail')}
 				</button>
 				{withVideo && (
 					<button
@@ -367,11 +381,11 @@ const MyPage: NextPage = () => {
 						disabled={uploadBusy === kind + 'Vid'}
 						onClick={() => pickFile('video/mp4,video/webm,video/ogg', (f) => uploadTo(kind + 'Vid', f, true, (url) => setObj({ ...obj, videoUrl: url })))}
 					>
-						{uploadBusy === kind + 'Vid' ? 'Uploading video...' : obj.videoUrl ? 'Replace Video' : 'Upload Video'}
+						{uploadBusy === kind + 'Vid' ? t('workouts.media.uploadingVideo') : obj.videoUrl ? t('workouts.media.replaceVideo') : t('workouts.media.uploadVideo')}
 					</button>
 				)}
 				{withVideo && obj.videoUrl && (
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba' }}>Video attached ✓</span>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba' }}>{t('workouts.media.videoAttached')}</span>
 				)}
 				{withVideo && (
 					<input
@@ -379,7 +393,7 @@ const MyPage: NextPage = () => {
 						style={{ flex: '1 1 100%', minWidth: '240px' }}
 						value={obj.videoUrl ?? ''}
 						onChange={(e) => setObj({ ...obj, videoUrl: e.target.value })}
-						placeholder="...or paste a video URL (YouTube, Vimeo, mp4)"
+						placeholder={t('workouts.media.videoUrlPlaceholder')}
 					/>
 				)}
 			</div>
@@ -394,13 +408,13 @@ const MyPage: NextPage = () => {
 		};
 		return (
 			<div>
-				<span style={labelStyle}>Training Plan (exercises)</span>
+				<span style={labelStyle}>{t('workouts.form.trainingPlan')}</span>
 				<div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
 					{list.map((ex: any, i: number) => (
 						<div key={i} style={{ display: 'grid', gridTemplateColumns: '1fr 86px 86px 36px', gap: '8px', alignItems: 'center' }}>
-							<input className="wd-input" placeholder={`Exercise ${i + 1} name`} value={ex.exerciseName} onChange={(e) => update(i, 'exerciseName', e.target.value)} />
-							<input className="wd-input" type="number" min={1} placeholder="Sets" value={ex.sets} onChange={(e) => update(i, 'sets', e.target.value)} />
-							<input className="wd-input" type="number" min={1} placeholder="Reps" value={ex.reps} onChange={(e) => update(i, 'reps', e.target.value)} />
+							<input className="wd-input" placeholder={t('workouts.form.exercisePlaceholder', { n: i + 1 })} value={ex.exerciseName} onChange={(e) => update(i, 'exerciseName', e.target.value)} />
+							<input className="wd-input" type="number" min={1} placeholder={t('workouts.form.sets')} value={ex.sets} onChange={(e) => update(i, 'sets', e.target.value)} />
+							<input className="wd-input" type="number" min={1} placeholder={t('workouts.form.reps')} value={ex.reps} onChange={(e) => update(i, 'reps', e.target.value)} />
 							<button className="nm-del" style={{ opacity: 1 }} onClick={() => setObj({ ...obj, exercises: list.filter((_: any, idx: number) => idx !== i) })}>
 								✕
 							</button>
@@ -408,7 +422,7 @@ const MyPage: NextPage = () => {
 					))}
 				</div>
 				<button className="nt-markall" style={{ marginTop: '9px' }} onClick={() => setObj({ ...obj, exercises: [...list, { exerciseName: '', sets: 3, reps: 10 }] })}>
-					+ Add Exercise
+					{t('workouts.form.addExercise')}
 				</button>
 			</div>
 		);
@@ -419,6 +433,40 @@ const MyPage: NextPage = () => {
 	const labelStyle: React.CSSProperties = { fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#849495', textTransform: 'uppercase', display: 'block', marginBottom: '4px', letterSpacing: '0.04em' };
 	const unreadCount = notifications.filter((n: any) => !n.isRead).length;
 	const unreadChatCount = conversations.filter((c: any) => !c.isRead && c.lastMessage).length;
+
+	/** Dashboard data — hoisted out of JSX (stats are role-aware) */
+	const statCards =
+		user?.memberType === 'TRAINER'
+			? [
+					{ label: t('dashboard.stats.workoutsPublished'), value: user?.memberWorkouts ?? 0, color: statColors.cyan },
+					{ label: t('common:stats.programs'), value: trainerCourses.length, color: statColors.orange },
+					{ label: t('dashboard.stats.likes'), value: user?.memberLikes ?? 0, color: statColors.mint },
+					{ label: t('common:stats.articles'), value: user?.memberArticles ?? 0, color: statColors.violet },
+			  ]
+			: [
+					{ label: t('dashboard.stats.totalCalories'), value: dashboardStats?.totalCalories ? Math.round(dashboardStats.totalCalories) : 0, color: statColors.orange },
+					{ label: t('common:stats.workouts'), value: dashboardStats?.workoutCount ?? user?.memberWorkouts ?? 0, color: statColors.cyan },
+					{ label: t('dashboard.stats.progress'), value: dashboardStats?.progressEntries ?? 0, color: statColors.mint },
+					{ label: t('common:stats.programs'), value: user?.memberCourses ?? 0, color: statColors.violet },
+			  ];
+	const quickActions =
+		user?.memberType === 'TRAINER'
+			? [
+					{ label: t('dashboard.quickActions.createWorkout'), desc: t('dashboard.quickActions.createWorkoutDesc'), action: () => menuHandler('createWorkout') },
+					{ label: t('dashboard.quickActions.createProgram'), desc: t('dashboard.quickActions.createProgramDesc'), action: () => menuHandler('createCourse') },
+					{ label: t('dashboard.quickActions.writeArticle'), desc: t('dashboard.quickActions.writeArticleDesc'), action: () => menuHandler('writeArticle') },
+			  ]
+			: [
+					{ label: t('dashboard.quickActions.nutrition'), desc: t('dashboard.quickActions.nutritionDesc'), action: () => menuHandler('nutrition') },
+					{ label: t('dashboard.quickActions.progress'), desc: t('dashboard.quickActions.progressDesc'), action: () => menuHandler('progress') },
+					{ label: t('dashboard.quickActions.community'), desc: t('dashboard.quickActions.communityDesc'), action: () => router.push('/community') },
+			  ];
+
+	/** Media editors — hoisted so JSX stays free of raw upload-kind keys */
+	const editWorkoutMedia = editWorkout && mediaControls('editWorkout', editWorkout, setEditWorkout, true);
+	const newWorkoutMedia = mediaControls('newWorkout', newWorkout, setNewWorkout, true);
+	const editCourseMedia = editCourse && mediaControls('editCourse', editCourse, setEditCourse, false);
+	const newCourseMedia = mediaControls('newCourse', newCourse, setNewCourse, false);
 
 	return (
 		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
@@ -432,9 +480,9 @@ const MyPage: NextPage = () => {
 							<div className="mp-ava">
 								<img src={user?.memberImage ? `${REACT_APP_API_URL}/${user.memberImage}` : '/img/profile/defaultUser.svg'} alt="" />
 							</div>
-							<h3 className="mp-name">{user?.memberFullName || user?.memberNick || 'User'}</h3>
+							<h3 className="mp-name">{user?.memberFullName || user?.memberNick || t('enums:memberType.USER')}</h3>
 							<span className={`mp-chip${trainerProfile?.trainerVerificationStatus === 'VERIFIED' ? ' is-verified' : ''}`}>
-								{trainerProfile?.trainerVerificationStatus === 'VERIFIED' ? 'Verified Trainer' : user?.memberType || 'USER'}
+								{trainerProfile?.trainerVerificationStatus === 'VERIFIED' ? t('profile.identity.verifiedTrainer') : t(`enums:memberType.${user?.memberType || 'USER'}`)}
 							</span>
 
 							{user?.memberType === 'TRAINER' && trainerProfile && (
@@ -442,9 +490,9 @@ const MyPage: NextPage = () => {
 									<span className="mp-rating">
 										{trainerProfile.trainerRating > 0
 											? `★ ${trainerProfile.trainerRating.toFixed(1)}${trainerProfile.trainerRatingCount ? ` (${trainerProfile.trainerRatingCount})` : ''}`
-											: 'New trainer'}
+											: t('profile.identity.newTrainer')}
 									</span>
-									<span>{trainerProfile.trainerExperience ?? 0}y exp</span>
+									<span>{t('common:creator.experienceYears', { count: trainerProfile.trainerExperience ?? 0 })}</span>
 								</div>
 							)}
 
@@ -452,14 +500,14 @@ const MyPage: NextPage = () => {
 							<div className="mp-mini">
 								{(user?.memberType === 'TRAINER'
 									? [
-											{ v: user?.memberWorkouts ?? 0, l: 'Workouts' },
-											{ v: trainerCourses.length, l: 'Programs' },
-											{ v: user?.memberArticles ?? 0, l: 'Articles' },
+											{ v: user?.memberWorkouts ?? 0, l: t('common:stats.workouts') },
+											{ v: trainerCourses.length, l: t('common:stats.programs') },
+											{ v: user?.memberArticles ?? 0, l: t('common:stats.articles') },
 									  ]
 									: [
-											{ v: user?.memberWorkouts ?? 0, l: 'Workouts' },
-											{ v: user?.memberCourses ?? 0, l: 'Programs' },
-											{ v: user?.memberPoints ?? 0, l: 'Points' },
+											{ v: user?.memberWorkouts ?? 0, l: t('common:stats.workouts') },
+											{ v: user?.memberCourses ?? 0, l: t('common:stats.programs') },
+											{ v: user?.memberPoints ?? 0, l: t('profile.identity.points') },
 									  ]
 								).map((s) => (
 									<div key={s.l}>
@@ -490,7 +538,7 @@ const MyPage: NextPage = () => {
 										</div>
 									)}
 									<button className="mp-public" onClick={() => router.push({ pathname: '/trainer/detail', query: { id: user._id } })}>
-										View Public Profile →
+										{t('profile.identity.viewPublicProfile')}
 									</button>
 								</>
 							)}
@@ -506,7 +554,7 @@ const MyPage: NextPage = () => {
 
 								return (
 									<div key={sIdx}>
-										{section.title && <div className="mp-nav-label">{section.title}</div>}
+										{section.title && <div className="mp-nav-label">{t(section.title)}</div>}
 										{!section.title && sIdx > 0 && <div className="mp-sep" />}
 										{visibleItems.map((item) => {
 											const isActive = cat === item.key || cat === item.createKey;
@@ -518,13 +566,13 @@ const MyPage: NextPage = () => {
 													onClick={() => menuHandler(item.key)}
 												>
 													<span className="mp-item-ic">{item.icon}</span>
-													<span className="mp-item-label">{item.label}</span>
+													<span className="mp-item-label">{t(item.label)}</span>
 													{item.key === 'notifications' && unreadCount > 0 && <span className="mp-unread">{unreadCount}</span>}
 													{item.key === 'chat' && unreadChatCount > 0 && <span className="mp-unread">{unreadChatCount}</span>}
 													{item.createKey && (
 														<span
 															className={`mp-add${cat === item.createKey ? ' is-active' : ''}`}
-															title={item.createTitle}
+															title={item.createTitle && t(item.createTitle)}
 															onClick={(e) => {
 																e.stopPropagation();
 																menuHandler(item.createKey as string);
@@ -548,24 +596,11 @@ const MyPage: NextPage = () => {
 					{/* Dashboard */}
 					{cat === 'dashboard' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#ffffff', marginBottom: '24px' }}>Welcome back, {user?.memberNick}</h2>
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: '#ffffff', marginBottom: '24px' }}>{t('dashboard.welcome', { name: user?.memberNick })}</h2>
 
 							{/* Stats — trainers see studio metrics, users see training metrics */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '12px', marginBottom: '24px' }}>
-								{(user?.memberType === 'TRAINER'
-									? [
-											{ label: 'Workouts Published', value: user?.memberWorkouts ?? 0, color: '#00dce5' },
-											{ label: 'Programs', value: trainerCourses.length, color: '#ff8a00' },
-											{ label: 'Likes', value: user?.memberLikes ?? 0, color: '#66daba' },
-											{ label: 'Articles', value: user?.memberArticles ?? 0, color: '#ddb7ff' },
-									  ]
-									: [
-											{ label: 'Total Calories', value: dashboardStats?.totalCalories ? Math.round(dashboardStats.totalCalories) : 0, color: '#ff8a00' },
-											{ label: 'Workouts', value: dashboardStats?.workoutCount ?? user?.memberWorkouts ?? 0, color: '#00dce5' },
-											{ label: 'Progress', value: dashboardStats?.progressEntries ?? 0, color: '#66daba' },
-											{ label: 'Programs', value: user?.memberCourses ?? 0, color: '#ddb7ff' },
-									  ]
-								).map((s) => (
+								{statCards.map((s) => (
 									<div key={s.label} style={{ background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '20px' }}>
 										<span style={labelStyle}>{s.label}</span>
 										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 800, color: s.color, display: 'block', marginTop: '4px' }}>{s.value}</span>
@@ -576,7 +611,7 @@ const MyPage: NextPage = () => {
 							{/* Recommendations — consumer feature */}
 							{user?.memberType !== 'TRAINER' && recommendations.length > 0 && (
 								<div style={{ background: 'rgba(0,220,229,0.03)', border: '1px solid rgba(0,220,229,0.1)', borderRadius: '14px', padding: '24px', marginBottom: '20px' }}>
-									<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>Recommendations for You</h3>
+									<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '18px', fontWeight: 700, color: '#e5e2e3', marginBottom: '16px' }}>{t('dashboard.recommendations.title')}</h3>
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
 										{recommendations.map((rec: any, i: number) => (
 											<div key={i} style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', padding: '14px', background: 'rgba(255,255,255,0.02)', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.04)' }}>
@@ -584,7 +619,7 @@ const MyPage: NextPage = () => {
 												<div>
 													<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3', lineHeight: '1.4', marginBottom: '4px' }}>{rec.reason}</p>
 													{rec.items?.length > 0 && (
-														<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)' }}>{rec.items.length} suggestion{rec.items.length > 1 ? 's' : ''}</span>
+														<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)' }}>{rec.items.length > 1 ? t('dashboard.recommendations.suggestionsCount', { count: rec.items.length }) : t('dashboard.recommendations.suggestionsCountOne', { count: rec.items.length })}</span>
 													)}
 												</div>
 											</div>
@@ -598,8 +633,8 @@ const MyPage: NextPage = () => {
 								const raw: string = dashboardStats.subscriptionSummary;
 								const active = raw !== 'NO_SUBSCRIPTION';
 								const [plan, status] = active ? raw.split(':') : ['', ''];
-								const planLabel = plan === 'YEARLY' ? 'Yearly plan' : plan === 'MONTHLY' ? 'Monthly plan' : 'Premium plan';
-								const accent = active ? '#66daba' : '#ffb77f';
+								const planLabel = plan === 'YEARLY' ? t('dashboard.subscription.yearlyPlan') : plan === 'MONTHLY' ? t('dashboard.subscription.monthlyPlan') : t('dashboard.subscription.premiumPlan');
+								const accent = active ? subAccents.active : subAccents.free;
 								return (
 									<div
 										style={{
@@ -612,10 +647,10 @@ const MyPage: NextPage = () => {
 											<span style={{ width: '9px', height: '9px', borderRadius: '50%', background: accent, boxShadow: `0 0 10px ${accent}`, flex: 'none' }} />
 											<div>
 												<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 700, color: '#ffffff', display: 'block' }}>
-													{active ? `${planLabel} · ${status === 'ACTIVE' ? 'Active' : status}` : "You're on the Free plan"}
+													{active ? `${planLabel} · ${status === 'ACTIVE' ? t('dashboard.subscription.active') : status}` : t('dashboard.subscription.freePlan')}
 												</span>
 												<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '12.5px', color: 'rgba(213,226,226,0.6)' }}>
-													{active ? 'Thanks for supporting Gymora.' : 'Upgrade to support free training and back verified trainers.'}
+													{active ? t('dashboard.subscription.thanks') : t('dashboard.subscription.upgradeHint')}
 												</span>
 											</div>
 										</div>
@@ -630,7 +665,7 @@ const MyPage: NextPage = () => {
 											}}
 											onClick={() => menuHandler('subscription')}
 										>
-											{active ? 'Manage' : 'Upgrade →'}
+											{active ? t('dashboard.subscription.manage') : t('dashboard.subscription.upgrade')}
 										</button>
 									</div>
 								);
@@ -638,18 +673,7 @@ const MyPage: NextPage = () => {
 
 							{/* Quick actions — role-aware */}
 							<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px' }}>
-								{(user?.memberType === 'TRAINER'
-									? [
-											{ label: 'Create Workout', desc: 'Publish a free workout', action: () => menuHandler('createWorkout') },
-											{ label: 'Create Program', desc: 'Build a paid program', action: () => menuHandler('createCourse') },
-											{ label: 'Write Article', desc: 'Share your expertise', action: () => menuHandler('writeArticle') },
-									  ]
-									: [
-											{ label: 'Nutrition', desc: 'Track meals & macros', action: () => menuHandler('nutrition') },
-											{ label: 'Progress', desc: 'Log body metrics', action: () => menuHandler('progress') },
-											{ label: 'Community', desc: 'Read & write articles', action: () => router.push('/community') },
-									  ]
-								).map((action) => (
+								{quickActions.map((action) => (
 									<button key={action.label} onClick={action.action} style={{ ...cardStyle, padding: '20px', textAlign: 'left', border: '1px solid rgba(255,255,255,0.05)' }}
 										onMouseOver={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(0,220,229,0.15)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(-2px)'; }}
 										onMouseOut={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.05)'; (e.currentTarget as HTMLElement).style.transform = 'translateY(0)'; }}>
@@ -666,20 +690,20 @@ const MyPage: NextPage = () => {
 					{cat === 'myWorkouts' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Workouts ({myWorkouts.length})</h2>
-								<button onClick={() => menuHandler('createWorkout')} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
+								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>{t('workouts.title')} ({myWorkouts.length})</h2>
+								<button onClick={() => menuHandler('createWorkout')} style={{ background: 'linear-gradient(135deg, #00dce5, #e9feff)', color: '#003739', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>{t('workouts.create')}</button>
 							</div>
 							{/* Edit panel */}
 							{editWorkout && (
 								<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)', marginBottom: '18px' }}>
-									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>Edit Workout</h4>
+									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>{t('workouts.editTitle')}</h4>
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-										<input className="wd-input" value={editWorkout.workoutTitle} onChange={(e) => setEditWorkout({ ...editWorkout, workoutTitle: e.target.value })} placeholder="Title *" />
-										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editWorkout.workoutDesc ?? ''} onChange={(e) => setEditWorkout({ ...editWorkout, workoutDesc: e.target.value })} placeholder="Description" />
+										<input className="wd-input" value={editWorkout.workoutTitle} onChange={(e) => setEditWorkout({ ...editWorkout, workoutTitle: e.target.value })} placeholder={t('workouts.form.title')} />
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editWorkout.workoutDesc ?? ''} onChange={(e) => setEditWorkout({ ...editWorkout, workoutDesc: e.target.value })} placeholder={t('workouts.form.description')} />
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-											{['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'].map((m) => (
+											{musclePresets.map((m) => (
 												<button key={m} className="cl-cat-btn" style={editWorkout.targetMuscle === m ? { borderColor: 'rgba(0,220,229,0.5)', background: 'rgba(0,220,229,0.14)', color: '#00eaf4' } : undefined} onClick={() => setEditWorkout({ ...editWorkout, targetMuscle: m })}>
-													{m}
+													{t(`enums:muscle.${m}`)}
 												</button>
 											))}
 										</div>
@@ -687,23 +711,23 @@ const MyPage: NextPage = () => {
 											<div className="wl-seg">
 												{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
 													<button key={d} className={editWorkout.workoutDifficulty === d ? 'is-active' : ''} onClick={() => setEditWorkout({ ...editWorkout, workoutDifficulty: d })}>
-														{d.charAt(0) + d.slice(1).toLowerCase()}
+														{t(`enums:difficulty.${d}`)}
 													</button>
 												))}
 											</div>
-											<input className="wd-input" type="number" style={{ width: '140px' }} value={editWorkout.estimatedCaloriesBurned} onChange={(e) => setEditWorkout({ ...editWorkout, estimatedCaloriesBurned: e.target.value })} placeholder="Kcal" />
+											<input className="wd-input" type="number" style={{ width: '140px' }} value={editWorkout.estimatedCaloriesBurned} onChange={(e) => setEditWorkout({ ...editWorkout, estimatedCaloriesBurned: e.target.value })} placeholder={t('workouts.form.kcalPlaceholder')} />
 										</div>
-										{mediaControls('editWorkout', editWorkout, setEditWorkout, true)}
+										{editWorkoutMedia}
 										{exercisesEditor(editWorkout, setEditWorkout)}
 										<div style={{ display: 'flex', gap: '10px' }}>
-											<button className="wd-btn" onClick={saveWorkoutEdit}>Save Changes</button>
-											<button className="nt-markall" onClick={() => setEditWorkout(null)}>Cancel</button>
+											<button className="wd-btn" onClick={saveWorkoutEdit}>{t('workouts.form.saveChanges')}</button>
+											<button className="nt-markall" onClick={() => setEditWorkout(null)}>{t('common:actions.cancel')}</button>
 										</div>
 									</div>
 								</div>
 							)}
 
-							{myWorkouts.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No workouts yet.</p> : (
+							{myWorkouts.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>{t('workouts.empty')}</p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{myWorkouts.map((w) => (
 										<div key={w._id} onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })} style={cardStyle}
@@ -713,7 +737,7 @@ const MyPage: NextPage = () => {
 											<div style={{ padding: '14px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '10px' }}>
 												<div style={{ minWidth: 0 }}>
 													<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{w.workoutTitle}</h4>
-													<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{w.workoutDifficulty} · {w.estimatedCaloriesBurned} kcal</span>
+													<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{t(`enums:difficulty.${w.workoutDifficulty}`)} · {t('workouts.kcalValue', { count: w.estimatedCaloriesBurned })}</span>
 												</div>
 												<button
 													className="ad-btn"
@@ -723,7 +747,7 @@ const MyPage: NextPage = () => {
 														window.scrollTo({ top: 0, behavior: 'smooth' });
 													}}
 												>
-													Edit
+													{t('common:actions.edit')}
 												</button>
 											</div>
 										</div>
@@ -737,11 +761,11 @@ const MyPage: NextPage = () => {
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div className="nt-head">
 								<div>
-									<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>Studio</span>
-									<h2>Create Workout</h2>
+									<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>{t('menu.sections.studio')}</span>
+									<h2>{t('workouts.createHeading')}</h2>
 									{freeWorkoutCount !== null && (
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(102,218,186,0.8)', display: 'block', marginTop: '6px' }}>
-											{freeWorkoutCount} free workout{freeWorkoutCount === 1 ? '' : 's'} published
+											{freeWorkoutCount === 1 ? t('workouts.freePublishedCountOne', { count: freeWorkoutCount }) : t('workouts.freePublishedCount', { count: freeWorkoutCount })}
 										</span>
 									)}
 								</div>
@@ -749,17 +773,17 @@ const MyPage: NextPage = () => {
 							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 									<div>
-										<span style={labelStyle}>Title *</span>
-										<input className="wd-input" value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder="Workout title" />
+										<span style={labelStyle}>{t('workouts.form.title')}</span>
+										<input className="wd-input" value={newWorkout.workoutTitle} onChange={(e) => setNewWorkout({ ...newWorkout, workoutTitle: e.target.value })} placeholder={t('workouts.form.titlePlaceholder')} />
 									</div>
 									<div>
-										<span style={labelStyle}>Description</span>
-										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder="Describe this workout..." />
+										<span style={labelStyle}>{t('workouts.form.description')}</span>
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newWorkout.workoutDesc} onChange={(e) => setNewWorkout({ ...newWorkout, workoutDesc: e.target.value })} placeholder={t('workouts.form.descPlaceholder')} />
 									</div>
 									<div>
-										<span style={labelStyle}>Target Muscle *</span>
+										<span style={labelStyle}>{t('workouts.form.targetMuscle')}</span>
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-											{['Chest', 'Back', 'Legs', 'Shoulders', 'Arms', 'Core', 'Full Body'].map((m) => {
+											{musclePresets.map((m) => {
 												const isActive = newWorkout.targetMuscle === m;
 												return (
 													<button
@@ -768,33 +792,33 @@ const MyPage: NextPage = () => {
 														style={isActive ? { borderColor: 'rgba(0,220,229,0.5)', background: 'rgba(0,220,229,0.14)', color: '#00eaf4' } : undefined}
 														onClick={() => setNewWorkout({ ...newWorkout, targetMuscle: m })}
 													>
-														{m}
+														{t(`enums:muscle.${m}`)}
 													</button>
 												);
 											})}
 										</div>
 									</div>
 									<div>
-										<span style={labelStyle}>Difficulty</span>
+										<span style={labelStyle}>{t('workouts.form.difficulty')}</span>
 										<div className="wl-seg">
 											{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
 												<button key={d} className={newWorkout.workoutDifficulty === d ? 'is-active' : ''} onClick={() => setNewWorkout({ ...newWorkout, workoutDifficulty: d })}>
-													{d.charAt(0) + d.slice(1).toLowerCase()}
+													{t(`enums:difficulty.${d}`)}
 												</button>
 											))}
 										</div>
 									</div>
 									<div style={{ maxWidth: '240px' }}>
-										<span style={labelStyle}>Est. Calories Burned</span>
+										<span style={labelStyle}>{t('workouts.form.calories')}</span>
 										<input className="wd-input" type="number" value={newWorkout.estimatedCaloriesBurned} onChange={(e) => setNewWorkout({ ...newWorkout, estimatedCaloriesBurned: Number(e.target.value) })} />
 									</div>
 									<div>
-										<span style={labelStyle}>Media</span>
-										{mediaControls('newWorkout', newWorkout, setNewWorkout, true)}
+										<span style={labelStyle}>{t('workouts.form.media')}</span>
+										{newWorkoutMedia}
 									</div>
 									{exercisesEditor(newWorkout, setNewWorkout)}
 									<button className="wd-btn" style={{ width: 'fit-content' }} onClick={createWorkoutHandler}>
-										Publish Workout →
+										{t('workouts.form.publish')}
 									</button>
 								</div>
 							</div>
@@ -803,8 +827,8 @@ const MyPage: NextPage = () => {
 
 					{cat === 'myCourses' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>My Programs ({purchasedCourses.length})</h2>
-							{purchasedCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No programs yet. <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>Browse programs →</span></p> : (
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '24px' }}>{t('programs.title')} ({purchasedCourses.length})</h2>
+							{purchasedCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>{t('programs.empty')} <span onClick={() => router.push('/course')} style={{ color: '#e9feff', cursor: 'pointer', fontWeight: 600 }}>{t('programs.browse')}</span></p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{purchasedCourses.map((c) => (
 										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={cardStyle}
@@ -813,7 +837,7 @@ const MyPage: NextPage = () => {
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={c.courseThumbnail ? `${REACT_APP_API_URL}/${c.courseThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
 											<div style={{ padding: '14px' }}>
 												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{c.courseTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{c.courseCategory} · {c.courseDuration}w · {c.courseDifficulty}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{t(`enums:category.${c.courseCategory}`)} · {t('programs.weeksShort', { count: c.courseDuration })} · {t(`enums:difficulty.${c.courseDifficulty}`)}</span>
 											</div>
 										</div>
 									))}
@@ -825,27 +849,21 @@ const MyPage: NextPage = () => {
 					{cat === 'trainerCourses' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '24px' }}>
-								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>My Programs ({trainerCourses.length})</h2>
-								<button onClick={() => menuHandler('createCourse')} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>+ Create</button>
+								<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3' }}>{t('programs.title')} ({trainerCourses.length})</h2>
+								<button onClick={() => menuHandler('createCourse')} style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800', border: 'none', borderRadius: '10px', padding: '10px 20px', fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, cursor: 'pointer' }}>{t('programs.create')}</button>
 							</div>
 							{/* Edit program panel */}
 							{editCourse && (
 								<div className="wd-form-card" style={{ borderColor: 'rgba(255,138,0,0.25)', marginBottom: '18px' }}>
-									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>Edit Program</h4>
+									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>{t('programs.editTitle')}</h4>
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-										<input className="wd-input" value={editCourse.courseTitle} onChange={(e) => setEditCourse({ ...editCourse, courseTitle: e.target.value })} placeholder="Title *" />
-										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editCourse.courseDesc ?? ''} onChange={(e) => setEditCourse({ ...editCourse, courseDesc: e.target.value })} placeholder="Description" />
+										<input className="wd-input" value={editCourse.courseTitle} onChange={(e) => setEditCourse({ ...editCourse, courseTitle: e.target.value })} placeholder={t('programs.form.title')} />
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editCourse.courseDesc ?? ''} onChange={(e) => setEditCourse({ ...editCourse, courseDesc: e.target.value })} placeholder={t('programs.form.description')} />
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-											{[
-												{ v: 'STRENGTH', c: '#ff8a00' },
-												{ v: 'CARDIO', c: '#00dce5' },
-												{ v: 'YOGA', c: '#ddb7ff' },
-												{ v: 'MOBILITY', c: '#66daba' },
-												{ v: 'NUTRITION', c: '#ffb77f' },
-											].map((catOpt) => (
+											{courseCategoryOptions.map((catOpt) => (
 												<button key={catOpt.v} className="cl-cat-btn" style={editCourse.courseCategory === catOpt.v ? { borderColor: `${catOpt.c}80`, background: `${catOpt.c}1c`, color: catOpt.c } : undefined} onClick={() => setEditCourse({ ...editCourse, courseCategory: catOpt.v })}>
 													<span className="cl-cat-dot" style={{ background: catOpt.c }} />
-													{catOpt.v.charAt(0) + catOpt.v.slice(1).toLowerCase()}
+													{t(`enums:category.${catOpt.v}`)}
 												</button>
 											))}
 										</div>
@@ -853,23 +871,23 @@ const MyPage: NextPage = () => {
 											<div className="wl-seg">
 												{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
 													<button key={d} className={editCourse.courseDifficulty === d ? 'is-active' : ''} onClick={() => setEditCourse({ ...editCourse, courseDifficulty: d })}>
-														{d.charAt(0) + d.slice(1).toLowerCase()}
+														{t(`enums:difficulty.${d}`)}
 													</button>
 												))}
 											</div>
-											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.coursePrice} onChange={(e) => setEditCourse({ ...editCourse, coursePrice: e.target.value })} placeholder="Price $" />
-											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.courseDuration} onChange={(e) => setEditCourse({ ...editCourse, courseDuration: e.target.value })} placeholder="Weeks" />
+											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.coursePrice} onChange={(e) => setEditCourse({ ...editCourse, coursePrice: e.target.value })} placeholder={t('programs.form.pricePlaceholder')} />
+											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.courseDuration} onChange={(e) => setEditCourse({ ...editCourse, courseDuration: e.target.value })} placeholder={t('programs.form.weeksPlaceholder')} />
 										</div>
-										{mediaControls('editCourse', editCourse, setEditCourse, false)}
+										{editCourseMedia}
 										<div style={{ display: 'flex', gap: '10px' }}>
-											<button className="wd-btn" style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800' }} onClick={saveCourseEdit}>Save Changes</button>
-											<button className="nt-markall" onClick={() => setEditCourse(null)}>Cancel</button>
+											<button className="wd-btn" style={{ background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800' }} onClick={saveCourseEdit}>{t('programs.form.saveChanges')}</button>
+											<button className="nt-markall" onClick={() => setEditCourse(null)}>{t('common:actions.cancel')}</button>
 										</div>
 									</div>
 								</div>
 							)}
 
-							{trainerCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>No courses created yet.</p> : (
+							{trainerCourses.length === 0 ? <p style={{ color: 'rgba(185,202,202,0.5)' }}>{t('programs.emptyTrainer')}</p> : (
 								<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '14px' }}>
 									{trainerCourses.map((c) => (
 										<div key={c._id} onClick={() => router.push({ pathname: '/course/detail', query: { id: c._id } })} style={cardStyle}
@@ -878,7 +896,7 @@ const MyPage: NextPage = () => {
 											<div style={{ aspectRatio: '16/9', overflow: 'hidden' }}><img src={c.courseThumbnail ? `${REACT_APP_API_URL}/${c.courseThumbnail}` : '/img/banner/header1.svg'} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
 											<div style={{ padding: '14px' }}>
 												<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '15px', fontWeight: 600, color: '#e5e2e3', marginBottom: '4px' }}>{c.courseTitle}</h4>
-												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{c.courseCategory} · ${c.coursePrice} · {c.courseRating ? `★ ${c.courseRating.toFixed(1)}` : 'No ratings'}</span>
+												<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)' }}>{t(`enums:category.${c.courseCategory}`)} · ${c.coursePrice} · {c.courseRating ? `★ ${c.courseRating.toFixed(1)}` : t('programs.noRatings')}</span>
 												<div style={{ display: 'flex', gap: '7px', marginTop: '12px' }}>
 													<button
 														className="ad-btn"
@@ -889,7 +907,7 @@ const MyPage: NextPage = () => {
 															window.scrollTo({ top: 0, behavior: 'smooth' });
 														}}
 													>
-														Edit
+														{t('common:actions.edit')}
 													</button>
 													<button
 														className="ad-btn is-success"
@@ -899,7 +917,7 @@ const MyPage: NextPage = () => {
 															setEditCourse(null);
 														}}
 													>
-														{lessonCourse?.id === c._id ? 'Hide Lessons' : 'Lessons'}
+														{lessonCourse?.id === c._id ? t('programs.hideLessons') : t('programs.lessons')}
 													</button>
 												</div>
 											</div>
@@ -917,33 +935,27 @@ const MyPage: NextPage = () => {
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div className="nt-head">
 								<div>
-									<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>Studio</span>
-									<h2>Create Program</h2>
+									<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '6px' }}>{t('menu.sections.studio')}</span>
+									<h2>{t('programs.createHeading')}</h2>
 									<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', color: 'rgba(185,202,202,0.6)', display: 'block', marginTop: '6px' }}>
-										Lesson videos are added right after publishing — the Lesson Manager opens automatically.
+										{t('programs.createHint')}
 									</span>
 								</div>
 							</div>
 							<div className="wd-form-card" style={{ maxWidth: '640px' }}>
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 									<div>
-										<span style={labelStyle}>Title *</span>
-										<input className="wd-input" value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder="Program title" />
+										<span style={labelStyle}>{t('programs.form.title')}</span>
+										<input className="wd-input" value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder={t('programs.form.titlePlaceholder')} />
 									</div>
 									<div>
-										<span style={labelStyle}>Description</span>
-										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder="Describe this program..." />
+										<span style={labelStyle}>{t('programs.form.description')}</span>
+										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={newCourse.courseDesc} onChange={(e) => setNewCourse({ ...newCourse, courseDesc: e.target.value })} placeholder={t('programs.form.descPlaceholder')} />
 									</div>
 									<div>
-										<span style={labelStyle}>Category</span>
+										<span style={labelStyle}>{t('programs.form.category')}</span>
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
-											{[
-												{ v: 'STRENGTH', c: '#ff8a00' },
-												{ v: 'CARDIO', c: '#00dce5' },
-												{ v: 'YOGA', c: '#ddb7ff' },
-												{ v: 'MOBILITY', c: '#66daba' },
-												{ v: 'NUTRITION', c: '#ffb77f' },
-											].map((catOpt) => {
+											{courseCategoryOptions.map((catOpt) => {
 												const isActive = newCourse.courseCategory === catOpt.v;
 												return (
 													<button
@@ -953,42 +965,42 @@ const MyPage: NextPage = () => {
 														onClick={() => setNewCourse({ ...newCourse, courseCategory: catOpt.v })}
 													>
 														<span className="cl-cat-dot" style={{ background: catOpt.c }} />
-														{catOpt.v.charAt(0) + catOpt.v.slice(1).toLowerCase()}
+														{t(`enums:category.${catOpt.v}`)}
 													</button>
 												);
 											})}
 										</div>
 									</div>
 									<div>
-										<span style={labelStyle}>Difficulty</span>
+										<span style={labelStyle}>{t('programs.form.difficulty')}</span>
 										<div className="wl-seg">
 											{['BEGINNER', 'INTERMEDIATE', 'ADVANCED'].map((d) => (
 												<button key={d} className={newCourse.courseDifficulty === d ? 'is-active' : ''} onClick={() => setNewCourse({ ...newCourse, courseDifficulty: d })}>
-													{d.charAt(0) + d.slice(1).toLowerCase()}
+													{t(`enums:difficulty.${d}`)}
 												</button>
 											))}
 										</div>
 									</div>
 									<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
 										<div>
-											<span style={labelStyle}>Price ($)</span>
+											<span style={labelStyle}>{t('programs.form.price')}</span>
 											<input className="wd-input" type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} />
 										</div>
 										<div>
-											<span style={labelStyle}>Duration (weeks)</span>
+											<span style={labelStyle}>{t('programs.form.duration')}</span>
 											<input className="wd-input" type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} />
 										</div>
 									</div>
 									<div>
-										<span style={labelStyle}>Thumbnail</span>
-										{mediaControls('newCourse', newCourse, setNewCourse, false)}
+										<span style={labelStyle}>{t('programs.form.thumbnail')}</span>
+										{newCourseMedia}
 									</div>
 									<button
 										className="wd-btn"
 										style={{ width: 'fit-content', background: 'linear-gradient(135deg, #ff8a00, #ffb77f)', color: '#3a1800' }}
 										onClick={createCourseHandler}
 									>
-										Publish Program →
+										{t('programs.form.publish')}
 									</button>
 								</div>
 							</div>
@@ -1007,25 +1019,25 @@ const MyPage: NextPage = () => {
 					{cat === 'notifications' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
 							<div className="nt-head">
-								<h2>Notifications</h2>
+								<h2>{t('notifications.title')}</h2>
 								<div className="nt-tools">
 									{unreadCount > 0 && (
 										<span className="nt-unread-chip">
 											<span className="nt-unread-dot" />
-											{unreadCount} unread
+											{t('notifications.unreadCount', { count: unreadCount })}
 										</span>
 									)}
 									<div className="wl-seg">
 										<button className={notifFilter === 'all' ? 'is-active' : ''} onClick={() => setNotifFilter('all')}>
-											All
+											{t('notifications.all')}
 										</button>
 										<button className={notifFilter === 'unread' ? 'is-active' : ''} onClick={() => setNotifFilter('unread')}>
-											Unread
+											{t('notifications.unread')}
 										</button>
 									</div>
 									{unreadCount > 0 && (
 										<button className="nt-markall" onClick={markAllNotifsRead}>
-											Mark all read
+											{t('notifications.markAllRead')}
 										</button>
 									)}
 								</div>
@@ -1037,8 +1049,8 @@ const MyPage: NextPage = () => {
 									return (
 										<div className="nt-empty">
 											<div className="nt-empty-ic">◉</div>
-											<h4>{notifFilter === 'unread' ? 'All caught up' : 'No notifications yet'}</h4>
-											<p>{notifFilter === 'unread' ? 'You have read everything.' : 'Activity around your account will appear here.'}</p>
+											<h4>{notifFilter === 'unread' ? t('notifications.allCaughtUp') : t('notifications.emptyTitle')}</h4>
+											<p>{notifFilter === 'unread' ? t('notifications.allCaughtUpDesc') : t('notifications.emptyDesc')}</p>
 										</div>
 									);
 								}
@@ -1065,8 +1077,8 @@ const MyPage: NextPage = () => {
 														<p>{n.notificationMessage}</p>
 													</div>
 													<div className="nt-meta">
-														<span className="nt-type">{n.notificationType}</span>
-														<span className="nt-time">{notifTimeAgo(n.createdAt)}</span>
+														<span className="nt-type">{t(`notifications.types.${n.notificationType}`, { defaultValue: n.notificationType })}</span>
+														<span className="nt-time">{notifTimeAgo(n.createdAt, t)}</span>
 													</div>
 												</div>
 											);
@@ -1079,13 +1091,13 @@ const MyPage: NextPage = () => {
 
 					{cat === 'becomeTrainer' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
-							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>Become a Trainer</h2>
-							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.5)', marginBottom: '24px' }}>Create your trainer profile to start sharing workouts and courses.</p>
+							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>{t('profile.becomeTrainer.title')}</h2>
+							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.5)', marginBottom: '24px' }}>{t('profile.becomeTrainer.subtitle')}</p>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
-								<div><span style={labelStyle}>Bio *</span><textarea value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder="Tell us about your training background..." style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
-								<div><span style={labelStyle}>Specializations (comma separated)</span><input value={trainerForm.trainerSpecializations} onChange={(e) => setTrainerForm({ ...trainerForm, trainerSpecializations: e.target.value })} placeholder="Strength, HIIT, Mobility" style={inputStyle} /></div>
-								<div><span style={labelStyle}>Years of Experience</span><input type="number" value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
-								<button onClick={becomeTrainerHandler} style={{ background: 'linear-gradient(135deg, #66daba, #00dce5)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>Apply as Trainer</button>
+								<div><span style={labelStyle}>{t('profile.becomeTrainer.bio')}</span><textarea value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder={t('profile.becomeTrainer.bioPlaceholder')} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
+								<div><span style={labelStyle}>{t('profile.becomeTrainer.specializations')}</span><input value={trainerForm.trainerSpecializations} onChange={(e) => setTrainerForm({ ...trainerForm, trainerSpecializations: e.target.value })} placeholder={t('profile.becomeTrainer.specializationsPlaceholder')} style={inputStyle} /></div>
+								<div><span style={labelStyle}>{t('profile.becomeTrainer.experience')}</span><input type="number" value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
+								<button onClick={becomeTrainerHandler} style={{ background: 'linear-gradient(135deg, #66daba, #00dce5)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>{t('profile.becomeTrainer.apply')}</button>
 							</div>
 						</div>
 					)}

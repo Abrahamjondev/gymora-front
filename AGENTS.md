@@ -67,3 +67,18 @@ Analyze first, then make incremental UI changes.
 ```bash
 yarn
 ```
+
+## i18n (MANDATORY for all new code)
+
+The app is trilingual: `en` (default), `ru`, `uz` — next-i18next, sub-path routing (`/ru/...`, `/uz/...`), `localeDetection: false` with the choice persisted in the `NEXT_LOCALE` cookie (restored in `_app.tsx`).
+
+Rules:
+
+1. NEVER hard-code user-facing text in JSX. Always `const { t } = useTranslation('<namespace>')` + `t('key')`. ESLint (`i18next/no-literal-string`) warns on violations.
+2. Every new key MUST be added to ALL THREE locale files: `public/locales/{en,ru,uz}/<namespace>.json`. `yarn i18n:check` fails the build/lint if locales drift; `yarn i18n:report` prints coverage.
+3. Namespaces: `common` (nav/footer/shared actions/stats/titles + global `alerts.*` used by `Messages` in libs/config.ts), `landing`, `workout`, `program`, `trainer`, `community`, `mypage`, `auth`, `static`, `enums` (backend enum display names). Page/feature-specific alert strings live in that feature's own namespace under `alerts.*`. Pages must list every namespace they use in `serverSideTranslations(locale, [...])`.
+4. Key naming: nested camelCase (`list.title`, `detail.trainingPlan`), interpolation via `{{var}}`. Do NOT use English sentences as keys. Plurals: use explicit `xCount`/`xCountOne` key pairs selected in code — i18next `_one/_few/_many` suffixes break the check-locales key-parity validator.
+   Non-React code (sweetAlert.ts, config.ts) translates via `import { i18n } from 'next-i18next'` + `i18n?.t('common:...', { defaultValue })` — only `common` keys are guaranteed loaded everywhere.
+5. Backend enum values (BEGINNER, STRENGTH, ...) are displayed through `enums.json` keys but sent to the API unchanged.
+6. The admin panel (`pages/_admin`, `LayoutAdmin`) stays English — excluded from the lint rule.
+7. User-generated content from the DB (workout titles, articles, bios) is NOT translated — UI chrome only.

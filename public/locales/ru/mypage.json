@@ -1,0 +1,502 @@
+{
+	"menu": {
+		"dashboard": "Панель",
+		"myProfile": "Мой профиль",
+		"myWorkouts": "Мои тренировки",
+		"myPrograms": "Мои программы",
+		"myArticles": "Мои статьи",
+		"notifications": "Уведомления",
+		"messages": "Сообщения",
+		"nutritionPlan": "План питания",
+		"mealTracker": "Дневник питания",
+		"progress": "Прогресс",
+		"subscription": "Подписка",
+		"becomeTrainer": "Стать тренером",
+		"createWorkout": "Создать тренировку",
+		"createProgram": "Создать программу",
+		"writeArticle": "Написать статью",
+		"sections": {
+			"studio": "Студия",
+			"training": "Тренинг",
+			"activity": "Активность",
+			"health": "Здоровье"
+		}
+	},
+	"dashboard": {
+		"welcome": "С возвращением, {{name}}",
+		"stats": {
+			"workoutsPublished": "Опубликовано тренировок",
+			"likes": "Лайки",
+			"totalCalories": "Всего калорий",
+			"progress": "Прогресс",
+			"points": "Баллы"
+		},
+		"recommendations": {
+			"title": "Рекомендации для вас",
+			"suggestionsCount": "{{count}} предложений",
+			"suggestionsCountOne": "{{count}} предложение"
+		},
+		"subscription": {
+			"monthlyPlan": "Месячный план",
+			"yearlyPlan": "Годовой план",
+			"premiumPlan": "Премиум-план",
+			"active": "Активна",
+			"freePlan": "У вас бесплатный план",
+			"thanks": "Спасибо за поддержку Gymora.",
+			"upgradeHint": "Оформите подписку, чтобы поддержать бесплатные тренировки и проверенных тренеров.",
+			"manage": "Управлять",
+			"upgrade": "Улучшить →"
+		},
+		"quickActions": {
+			"createWorkout": "Создать тренировку",
+			"createWorkoutDesc": "Опубликуйте бесплатную тренировку",
+			"createProgram": "Создать программу",
+			"createProgramDesc": "Создайте платную программу",
+			"writeArticle": "Написать статью",
+			"writeArticleDesc": "Поделитесь своей экспертизой",
+			"nutrition": "Питание",
+			"nutritionDesc": "Отслеживайте приёмы пищи и макросы",
+			"progress": "Прогресс",
+			"progressDesc": "Записывайте параметры тела",
+			"community": "Сообщество",
+			"communityDesc": "Читайте и пишите статьи"
+		}
+	},
+	"workouts": {
+		"title": "Мои тренировки",
+		"create": "+ Создать",
+		"editTitle": "Редактировать тренировку",
+		"empty": "Пока нет тренировок.",
+		"kcalValue": "{{count}} ккал",
+		"createHeading": "Создать тренировку",
+		"freePublishedCount": "Опубликовано бесплатных тренировок: {{count}}",
+		"freePublishedCountOne": "Опубликована {{count}} бесплатная тренировка",
+		"form": {
+			"title": "Название *",
+			"titlePlaceholder": "Название тренировки",
+			"description": "Описание",
+			"descPlaceholder": "Опишите эту тренировку...",
+			"targetMuscle": "Целевая мышца *",
+			"difficulty": "Сложность",
+			"calories": "Примерный расход калорий",
+			"kcalPlaceholder": "Ккал",
+			"media": "Медиа",
+			"saveChanges": "Сохранить изменения",
+			"publish": "Опубликовать тренировку →",
+			"trainingPlan": "План тренировки (упражнения)",
+			"exercisePlaceholder": "Название упражнения {{n}}",
+			"sets": "Подходы",
+			"reps": "Повторы",
+			"addExercise": "+ Добавить упражнение"
+		},
+		"media": {
+			"noImage": "НЕТ ФОТО",
+			"uploading": "Загрузка...",
+			"uploadThumbnail": "Загрузить обложку",
+			"changeThumbnail": "Сменить обложку",
+			"uploadingVideo": "Загрузка видео...",
+			"uploadVideo": "Загрузить видео",
+			"replaceVideo": "Заменить видео",
+			"videoAttached": "Видео прикреплено ✓",
+			"videoUrlPlaceholder": "...или вставьте ссылку на видео (YouTube, Vimeo, mp4)"
+		}
+	},
+	"programs": {
+		"title": "Мои программы",
+		"create": "+ Создать",
+		"editTitle": "Редактировать программу",
+		"createHeading": "Создать программу",
+		"createHint": "Видео уроков добавляются сразу после публикации — менеджер уроков откроется автоматически.",
+		"empty": "Пока нет программ.",
+		"browse": "Смотреть программы →",
+		"emptyTrainer": "Вы ещё не создали ни одной программы.",
+		"weeksShort": "{{count}} нед",
+		"noRatings": "Нет оценок",
+		"lessons": "Уроки",
+		"hideLessons": "Скрыть уроки",
+		"form": {
+			"title": "Название *",
+			"titlePlaceholder": "Название программы",
+			"description": "Описание",
+			"descPlaceholder": "Опишите эту программу...",
+			"category": "Категория",
+			"difficulty": "Сложность",
+			"price": "Цена ($)",
+			"pricePlaceholder": "Цена $",
+			"duration": "Длительность (недели)",
+			"weeksPlaceholder": "Недели",
+			"thumbnail": "Обложка",
+			"saveChanges": "Сохранить изменения",
+			"publish": "Опубликовать программу →"
+		}
+	},
+	"lessons": {
+		"header": "Уроки — {{title}}",
+		"count": "{{count}} уроков",
+		"countOne": "{{count}} урок",
+		"weekShort": "Н{{n}}",
+		"minutes": "{{count}} мин",
+		"empty": "Пока нет уроков — добавьте первый ниже.",
+		"editLesson": "Редактировать урок",
+		"addLesson": "Добавить урок",
+		"form": {
+			"title": "Название *",
+			"titlePlaceholder": "Название урока",
+			"week": "Неделя *",
+			"order": "Порядок *",
+			"duration": "Длительность (мин)",
+			"description": "Описание",
+			"descPlaceholder": "Краткое описание...",
+			"video": "Видео",
+			"videoPlaceholder": "Загрузите или вставьте ссылку...",
+			"upload": "Загрузить",
+			"uploading": "Загрузка...",
+			"saving": "Сохранение...",
+			"saveChanges": "Сохранить изменения",
+			"add": "+ Добавить урок"
+		}
+	},
+	"articles": {
+		"eyebrow": "Сообщество",
+		"title": "Мои статьи",
+		"publishedCount": "Опубликовано: {{count}}",
+		"writeShortcut": "+ Написать статью",
+		"emptyTitle": "Пока нет статей",
+		"emptyDesc": "Поделитесь первой статьёй с сообществом.",
+		"writeTitle": "Написать статью",
+		"editTitle": "Редактировать статью",
+		"writeSubtitle": "Поделитесь своими знаниями о фитнесе с сообществом.",
+		"editSubtitle": "Обновите статью — изменения вступают в силу сразу.",
+		"form": {
+			"category": "Категория",
+			"categoryFixed": "Категория (фиксируется после публикации)",
+			"title": "Заголовок *",
+			"titlePlaceholder": "Дайте статье сильный заголовок...",
+			"contentPlaceholder": "Поделитесь своими знаниями о фитнесе...",
+			"publish": "Опубликовать статью →",
+			"saveChanges": "Сохранить изменения →",
+			"publishing": "Публикация...",
+			"saving": "Сохранение..."
+		}
+	},
+	"profile": {
+		"eyebrow": "Аккаунт",
+		"title": "Мой профиль",
+		"photo": "Фото профиля",
+		"uploadImage": "Загрузить фото",
+		"uploading": "Загрузка...",
+		"photoFormats": "Формат JPG, JPEG или PNG",
+		"username": "Имя пользователя *",
+		"usernamePlaceholder": "Ваше имя пользователя",
+		"phone": "Телефон *",
+		"phonePlaceholder": "Ваш телефон",
+		"address": "Адрес",
+		"addressPlaceholder": "Ваш адрес",
+		"description": "Описание",
+		"descPlaceholder": "О себе...",
+		"saving": "Сохранение...",
+		"update": "Обновить профиль",
+		"identity": {
+			"verifiedTrainer": "Проверенный тренер",
+			"newTrainer": "Новый тренер",
+			"points": "Баллы",
+			"viewPublicProfile": "Публичный профиль →"
+		},
+		"becomeTrainer": {
+			"title": "Стать тренером",
+			"subtitle": "Создайте профиль тренера, чтобы делиться тренировками и программами.",
+			"bio": "О себе *",
+			"bioPlaceholder": "Расскажите о своём тренерском опыте...",
+			"specializations": "Специализации (через запятую)",
+			"specializationsPlaceholder": "Сила, HIIT, мобильность",
+			"experience": "Лет опыта",
+			"apply": "Подать заявку"
+		}
+	},
+	"notifications": {
+		"title": "Уведомления",
+		"unreadCount": "{{count}} непрочитанных",
+		"all": "Все",
+		"unread": "Непрочитанные",
+		"markAllRead": "Прочитать все",
+		"allCaughtUp": "Всё прочитано",
+		"allCaughtUpDesc": "Вы прочитали все уведомления.",
+		"emptyTitle": "Пока нет уведомлений",
+		"emptyDesc": "Активность вокруг вашего аккаунта появится здесь.",
+		"types": {
+			"SYSTEM": "Система",
+			"WORKOUT": "Тренировка",
+			"NUTRITION": "Питание",
+			"SUBSCRIPTION": "Подписка",
+			"CHAT": "Чат"
+		},
+		"time": {
+			"now": "сейчас",
+			"minutesAgo": "{{n}} мин назад",
+			"hoursAgo": "{{n}} ч назад",
+			"daysAgo": "{{n}} дн назад"
+		}
+	},
+	"alerts": {
+		"uploadFailed": "Не удалось загрузить файл",
+		"imageUploadFailed": "Не удалось загрузить изображение. Попробуйте ещё раз.",
+		"videoUploaded": "Видео загружено!",
+		"videoUploadFailed": "Не удалось загрузить видео",
+		"titleMuscleRequired": "Укажите название и целевую мышцу",
+		"titleRequired": "Укажите название",
+		"programTitleRequired": "Укажите название программы",
+		"workoutUpdated": "Тренировка обновлена!",
+		"workoutCreated": "Тренировка создана!",
+		"programUpdated": "Программа обновлена!",
+		"programCreated": "Программа создана! Теперь добавьте уроки и видео ниже.",
+		"bioRequired": "Заполните поле «О себе»",
+		"trainerCreated": "Профиль тренера создан! Войдите снова, чтобы активировать Студию.",
+		"profileUpdated": "Профиль успешно обновлён.",
+		"deleteArticleConfirm": "Удалить эту статью навсегда?",
+		"deleted": "Удалено",
+		"success": "Готово!",
+		"articleUpdated": "Статья обновлена!",
+		"articlePublished": "Статья опубликована!",
+		"lessonTitleRequired": "Укажите название урока",
+		"weekMin": "Номер недели должен быть не меньше 1",
+		"orderMin": "Порядок должен быть не меньше 1",
+		"lessonUpdated": "Урок обновлён!",
+		"lessonAdded": "Урок добавлен!",
+		"deleteLessonConfirm": "Удалить этот урок?"
+	},
+	"chat": {
+		"connecting": "Подключение к чат-серверу...",
+		"header": "Сообщения",
+		"live": "Онлайн",
+		"offline": "Офлайн",
+		"noConversations": "Пока нет диалогов.",
+		"userFallback": "Пользователь",
+		"startConversation": "Начните диалог",
+		"activeNow": "Сейчас в сети",
+		"lastSeenJustNow": "Был(а) в сети только что",
+		"lastSeenMinutes": "Был(а) в сети {{n}} мин назад",
+		"lastSeenHours": "Был(а) в сети {{n}} ч назад",
+		"lastSeenDays": "Был(а) в сети {{n}} дн назад",
+		"lastSeenDate": "Был(а) в сети {{date}}",
+		"today": "Сегодня",
+		"yesterday": "Вчера",
+		"read": "Прочитано",
+		"sent": "Отправлено",
+		"inputPlaceholder": "Введите сообщение...",
+		"inputConnecting": "Подключение...",
+		"send": "Отправить →",
+		"emptyTitle": "Ваши сообщения",
+		"emptyDesc": "Выберите диалог, чтобы начать общение."
+	},
+	"nutrition": {
+		"eyebrowPlan": "Энергия для тренировок",
+		"eyebrowYourPlan": "Ваш план",
+		"eyebrowTracker": "Контроль рациона",
+		"planTitle": "План питания",
+		"trackerTitle": "Дневник питания",
+		"recalculate": "Пересчитать",
+		"scanFood": "AI-скан еды",
+		"scanning": "Сканирование...",
+		"logMealBtn": "+ Записать приём",
+		"analyzing": "Анализ еды...",
+		"analyzingSub": "ИИ определяет пищевую ценность",
+		"aiDetected": "Распознано ИИ",
+		"logAs": "Записать как",
+		"mealTypes": {
+			"BREAKFAST": "Завтрак",
+			"LUNCH": "Обед",
+			"DINNER": "Ужин",
+			"SNACK": "Перекус"
+		},
+		"macros": {
+			"calories": "Калории",
+			"protein": "Белки",
+			"carbs": "Углеводы",
+			"fats": "Жиры"
+		},
+		"macroShort": {
+			"protein": "Б:{{n}}г",
+			"carbs": "У:{{n}}г",
+			"fats": "Ж:{{n}}г"
+		},
+		"units": {
+			"kcal": "ккал",
+			"g": "г",
+			"perDay": "/день",
+			"kcalValue": "{{n}} ккал",
+			"kcalPerDay": "ккал/день",
+			"proteinGrams": "{{n}} г белка"
+		},
+		"calc": {
+			"title": "Рассчитайте свой план питания",
+			"subtitle": "Укажите данные, чтобы получить персональные дневные нормы калорий и макросов",
+			"gender": "Пол",
+			"male": "Мужской",
+			"female": "Женский",
+			"age": "Возраст",
+			"agePlaceholder": "напр. 25",
+			"height": "Рост (см)",
+			"heightPlaceholder": "напр. 175",
+			"weight": "Вес (кг)",
+			"weightPlaceholder": "напр. 75",
+			"activityLevel": "Уровень активности",
+			"activity": {
+				"SEDENTARY": "Сидячий образ жизни",
+				"LIGHTLY_ACTIVE": "Лёгкая активность",
+				"MODERATELY_ACTIVE": "Умеренная активность",
+				"VERY_ACTIVE": "Высокая активность",
+				"EXTRA_ACTIVE": "Экстремальная активность"
+			},
+			"goal": "Цель",
+			"goals": {
+				"WEIGHT_LOSS": "Похудение",
+				"MAINTENANCE": "Поддержание",
+				"MUSCLE_GAIN": "Набор массы"
+			},
+			"calculate": "Рассчитать мой план",
+			"calculating": "Расчёт..."
+		},
+		"results": {
+			"dailyCalories": "Дневные калории",
+			"bodyMetrics": "Параметры тела",
+			"bmi": "ИМТ",
+			"bmr": "BMR",
+			"tdee": "TDEE",
+			"goal": "Цель",
+			"mealsPerDay": "{{n}} приёмов пищи/день",
+			"tips": "Советы",
+			"suggestedMealPlan": "Рекомендуемый план питания"
+		},
+		"tracker": {
+			"eaten": "Съедено"
+		},
+		"history": {
+			"title": "История калорий",
+			"week": "Неделя",
+			"month": "Месяц",
+			"year": "Год",
+			"barTitle": "{{label}}: {{n}} ккал",
+			"kcalTotal": "ккал всего",
+			"avgPerActiveDay": "в среднем / активный день",
+			"daysLogged": "дней с записями",
+			"activeMonths": "активных месяцев"
+		},
+		"form": {
+			"title": "Записать приём пищи",
+			"mealNamePlaceholder": "Название блюда",
+			"save": "Сохранить"
+		},
+		"recentMeals": "Недавние приёмы пищи",
+		"loggedCount": "{{count}} записано",
+		"loggedCountOne": "{{count}} запись",
+		"emptyTitle": "Пока нет записей о еде",
+		"emptyDesc": "Запишите приём пищи вручную или отсканируйте еду с помощью ИИ.",
+		"aiHistoryTitle": "История AI-сканов",
+		"alerts": {
+			"loggedAs": "Записано как {{type}}!",
+			"mealLogged": "Приём пищи записан!",
+			"deleteMealConfirm": "Удалить эту запись?",
+			"deleteMealFailed": "Не удалось удалить запись",
+			"fillBasics": "Укажите возраст, рост и вес",
+			"mealNameRequired": "Укажите название блюда",
+			"analysisFailed": "Анализ не удался"
+		}
+	},
+	"progress": {
+		"eyebrow": "Параметры тела",
+		"title": "Трекер прогресса",
+		"logBtn": "+ Записать прогресс",
+		"form": {
+			"weight": "Вес (кг)*",
+			"chest": "Грудь (см)",
+			"waist": "Талия (см)",
+			"hips": "Бёдра (см)",
+			"bodyFat": "Жир %",
+			"note": "Заметка",
+			"notePlaceholder": "Необязательная заметка...",
+			"save": "Сохранить запись"
+		},
+		"emptyTitle": "Пока нет записей прогресса",
+		"emptyDesc": "Запишите первое измерение, чтобы начать отслеживать свою трансформацию.",
+		"summary": {
+			"currentWeight": "Текущий вес",
+			"totalChange": "Общее изменение",
+			"bodyFat": "Жир",
+			"entries": "Записи",
+			"noChange": "без изменений"
+		},
+		"weightTrend": "Динамика веса",
+		"latest": "Последняя",
+		"metrics": {
+			"chest": "ГРУДЬ",
+			"waist": "ТАЛИЯ",
+			"hips": "БЁДРА",
+			"fat": "ЖИР"
+		},
+		"units": {
+			"kg": "кг",
+			"cm": "см"
+		},
+		"alerts": {
+			"weightRequired": "Укажите вес",
+			"logged": "Прогресс записан!"
+		}
+	},
+	"subscription": {
+		"eyebrow": "Членство",
+		"titlePrefix": "Инвестируйте в",
+		"titleHighlight": "результат",
+		"activePlan": "Активный план",
+		"daysLeftSuffix": "дней осталось",
+		"expires": "Истекает",
+		"notAvailable": "Н/Д",
+		"bestValue": "Выгоднее всего",
+		"perMonth": "/месяц",
+		"perYear": "/год",
+		"yearlySub": "$9.99/мес — экономия 33%",
+		"plans": {
+			"monthly": {
+				"name": "Месячный",
+				"features": [
+					"Поддержка бесплатных тренировок для всех",
+					"Прямая поддержка проверенных тренеров",
+					"Ежемесячная оплата, отмена в любой момент",
+					"Защищено Stripe"
+				]
+			},
+			"yearly": {
+				"name": "Годовой",
+				"features": [
+					"Всё из месячного плана",
+					"Лучшая цена — $9.99 в месяц",
+					"Один платёж за весь год",
+					"Статус раннего сторонника платформы"
+				]
+			}
+		},
+		"subscribe": "Оформить план «{{plan}}»",
+		"processing": "Обработка...",
+		"paymentHistory": "История платежей",
+		"paymentsCount": "{{count}} платежей",
+		"paymentsCountOne": "{{count}} платёж",
+		"status": {
+			"PAID": "ОПЛАЧЕНО",
+			"PENDING": "В ОЖИДАНИИ"
+		},
+		"modal": {
+			"securePayment": "Безопасная оплата",
+			"heading": "План «{{plan}}» — ${{price}}",
+			"testHint": "Тест: 4242 4242 4242 4242 | Любая будущая дата | Любой CVC",
+			"pay": "Оплатить ${{price}}",
+			"securedByStripe": "Защищено Stripe",
+			"paymentFailed": "Оплата не прошла",
+			"notCompleted": "Платёж не был завершён. Попробуйте ещё раз."
+		},
+		"alerts": {
+			"alreadyActive": "У вас уже есть активная подписка",
+			"initiationFailed": "Не удалось инициировать платёж",
+			"activated": "Подписка активирована!"
+		},
+		"loginRequired": "Войдите, чтобы управлять подпиской."
+	}
+}

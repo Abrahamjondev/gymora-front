@@ -1,0 +1,502 @@
+{
+	"menu": {
+		"dashboard": "Boshqaruv",
+		"myProfile": "Mening profilim",
+		"myWorkouts": "Mening mashqlarim",
+		"myPrograms": "Mening dasturlarim",
+		"myArticles": "Mening maqolalarim",
+		"notifications": "Bildirishnomalar",
+		"messages": "Xabarlar",
+		"nutritionPlan": "Ovqatlanish rejasi",
+		"mealTracker": "Ovqat kundaligi",
+		"progress": "Progress",
+		"subscription": "Obuna",
+		"becomeTrainer": "Murabbiy bo'lish",
+		"createWorkout": "Mashq yaratish",
+		"createProgram": "Dastur yaratish",
+		"writeArticle": "Maqola yozish",
+		"sections": {
+			"studio": "Studiya",
+			"training": "Mashg'ulot",
+			"activity": "Faollik",
+			"health": "Salomatlik"
+		}
+	},
+	"dashboard": {
+		"welcome": "Yana xush kelibsiz, {{name}}",
+		"stats": {
+			"workoutsPublished": "Chop etilgan mashqlar",
+			"likes": "Layklar",
+			"totalCalories": "Jami kaloriya",
+			"progress": "Progress",
+			"points": "Ballar"
+		},
+		"recommendations": {
+			"title": "Siz uchun tavsiyalar",
+			"suggestionsCount": "{{count}} ta taklif",
+			"suggestionsCountOne": "{{count}} ta taklif"
+		},
+		"subscription": {
+			"monthlyPlan": "Oylik reja",
+			"yearlyPlan": "Yillik reja",
+			"premiumPlan": "Premium reja",
+			"active": "Faol",
+			"freePlan": "Siz Bepul rejadasiz",
+			"thanks": "Gymora'ni qo'llab-quvvatlaganingiz uchun rahmat.",
+			"upgradeHint": "Bepul mashg'ulotlarni va tasdiqlangan murabbiylarni qo'llab-quvvatlash uchun obunani yangilang.",
+			"manage": "Boshqarish",
+			"upgrade": "Yangilash →"
+		},
+		"quickActions": {
+			"createWorkout": "Mashq yaratish",
+			"createWorkoutDesc": "Bepul mashq chop eting",
+			"createProgram": "Dastur yaratish",
+			"createProgramDesc": "Pullik dastur tuzing",
+			"writeArticle": "Maqola yozish",
+			"writeArticleDesc": "Tajribangiz bilan o'rtoqlashing",
+			"nutrition": "Ovqatlanish",
+			"nutritionDesc": "Ovqat va makrolarni kuzating",
+			"progress": "Progress",
+			"progressDesc": "Tana ko'rsatkichlarini yozib boring",
+			"community": "Hamjamiyat",
+			"communityDesc": "Maqolalarni o'qing va yozing"
+		}
+	},
+	"workouts": {
+		"title": "Mening mashqlarim",
+		"create": "+ Yaratish",
+		"editTitle": "Mashqni tahrirlash",
+		"empty": "Hozircha mashqlar yo'q.",
+		"kcalValue": "{{count}} kkal",
+		"createHeading": "Mashq yaratish",
+		"freePublishedCount": "{{count}} ta bepul mashq chop etilgan",
+		"freePublishedCountOne": "{{count}} ta bepul mashq chop etilgan",
+		"form": {
+			"title": "Nomi *",
+			"titlePlaceholder": "Mashq nomi",
+			"description": "Tavsif",
+			"descPlaceholder": "Bu mashqni tavsiflang...",
+			"targetMuscle": "Maqsadli mushak *",
+			"difficulty": "Daraja",
+			"calories": "Taxminiy kaloriya sarfi",
+			"kcalPlaceholder": "Kkal",
+			"media": "Media",
+			"saveChanges": "O'zgarishlarni saqlash",
+			"publish": "Mashqni chop etish →",
+			"trainingPlan": "Mashq rejasi (mashqlar)",
+			"exercisePlaceholder": "{{n}}-mashq nomi",
+			"sets": "Setlar",
+			"reps": "Takrorlar",
+			"addExercise": "+ Mashq qo'shish"
+		},
+		"media": {
+			"noImage": "RASM YO'Q",
+			"uploading": "Yuklanmoqda...",
+			"uploadThumbnail": "Muqova yuklash",
+			"changeThumbnail": "Muqovani almashtirish",
+			"uploadingVideo": "Video yuklanmoqda...",
+			"uploadVideo": "Video yuklash",
+			"replaceVideo": "Videoni almashtirish",
+			"videoAttached": "Video biriktirildi ✓",
+			"videoUrlPlaceholder": "...yoki video havolasini joylashtiring (YouTube, Vimeo, mp4)"
+		}
+	},
+	"programs": {
+		"title": "Mening dasturlarim",
+		"create": "+ Yaratish",
+		"editTitle": "Dasturni tahrirlash",
+		"createHeading": "Dastur yaratish",
+		"createHint": "Dars videolari chop etilgandan so'ng darhol qo'shiladi — Dars menejeri avtomatik ochiladi.",
+		"empty": "Hozircha dasturlar yo'q.",
+		"browse": "Dasturlarni ko'rish →",
+		"emptyTrainer": "Siz hali dastur yaratmagansiz.",
+		"weeksShort": "{{count}} hafta",
+		"noRatings": "Baholar yo'q",
+		"lessons": "Darslar",
+		"hideLessons": "Darslarni yashirish",
+		"form": {
+			"title": "Nomi *",
+			"titlePlaceholder": "Dastur nomi",
+			"description": "Tavsif",
+			"descPlaceholder": "Bu dasturni tavsiflang...",
+			"category": "Kategoriya",
+			"difficulty": "Daraja",
+			"price": "Narx ($)",
+			"pricePlaceholder": "Narx $",
+			"duration": "Davomiylik (hafta)",
+			"weeksPlaceholder": "Haftalar",
+			"thumbnail": "Muqova",
+			"saveChanges": "O'zgarishlarni saqlash",
+			"publish": "Dasturni chop etish →"
+		}
+	},
+	"lessons": {
+		"header": "Darslar — {{title}}",
+		"count": "{{count}} ta dars",
+		"countOne": "{{count}} ta dars",
+		"weekShort": "H{{n}}",
+		"minutes": "{{count}} daqiqa",
+		"empty": "Hozircha darslar yo'q — birinchisini quyida qo'shing.",
+		"editLesson": "Darsni tahrirlash",
+		"addLesson": "Dars qo'shish",
+		"form": {
+			"title": "Nomi *",
+			"titlePlaceholder": "Dars nomi",
+			"week": "Hafta *",
+			"order": "Tartib *",
+			"duration": "Davomiylik (daqiqa)",
+			"description": "Tavsif",
+			"descPlaceholder": "Qisqa tavsif...",
+			"video": "Video",
+			"videoPlaceholder": "Yuklang yoki havola joylashtiring...",
+			"upload": "Yuklash",
+			"uploading": "Yuklanmoqda...",
+			"saving": "Saqlanmoqda...",
+			"saveChanges": "O'zgarishlarni saqlash",
+			"add": "+ Dars qo'shish"
+		}
+	},
+	"articles": {
+		"eyebrow": "Hamjamiyat",
+		"title": "Mening maqolalarim",
+		"publishedCount": "{{count}} ta chop etilgan",
+		"writeShortcut": "+ Maqola yozish",
+		"emptyTitle": "Hozircha maqolalar yo'q",
+		"emptyDesc": "Birinchi maqolangizni hamjamiyat bilan ulashing.",
+		"writeTitle": "Maqola yozish",
+		"editTitle": "Maqolani tahrirlash",
+		"writeSubtitle": "Fitnes bilimlaringizni hamjamiyat bilan ulashing.",
+		"editSubtitle": "Maqolani yangilang — o'zgarishlar darhol kuchga kiradi.",
+		"form": {
+			"category": "Kategoriya",
+			"categoryFixed": "Kategoriya (chop etilgandan so'ng o'zgarmaydi)",
+			"title": "Sarlavha *",
+			"titlePlaceholder": "Maqolangizga kuchli sarlavha bering...",
+			"contentPlaceholder": "Fitnes bilimlaringizni ulashing...",
+			"publish": "Maqolani chop etish →",
+			"saveChanges": "O'zgarishlarni saqlash →",
+			"publishing": "Chop etilmoqda...",
+			"saving": "Saqlanmoqda..."
+		}
+	},
+	"profile": {
+		"eyebrow": "Hisob",
+		"title": "Mening profilim",
+		"photo": "Profil surati",
+		"uploadImage": "Surat yuklash",
+		"uploading": "Yuklanmoqda...",
+		"photoFormats": "JPG, JPEG yoki PNG formati",
+		"username": "Foydalanuvchi nomi *",
+		"usernamePlaceholder": "Foydalanuvchi nomingiz",
+		"phone": "Telefon *",
+		"phonePlaceholder": "Telefon raqamingiz",
+		"address": "Manzil",
+		"addressPlaceholder": "Manzilingiz",
+		"description": "Tavsif",
+		"descPlaceholder": "O'zingiz haqingizda...",
+		"saving": "Saqlanmoqda...",
+		"update": "Profilni yangilash",
+		"identity": {
+			"verifiedTrainer": "Tasdiqlangan murabbiy",
+			"newTrainer": "Yangi murabbiy",
+			"points": "Ballar",
+			"viewPublicProfile": "Ochiq profilni ko'rish →"
+		},
+		"becomeTrainer": {
+			"title": "Murabbiy bo'lish",
+			"subtitle": "Mashqlar va dasturlar bilan o'rtoqlashish uchun murabbiy profilini yarating.",
+			"bio": "O'zingiz haqingizda *",
+			"bioPlaceholder": "Murabbiylik tajribangiz haqida so'zlab bering...",
+			"specializations": "Mutaxassisliklar (vergul bilan)",
+			"specializationsPlaceholder": "Kuch, HIIT, harakatchanlik",
+			"experience": "Tajriba (yil)",
+			"apply": "Murabbiylikka ariza berish"
+		}
+	},
+	"notifications": {
+		"title": "Bildirishnomalar",
+		"unreadCount": "{{count}} ta o'qilmagan",
+		"all": "Hammasi",
+		"unread": "O'qilmagan",
+		"markAllRead": "Hammasini o'qilgan deb belgilash",
+		"allCaughtUp": "Hammasi o'qildi",
+		"allCaughtUpDesc": "Siz hammasini o'qib bo'ldingiz.",
+		"emptyTitle": "Hozircha bildirishnomalar yo'q",
+		"emptyDesc": "Hisobingiz atrofidagi faollik shu yerda ko'rinadi.",
+		"types": {
+			"SYSTEM": "Tizim",
+			"WORKOUT": "Mashq",
+			"NUTRITION": "Ovqatlanish",
+			"SUBSCRIPTION": "Obuna",
+			"CHAT": "Chat"
+		},
+		"time": {
+			"now": "hozir",
+			"minutesAgo": "{{n}} daqiqa oldin",
+			"hoursAgo": "{{n}} soat oldin",
+			"daysAgo": "{{n}} kun oldin"
+		}
+	},
+	"alerts": {
+		"uploadFailed": "Fayl yuklanmadi",
+		"imageUploadFailed": "Rasm yuklanmadi. Qaytadan urinib ko'ring.",
+		"videoUploaded": "Video yuklandi!",
+		"videoUploadFailed": "Video yuklanmadi",
+		"titleMuscleRequired": "Nomi va maqsadli mushak talab qilinadi",
+		"titleRequired": "Nomi talab qilinadi",
+		"programTitleRequired": "Dastur nomi talab qilinadi",
+		"workoutUpdated": "Mashq yangilandi!",
+		"workoutCreated": "Mashq yaratildi!",
+		"programUpdated": "Dastur yangilandi!",
+		"programCreated": "Dastur yaratildi! Endi quyida darslar va videolarni qo'shing.",
+		"bioRequired": "O'zingiz haqingizda yozish shart",
+		"trainerCreated": "Murabbiy profili yaratildi! Studiyani faollashtirish uchun qaytadan kiring.",
+		"profileUpdated": "Profil muvaffaqiyatli yangilandi.",
+		"deleteArticleConfirm": "Bu maqola butunlay o'chirilsinmi?",
+		"deleted": "O'chirildi",
+		"success": "Bajarildi!",
+		"articleUpdated": "Maqola yangilandi!",
+		"articlePublished": "Maqola chop etildi!",
+		"lessonTitleRequired": "Dars nomi talab qilinadi",
+		"weekMin": "Hafta raqami kamida 1 bo'lishi kerak",
+		"orderMin": "Tartib kamida 1 bo'lishi kerak",
+		"lessonUpdated": "Dars yangilandi!",
+		"lessonAdded": "Dars qo'shildi!",
+		"deleteLessonConfirm": "Bu dars o'chirilsinmi?"
+	},
+	"chat": {
+		"connecting": "Chat serveriga ulanmoqda...",
+		"header": "Xabarlar",
+		"live": "Onlayn",
+		"offline": "Oflayn",
+		"noConversations": "Hozircha suhbatlar yo'q.",
+		"userFallback": "Foydalanuvchi",
+		"startConversation": "Suhbatni boshlang",
+		"activeNow": "Hozir onlayn",
+		"lastSeenJustNow": "Hozirgina onlayn edi",
+		"lastSeenMinutes": "{{n}} daqiqa oldin onlayn edi",
+		"lastSeenHours": "{{n}} soat oldin onlayn edi",
+		"lastSeenDays": "{{n}} kun oldin onlayn edi",
+		"lastSeenDate": "{{date}} kuni onlayn edi",
+		"today": "Bugun",
+		"yesterday": "Kecha",
+		"read": "O'qildi",
+		"sent": "Yuborildi",
+		"inputPlaceholder": "Xabar yozing...",
+		"inputConnecting": "Ulanmoqda...",
+		"send": "Yuborish →",
+		"emptyTitle": "Sizning xabarlaringiz",
+		"emptyDesc": "Suhbatni boshlash uchun dialog tanlang."
+	},
+	"nutrition": {
+		"eyebrowPlan": "Mashg'ulot uchun quvvat",
+		"eyebrowYourPlan": "Sizning rejangiz",
+		"eyebrowTracker": "Ratsioningizni kuzating",
+		"planTitle": "Ovqatlanish rejasi",
+		"trackerTitle": "Ovqat kundaligi",
+		"recalculate": "Qayta hisoblash",
+		"scanFood": "AI orqali skanerlash",
+		"scanning": "Skanerlanmoqda...",
+		"logMealBtn": "+ Ovqat qayd etish",
+		"analyzing": "Ovqat tahlil qilinmoqda...",
+		"analyzingSub": "AI ozuqaviy qiymatni aniqlamoqda",
+		"aiDetected": "AI aniqladi",
+		"logAs": "Qayd etish turi",
+		"mealTypes": {
+			"BREAKFAST": "Nonushta",
+			"LUNCH": "Tushlik",
+			"DINNER": "Kechki ovqat",
+			"SNACK": "Yengil tamaddi"
+		},
+		"macros": {
+			"calories": "Kaloriya",
+			"protein": "Oqsil",
+			"carbs": "Uglevod",
+			"fats": "Yog'"
+		},
+		"macroShort": {
+			"protein": "O:{{n}}g",
+			"carbs": "U:{{n}}g",
+			"fats": "Y:{{n}}g"
+		},
+		"units": {
+			"kcal": "kkal",
+			"g": "g",
+			"perDay": "/kun",
+			"kcalValue": "{{n}} kkal",
+			"kcalPerDay": "kkal/kun",
+			"proteinGrams": "{{n}}g oqsil"
+		},
+		"calc": {
+			"title": "Ovqatlanish rejangizni hisoblang",
+			"subtitle": "Kunlik kaloriya va makro me'yorlaringizni olish uchun ma'lumotlaringizni kiriting",
+			"gender": "Jins",
+			"male": "Erkak",
+			"female": "Ayol",
+			"age": "Yosh",
+			"agePlaceholder": "mas. 25",
+			"height": "Bo'y (sm)",
+			"heightPlaceholder": "mas. 175",
+			"weight": "Vazn (kg)",
+			"weightPlaceholder": "mas. 75",
+			"activityLevel": "Faollik darajasi",
+			"activity": {
+				"SEDENTARY": "Kam harakat",
+				"LIGHTLY_ACTIVE": "Yengil faollik",
+				"MODERATELY_ACTIVE": "O'rtacha faollik",
+				"VERY_ACTIVE": "Yuqori faollik",
+				"EXTRA_ACTIVE": "Juda yuqori faollik"
+			},
+			"goal": "Maqsad",
+			"goals": {
+				"WEIGHT_LOSS": "Vazn yo'qotish",
+				"MAINTENANCE": "Vaznni saqlash",
+				"MUSCLE_GAIN": "Mushak orttirish"
+			},
+			"calculate": "Rejamni hisoblash",
+			"calculating": "Hisoblanmoqda..."
+		},
+		"results": {
+			"dailyCalories": "Kunlik kaloriya",
+			"bodyMetrics": "Tana ko'rsatkichlari",
+			"bmi": "BMI",
+			"bmr": "BMR",
+			"tdee": "TDEE",
+			"goal": "Maqsad",
+			"mealsPerDay": "kuniga {{n}} mahal",
+			"tips": "Maslahatlar",
+			"suggestedMealPlan": "Tavsiya etilgan taomnoma"
+		},
+		"tracker": {
+			"eaten": "Iste'mol qilindi"
+		},
+		"history": {
+			"title": "Kaloriya tarixi",
+			"week": "Hafta",
+			"month": "Oy",
+			"year": "Yil",
+			"barTitle": "{{label}}: {{n}} kkal",
+			"kcalTotal": "kkal jami",
+			"avgPerActiveDay": "o'rtacha / faol kun",
+			"daysLogged": "kun qayd etilgan",
+			"activeMonths": "faol oy"
+		},
+		"form": {
+			"title": "Ovqat qayd etish",
+			"mealNamePlaceholder": "Taom nomi",
+			"save": "Saqlash"
+		},
+		"recentMeals": "So'nggi taomlar",
+		"loggedCount": "{{count}} ta qayd",
+		"loggedCountOne": "{{count}} ta qayd",
+		"emptyTitle": "Hali ovqat qayd etilmagan",
+		"emptyDesc": "Ovqatni qo'lda qayd eting yoki AI yordamida skanerlang.",
+		"aiHistoryTitle": "AI skanlar tarixi",
+		"alerts": {
+			"loggedAs": "{{type}} sifatida qayd etildi!",
+			"mealLogged": "Ovqat qayd etildi!",
+			"deleteMealConfirm": "Bu yozuv o'chirilsinmi?",
+			"deleteMealFailed": "Yozuvni o'chirib bo'lmadi",
+			"fillBasics": "Yosh, bo'y va vaznni kiriting",
+			"mealNameRequired": "Taom nomini kiriting",
+			"analysisFailed": "Tahlil amalga oshmadi"
+		}
+	},
+	"progress": {
+		"eyebrow": "Tana ko'rsatkichlari",
+		"title": "Taraqqiyot kuzatuvi",
+		"logBtn": "+ Taraqqiyot qayd etish",
+		"form": {
+			"weight": "Vazn (kg)*",
+			"chest": "Ko'krak (sm)",
+			"waist": "Bel (sm)",
+			"hips": "Son (sm)",
+			"bodyFat": "Yog' %",
+			"note": "Izoh",
+			"notePlaceholder": "Ixtiyoriy izoh...",
+			"save": "Yozuvni saqlash"
+		},
+		"emptyTitle": "Hali taraqqiyot yozuvlari yo'q",
+		"emptyDesc": "O'zgarishingizni kuzatishni boshlash uchun birinchi o'lchovni qayd eting.",
+		"summary": {
+			"currentWeight": "Joriy vazn",
+			"totalChange": "Umumiy o'zgarish",
+			"bodyFat": "Yog'",
+			"entries": "Yozuvlar",
+			"noChange": "o'zgarish yo'q"
+		},
+		"weightTrend": "Vazn dinamikasi",
+		"latest": "So'nggi",
+		"metrics": {
+			"chest": "KO'KRAK",
+			"waist": "BEL",
+			"hips": "SON",
+			"fat": "YOG'"
+		},
+		"units": {
+			"kg": "kg",
+			"cm": "sm"
+		},
+		"alerts": {
+			"weightRequired": "Vaznni kiriting",
+			"logged": "Taraqqiyot qayd etildi!"
+		}
+	},
+	"subscription": {
+		"eyebrow": "A'zolik",
+		"titlePrefix": "Natijaga",
+		"titleHighlight": "sarmoya kiriting",
+		"activePlan": "Faol reja",
+		"daysLeftSuffix": "kun qoldi",
+		"expires": "Tugash sanasi",
+		"notAvailable": "Mavjud emas",
+		"bestValue": "Eng foydali",
+		"perMonth": "/oy",
+		"perYear": "/yil",
+		"yearlySub": "$9.99/oy — 33% tejang",
+		"plans": {
+			"monthly": {
+				"name": "Oylik",
+				"features": [
+					"Hamma uchun bepul mashg'ulotlarni qo'llab-quvvatlash",
+					"Tasdiqlangan murabbiylarni bevosita qo'llab-quvvatlash",
+					"Oylik to'lov, istalgan vaqtda bekor qilish",
+					"Stripe himoyasida"
+				]
+			},
+			"yearly": {
+				"name": "Yillik",
+				"features": [
+					"Oylik rejadagi hammasi",
+					"Eng yaxshi narx — oyiga $9.99",
+					"Butun yil uchun bitta to'lov",
+					"Platformaning ilk homiysi maqomi"
+				]
+			}
+		},
+		"subscribe": "{{plan}} rejasiga obuna bo'lish",
+		"processing": "Bajarilmoqda...",
+		"paymentHistory": "To'lovlar tarixi",
+		"paymentsCount": "{{count}} ta to'lov",
+		"paymentsCountOne": "{{count}} ta to'lov",
+		"status": {
+			"PAID": "TO'LANGAN",
+			"PENDING": "KUTILMOQDA"
+		},
+		"modal": {
+			"securePayment": "Xavfsiz to'lov",
+			"heading": "{{plan}} rejasi — ${{price}}",
+			"testHint": "Test: 4242 4242 4242 4242 | Istalgan kelajak sana | Istalgan CVC",
+			"pay": "${{price}} to'lash",
+			"securedByStripe": "Stripe himoyasida",
+			"paymentFailed": "To'lov amalga oshmadi",
+			"notCompleted": "To'lov yakunlanmadi. Qaytadan urinib ko'ring."
+		},
+		"alerts": {
+			"alreadyActive": "Sizda allaqachon faol obuna bor",
+			"initiationFailed": "To'lovni boshlab bo'lmadi",
+			"activated": "Obuna faollashtirildi!"
+		},
+		"loginRequired": "Obunani boshqarish uchun tizimga kiring."
+	}
+}

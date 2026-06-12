@@ -9,6 +9,7 @@ import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_TRAINER_MEMBERS } from '../../apollo/user/query';
 import { LIKE_TARGET_MEMBER } from '../../apollo/user/mutation';
@@ -18,12 +19,13 @@ import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/swee
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'trainer', 'enums'])),
 	},
 });
 
 const TrainerList: NextPage = () => {
 	const device = useDeviceDetect();
+	const { t } = useTranslation('trainer');
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const [trainers, setTrainers] = useState<Member[]>([]);
@@ -99,10 +101,10 @@ const TrainerList: NextPage = () => {
 	};
 
 	const sortOptions = [
-		{ value: 'memberRank', label: 'Top Ranked' },
-		{ value: 'memberLikes', label: 'Most Liked' },
-		{ value: 'memberViews', label: 'Most Viewed' },
-		{ value: 'createdAt', label: 'Newest' },
+		{ value: 'memberRank', label: t('list.sort.topRanked') },
+		{ value: 'memberLikes', label: t('list.sort.mostLiked') },
+		{ value: 'memberViews', label: t('list.sort.mostViewed') },
+		{ value: 'createdAt', label: t('list.sort.newest') },
 	];
 
 	/** LOADING STATE **/
@@ -120,16 +122,16 @@ const TrainerList: NextPage = () => {
 				{/* Hero */}
 				<div className="wl-hero">
 					<div className="wl-hero-glow" />
-					<span className="lp-eyebrow lp-eyebrow--green">Verified professionals</span>
+					<span className="lp-eyebrow lp-eyebrow--green">{t('list.eyebrow')}</span>
 					<h1 className="wl-title">
-						Elite <span className="lp-grad">Trainers</span>
+						{t('list.titlePre')} <span className="lp-grad">{t('list.titleAccent')}</span>
 					</h1>
 					<p className="lp-sub" style={{ margin: 0 }}>
-						Work with world-class athletes and certified professionals dedicated to pushing your limits.
+						{t('list.subtitle')}
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? `${total} trainers on the roster` : 'Loading roster'}</span>
+						<span>{total > 0 ? t('list.rosterCount', { count: total }) : t('list.loadingRoster')}</span>
 					</div>
 				</div>
 
@@ -141,7 +143,7 @@ const TrainerList: NextPage = () => {
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
-								placeholder="Search by name or keyword..."
+								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
 								<span
@@ -187,17 +189,17 @@ const TrainerList: NextPage = () => {
 										{trainer.memberFullName || trainer.memberNick}
 										{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
 									</h3>
-									<p>{trainer.memberDesc || 'Professional fitness trainer'}</p>
+									<p>{trainer.memberDesc || t('list.defaultBio')}</p>
 								</div>
 							</div>
 
 							<div className="tr-card-foot">
 								<div className="tr-card-meta">
 									<span>
-										<b>{trainer.memberWorkouts}</b> workouts
+										<b>{trainer.memberWorkouts}</b> {t('list.card.workouts')}
 									</span>
 									<span>
-										<b>{trainer.memberFollowers}</b> followers
+										<b>{trainer.memberFollowers}</b> {t('list.card.followers')}
 									</span>
 								</div>
 								<div className="tr-card-side">
@@ -216,9 +218,9 @@ const TrainerList: NextPage = () => {
 				{/* No results */}
 				{!loading && trainers.length === 0 && (
 					<div className="wl-empty">
-						<span className="wl-empty-label">No results</span>
-						<h3>No trainers match this search.</h3>
-						<p>Try a different name or keyword.</p>
+						<span className="wl-empty-label">{t('list.empty.label')}</span>
+						<h3>{t('list.empty.title')}</h3>
+						<p>{t('list.empty.hint')}</p>
 					</div>
 				)}
 
@@ -226,10 +228,10 @@ const TrainerList: NextPage = () => {
 				{total > 0 && (
 					<div className="tr-stats">
 						{[
-							{ label: 'Total Trainers', value: `${total}` },
-							{ label: 'Workouts Published', value: `${trainers.reduce((a, t) => a + (t.memberWorkouts || 0), 0)}` },
-							{ label: 'Followers', value: `${trainers.reduce((a, t) => a + (t.memberFollowers || 0), 0)}` },
-							{ label: 'Likes', value: `${trainers.reduce((a, t) => a + (t.memberLikes || 0), 0)}` },
+							{ label: t('list.stats.totalTrainers'), value: `${total}` },
+							{ label: t('list.stats.workoutsPublished'), value: `${trainers.reduce((a, m) => a + (m.memberWorkouts || 0), 0)}` },
+							{ label: t('list.stats.followers'), value: `${trainers.reduce((a, m) => a + (m.memberFollowers || 0), 0)}` },
+							{ label: t('list.stats.likes'), value: `${trainers.reduce((a, m) => a + (m.memberLikes || 0), 0)}` },
 						].map((stat) => (
 							<div key={stat.label}>
 								<span className="tr-stat-label">{stat.label}</span>

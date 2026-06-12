@@ -9,6 +9,7 @@ import LikeButton from '../../libs/components/common/LikeButton';
 import VideoPlayer from '../../libs/components/common/VideoPlayer';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_WORKOUT, GET_COMMENTS, GET_WORKOUT_REVIEWS } from '../../apollo/user/query';
 import { LIKE_WORKOUT, CREATE_COMMENT, CREATE_REVIEW } from '../../apollo/user/mutation';
@@ -24,13 +25,14 @@ import CreatorCard from '../../libs/components/common/CreatorCard';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'workout', 'enums'])),
 	},
 });
 
 const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
+	const { t } = useTranslation('workout');
 	const user = useReactiveVar(userVar);
 	const [workoutId, setWorkoutId] = useState<string | null>(null);
 	const [workout, setWorkout] = useState<Workout | null>(null);
@@ -93,13 +95,13 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const reviewHandler = async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			if (!reviewText) throw new Error('Review text required');
+			if (!reviewText) throw new Error(t('alerts.reviewTextRequired'));
 			await createReview({ variables: { input: { workoutId, reviewRating, reviewText } } });
 			notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New review on your workout', `${user.memberNick} rated "${workout?.workoutTitle}" ${reviewRating}/5`);
 			setReviewText('');
 			const { data } = await reviewsRefetch({ input: workoutId });
 			if (data?.getWorkoutReviews) setWorkoutReviews(data.getWorkoutReviews);
-			await sweetTopSmallSuccessAlert('Review posted!', 800);
+			await sweetTopSmallSuccessAlert(t('alerts.reviewPosted'), 800);
 		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 	};
 
@@ -207,7 +209,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 	if (!workout) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
-				<Typography sx={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>Workout not found.</Typography>
+				<Typography sx={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>{t('detail.notFound')}</Typography>
 			</Stack>
 		);
 	}
@@ -232,28 +234,32 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 				<div className="lp-hero-grain" />
 				<div className="lp-container wd-hero-inner">
 					<button className="wd-back" onClick={() => router.push('/workout')}>
-						← Library
+						← {t('detail.back')}
 					</button>
 					<div>
 						<div className="wd-chips">
-							{workout.targetMuscle && <span className="lp-chip lp-chip--cyan">{workout.targetMuscle}</span>}
+							{workout.targetMuscle && (
+								<span className="lp-chip lp-chip--cyan">
+									{t(`enums:muscle.${workout.targetMuscle}`, { defaultValue: workout.targetMuscle })}
+								</span>
+							)}
 							<span className="lp-chip" style={{ color: difficultyColor[workout.workoutDifficulty] || '#00dce5' }}>
-								{workout.workoutDifficulty}
+								{t(`enums:difficulty.${workout.workoutDifficulty}`)}
 							</span>
 							<span className="lp-chip" style={{ color: '#ffc08f', borderColor: 'rgba(255,138,0,0.3)' }}>
-								{workout.estimatedCaloriesBurned} KCAL
+								{t('detail.kcal', { count: workout.estimatedCaloriesBurned })}
 							</span>
 						</div>
 						<h1 className="wd-title">{workout.workoutTitle}</h1>
 						<div className="wd-meta">
 							<span>
-								<b>{workout.workoutViews ?? 0}</b> views
+								<b>{workout.workoutViews ?? 0}</b> {t('common:stats.views')}
 							</span>
 							<span>
-								<b>{workout.workoutLikes ?? 0}</b> likes
+								<b>{workout.workoutLikes ?? 0}</b> {t('common:stats.likes')}
 							</span>
 							<span>
-								<b>{workout.exercises?.length ?? 0}</b> exercises
+								<b>{workout.exercises?.length ?? 0}</b> {t('detail.exercises')}
 							</span>
 						</div>
 					</div>
@@ -265,14 +271,14 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 				{/* Sticky sidebar */}
 				<div className="wd-side">
 					<div className="wd-stats">
-						<h4>Workout Summary</h4>
+						<h4>{t('detail.summary.title')}</h4>
 						<div className="wd-stats-grid">
 							<div>
-								<span className="wd-stat-label">Est. Cal</span>
+								<span className="wd-stat-label">{t('detail.summary.estCal')}</span>
 								<span className="wd-stat-value">{workout.estimatedCaloriesBurned}</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Difficulty</span>
+								<span className="wd-stat-label">{t('detail.summary.difficulty')}</span>
 								<span className="wd-stat-value" style={{ fontSize: '14px' }}>
 									<span
 										style={{
@@ -283,15 +289,15 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 											background: difficultyColor[workout.workoutDifficulty] || '#00dce5',
 										}}
 									/>
-									{workout.workoutDifficulty}
+									{t(`enums:difficulty.${workout.workoutDifficulty}`)}
 								</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Views</span>
+								<span className="wd-stat-label">{t('detail.summary.views')}</span>
 								<span className="wd-stat-value">{workout.workoutViews ?? 0}</span>
 							</div>
 							<div>
-								<span className="wd-stat-label">Likes</span>
+								<span className="wd-stat-label">{t('detail.summary.likes')}</span>
 								<span className="wd-stat-value">{workout.workoutLikes ?? 0}</span>
 							</div>
 						</div>
@@ -303,11 +309,11 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 						count={workout.workoutLikes ?? 0}
 						onClick={(e) => likeHandler(user, workout._id)}
 						variant="full"
-						label="Like this workout"
+						label={t('detail.likeThisWorkout')}
 					/>
 
 					{/* Creator profile */}
-					<CreatorCard memberId={(workout as any)?.memberId} title="Coach" />
+					<CreatorCard memberId={(workout as any)?.memberId} title={t('common:creator.coach')} />
 				</div>
 
 				{/* Main content */}
@@ -316,7 +322,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					{workout.workoutDesc && (
 						<div className="wd-section">
 							<div className="wd-section-head">
-								<h3>About</h3>
+								<h3>{t('detail.about')}</h3>
 							</div>
 							<p>{workout.workoutDesc}</p>
 						</div>
@@ -326,8 +332,8 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					{workout.exercises && workout.exercises.length > 0 && (
 						<div className="wd-section">
 							<div className="wd-section-head">
-								<h3>Training Plan</h3>
-								<span className="wd-section-count">{workout.exercises.length} exercises</span>
+								<h3>{t('detail.trainingPlan')}</h3>
+								<span className="wd-section-count">{t('detail.exercisesCount', { count: workout.exercises.length })}</span>
 							</div>
 							{workout.exercises.map((ex, idx) => (
 								<div key={idx} className="wd-ex-row">
@@ -336,8 +342,8 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 										<h4>{ex.exerciseName}</h4>
 									</div>
 									<div className="wd-ex-chips">
-										<span>{ex.sets} SETS</span>
-										<span>{ex.reps} REPS</span>
+										<span>{t('detail.sets', { count: ex.sets })}</span>
+										<span>{t('detail.reps', { count: ex.reps })}</span>
 									</div>
 								</div>
 							))}
@@ -348,7 +354,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					{workout.videoUrl && (
 						<div className="wd-section">
 							<div className="wd-section-head">
-								<h3>Video</h3>
+								<h3>{t('detail.video')}</h3>
 							</div>
 							<VideoPlayer src={workout.videoUrl} title={workout.workoutTitle} />
 						</div>
@@ -357,8 +363,8 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					{/* Comments */}
 					<div className="wd-section">
 						<div className="wd-section-head">
-							<h3>Comments</h3>
-							<span className="wd-section-count">{commentTotal} total</span>
+							<h3>{t('detail.comments')}</h3>
+							<span className="wd-section-count">{t('detail.commentsTotal', { count: commentTotal })}</span>
 						</div>
 
 						{/* Leave a comment */}
@@ -367,14 +373,14 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 								className="wd-textarea"
 								onChange={({ target: { value } }) => setInsertCommentData({ ...insertCommentData, commentContent: value })}
 								value={insertCommentData.commentContent}
-								placeholder="Share your experience..."
+								placeholder={t('detail.commentPlaceholder')}
 							/>
 							<button
 								className="wd-btn"
 								onClick={createCommentHandler}
 								disabled={insertCommentData.commentContent === '' || user?._id === ''}
 							>
-								Post Comment
+								{t('detail.postComment')}
 							</button>
 						</div>
 
@@ -387,7 +393,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 								/>
 								<div className="wd-comment-body">
 									<div className="wd-comment-head">
-										<span className="wd-comment-nick">{comment.memberData?.memberNick ?? 'Anonymous'}</span>
+										<span className="wd-comment-nick">{comment.memberData?.memberNick ?? t('detail.anonymous')}</span>
 										<span className="wd-comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
 									</div>
 									<p>{comment.commentContent}</p>
@@ -396,7 +402,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 						))}
 
 						{workoutComments.length === 0 && !getCommentsLoading && (
-							<p className="wd-empty-line">No comments yet. Be the first!</p>
+							<p className="wd-empty-line">{t('detail.noCommentsYet')}</p>
 						)}
 
 						{commentTotal > 5 && (
@@ -418,8 +424,8 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 					{/* Star Reviews */}
 					<div className="wd-section">
 						<div className="wd-section-head">
-							<h3>Athlete Reviews</h3>
-							<span className="wd-section-count">{workoutReviews.length} reviews</span>
+							<h3>{t('detail.athleteReviews')}</h3>
+							<span className="wd-section-count">{t('detail.reviewsCount', { count: workoutReviews.length })}</span>
 						</div>
 						{user?._id && (
 							<div className="wd-form-card">
@@ -436,10 +442,10 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 										style={{ flex: 1 }}
 										value={reviewText}
 										onChange={(e) => setReviewText(e.target.value)}
-										placeholder="Write a review..."
+										placeholder={t('detail.reviewPlaceholder')}
 									/>
 									<button className="wd-btn" onClick={reviewHandler}>
-										Post
+										{t('common:actions.post')}
 									</button>
 								</div>
 							</div>
@@ -452,7 +458,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 								/>
 								<div className="wd-comment-body">
 									<div className="wd-comment-head">
-										<span className="wd-comment-nick">{r.memberData?.memberNick ?? 'User'}</span>
+										<span className="wd-comment-nick">{r.memberData?.memberNick ?? t('detail.userFallback')}</span>
 										<span className="wd-comment-stars">
 											{'★'.repeat(r.reviewRating)}
 											{'☆'.repeat(5 - r.reviewRating)}
@@ -462,7 +468,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 								</div>
 							</div>
 						))}
-						{workoutReviews.length === 0 && <p className="wd-empty-line">No star reviews yet.</p>}
+						{workoutReviews.length === 0 && <p className="wd-empty-line">{t('detail.noReviewsYet')}</p>}
 					</div>
 				</div>
 			</div>

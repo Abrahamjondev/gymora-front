@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { CircularProgress, Stack } from '@mui/material';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { GET_PROGRESS_TIMELINE } from '../../../apollo/user/query';
 import { ADD_PROGRESS } from '../../../apollo/user/mutation';
@@ -49,6 +50,7 @@ const WeightSparkline = ({ weights }: { weights: number[] }) => {
 };
 
 const ProgressContent = () => {
+	const { t } = useTranslation('mypage');
 	const user = useReactiveVar(userVar);
 	const [timeline, setTimeline] = useState<any[]>([]);
 	const [showAdd, setShowAdd] = useState(false);
@@ -65,7 +67,7 @@ const ProgressContent = () => {
 	const addHandler = async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			if (!newEntry.weight) throw new Error('Weight is required');
+			if (!newEntry.weight) throw new Error(t('progress.alerts.weightRequired'));
 			await addProgress({
 				variables: {
 					input: {
@@ -83,7 +85,7 @@ const ProgressContent = () => {
 			if (rd?.getProgressTimeline) setTimeline(rd.getProgressTimeline);
 			setShowAdd(false);
 			setNewEntry({ progressDate: new Date().toISOString(), weight: '', chest: '', waist: '', hips: '', bodyFat: '', progressNote: '' });
-			await sweetMixinSuccessAlert('Progress logged!');
+			await sweetMixinSuccessAlert(t('progress.alerts.logged'));
 		} catch (err: any) {
 			sweetMixinErrorAlert(err.message).then();
 		}
@@ -96,7 +98,9 @@ const ProgressContent = () => {
 	const latestFat = timeline.find((e: any) => e.bodyFat != null)?.bodyFat;
 	const chartWeights = [...timeline].reverse().map((e: any) => e.weight);
 
-	const deltaChip = (delta: number | null, unit: string = 'kg') => {
+	const formatEntryDate = (iso: string) => new Date(iso).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+
+	const deltaChip = (delta: number | null, unit: string = t('progress.units.kg')) => {
 		if (delta === null || delta === 0) return null;
 		const down = delta < 0;
 		return (
@@ -112,12 +116,12 @@ const ProgressContent = () => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>
-						Body metrics
+						{t('progress.eyebrow')}
 					</span>
-					<h2>Progress Tracker</h2>
+					<h2>{t('progress.title')}</h2>
 				</div>
 				<button className="wd-btn" onClick={() => setShowAdd(!showAdd)}>
-					{showAdd ? 'Close' : '+ Log Progress'}
+					{showAdd ? t('common:actions.close') : t('progress.logBtn')}
 				</button>
 			</div>
 
@@ -126,38 +130,38 @@ const ProgressContent = () => {
 				<div className="wd-form-card" style={{ borderColor: 'rgba(0,220,229,0.25)' }}>
 					<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '12px', marginBottom: '14px' }}>
 						<div>
-							<span style={labelStyle}>Weight (kg)*</span>
+							<span style={labelStyle}>{t('progress.form.weight')}</span>
 							<input className="wd-input" type="number" value={newEntry.weight} onChange={(e) => setNewEntry({ ...newEntry, weight: e.target.value })} />
 						</div>
 						<div>
-							<span style={labelStyle}>Chest (cm)</span>
+							<span style={labelStyle}>{t('progress.form.chest')}</span>
 							<input className="wd-input" type="number" value={newEntry.chest} onChange={(e) => setNewEntry({ ...newEntry, chest: e.target.value })} />
 						</div>
 						<div>
-							<span style={labelStyle}>Waist (cm)</span>
+							<span style={labelStyle}>{t('progress.form.waist')}</span>
 							<input className="wd-input" type="number" value={newEntry.waist} onChange={(e) => setNewEntry({ ...newEntry, waist: e.target.value })} />
 						</div>
 						<div>
-							<span style={labelStyle}>Hips (cm)</span>
+							<span style={labelStyle}>{t('progress.form.hips')}</span>
 							<input className="wd-input" type="number" value={newEntry.hips} onChange={(e) => setNewEntry({ ...newEntry, hips: e.target.value })} />
 						</div>
 						<div>
-							<span style={labelStyle}>Body Fat %</span>
+							<span style={labelStyle}>{t('progress.form.bodyFat')}</span>
 							<input className="wd-input" type="number" value={newEntry.bodyFat} onChange={(e) => setNewEntry({ ...newEntry, bodyFat: e.target.value })} />
 						</div>
 						<div>
-							<span style={labelStyle}>Note</span>
+							<span style={labelStyle}>{t('progress.form.note')}</span>
 							<input
 								className="wd-input"
 								type="text"
 								value={newEntry.progressNote}
 								onChange={(e) => setNewEntry({ ...newEntry, progressNote: e.target.value })}
-								placeholder="Optional note..."
+								placeholder={t('progress.form.notePlaceholder')}
 							/>
 						</div>
 					</div>
 					<button className="wd-btn" onClick={addHandler}>
-						Save Entry
+						{t('progress.form.save')}
 					</button>
 				</div>
 			)}
@@ -169,31 +173,31 @@ const ProgressContent = () => {
 			) : timeline.length === 0 ? (
 				<div className="nt-empty">
 					<div className="nt-empty-ic">△</div>
-					<h4>No progress entries yet</h4>
-					<p>Log your first measurement to start tracking your transformation.</p>
+					<h4>{t('progress.emptyTitle')}</h4>
+					<p>{t('progress.emptyDesc')}</p>
 				</div>
 			) : (
 				<>
 					{/* Summary — computed from real entries */}
 					<div className="pg-summary">
 						<div className="pg-stat">
-							<span className="pg-stat-label">Current Weight</span>
+							<span className="pg-stat-label">{t('progress.summary.currentWeight')}</span>
 							<span className="pg-stat-value">
-								{latest.weight} <small>kg</small>
+								{latest.weight} <small>{t('progress.units.kg')}</small>
 							</span>
 						</div>
 						<div className="pg-stat">
-							<span className="pg-stat-label">Total Change</span>
+							<span className="pg-stat-label">{t('progress.summary.totalChange')}</span>
 							<span className="pg-stat-value" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-								{totalChange !== null ? deltaChip(totalChange) || <small>no change</small> : <small>—</small>}
+								{totalChange !== null ? deltaChip(totalChange) || <small>{t('progress.summary.noChange')}</small> : <small>—</small>}
 							</span>
 						</div>
 						<div className="pg-stat">
-							<span className="pg-stat-label">Body Fat</span>
+							<span className="pg-stat-label">{t('progress.summary.bodyFat')}</span>
 							<span className="pg-stat-value">{latestFat != null ? <>{latestFat} <small>%</small></> : <small>—</small>}</span>
 						</div>
 						<div className="pg-stat">
-							<span className="pg-stat-label">Entries</span>
+							<span className="pg-stat-label">{t('progress.summary.entries')}</span>
 							<span className="pg-stat-value">{timeline.length}</span>
 						</div>
 					</div>
@@ -202,7 +206,7 @@ const ProgressContent = () => {
 					{chartWeights.length > 1 && (
 						<div className="pg-chart">
 							<div className="pg-chart-head">
-								<span>Weight trend</span>
+								<span>{t('progress.weightTrend')}</span>
 								<span>
 									{new Date(oldest.progressDate).toLocaleDateString()} — {new Date(latest.progressDate).toLocaleDateString()}
 								</span>
@@ -219,16 +223,16 @@ const ProgressContent = () => {
 							return (
 								<div key={entry._id} className="pg-entry">
 									<div className="pg-entry-top">
-										<span className="pg-entry-date">{new Date(entry.progressDate).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' })}</span>
+										<span className="pg-entry-date">{formatEntryDate(entry.progressDate)}</span>
 										{idx === 0 && (
 											<span className="lp-chip lp-chip--cyan" style={{ fontSize: '8.5px' }}>
-												Latest
+												{t('progress.latest')}
 											</span>
 										)}
 									</div>
 									<div className="pg-entry-weight">
 										<span className="pg-weight-value">
-											{entry.weight} <small>kg</small>
+											{entry.weight} <small>{t('progress.units.kg')}</small>
 										</span>
 										{deltaChip(delta)}
 									</div>
@@ -236,22 +240,22 @@ const ProgressContent = () => {
 										<div className="pg-metrics">
 											{entry.chest && (
 												<span className="pg-metric">
-													CHEST <b>{entry.chest}cm</b>
+													{t('progress.metrics.chest')} <b>{entry.chest}{t('progress.units.cm')}</b>
 												</span>
 											)}
 											{entry.waist && (
 												<span className="pg-metric">
-													WAIST <b>{entry.waist}cm</b>
+													{t('progress.metrics.waist')} <b>{entry.waist}{t('progress.units.cm')}</b>
 												</span>
 											)}
 											{entry.hips && (
 												<span className="pg-metric">
-													HIPS <b>{entry.hips}cm</b>
+													{t('progress.metrics.hips')} <b>{entry.hips}{t('progress.units.cm')}</b>
 												</span>
 											)}
 											{entry.bodyFat && (
 												<span className="pg-metric">
-													FAT <b>{entry.bodyFat}%</b>
+													{t('progress.metrics.fat')} <b>{entry.bodyFat}%</b>
 												</span>
 											)}
 										</div>

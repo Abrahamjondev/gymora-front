@@ -1,0 +1,78 @@
+{
+	"list": {
+		"eyebrow": "Проверенные профессионалы",
+		"titlePre": "Элитные",
+		"titleAccent": "тренеры",
+		"subtitle": "Тренируйтесь с атлетами мирового уровня и сертифицированными профессионалами, которые помогут вам превзойти свои пределы.",
+		"rosterCount": "Тренеров в составе: {{count}}",
+		"loadingRoster": "Загружаем состав",
+		"searchPlaceholder": "Поиск по имени или ключевому слову...",
+		"sort": {
+			"topRanked": "По рейтингу",
+			"mostLiked": "По лайкам",
+			"mostViewed": "По просмотрам",
+			"newest": "Новые"
+		},
+		"defaultBio": "Профессиональный фитнес-тренер",
+		"card": {
+			"workouts": "тренировок",
+			"followers": "подписчиков"
+		},
+		"empty": {
+			"label": "Нет результатов",
+			"title": "По этому запросу тренеры не найдены.",
+			"hint": "Попробуйте другое имя или ключевое слово."
+		},
+		"stats": {
+			"totalTrainers": "Всего тренеров",
+			"workoutsPublished": "Опубликовано тренировок",
+			"followers": "Подписчики",
+			"likes": "Лайки"
+		}
+	},
+	"detail": {
+		"back": "← Тренеры",
+		"notFound": "Тренер не найден.",
+		"verified": "Проверенный тренер",
+		"pending": "Тренер",
+		"rank": "Ранг",
+		"experienceShort": "{{count}} л.",
+		"weeksShort": "{{count}} нед.",
+		"free": "Бесплатно",
+		"sections": {
+			"freeWorkouts": "Бесплатные тренировки",
+			"publishedCount": "Опубликовано: {{count}}",
+			"programsCountOne": "{{count}} программа",
+			"programsCount": "Программ: {{count}}",
+			"latestCount": "Последние {{count}}",
+			"athleteReviews": "Отзывы атлетов",
+			"reviewsCountOne": "{{count}} отзыв",
+			"reviewsCount": "Отзывов: {{count}}"
+		},
+		"people": {
+			"noFollowers": "Подписчиков пока нет.",
+			"noFollowings": "Пока ни на кого не подписан."
+		},
+		"review": {
+			"placeholder": "Поделитесь опытом тренировок с {{name}}...",
+			"eligibilityNote": "Оставить отзыв могут только атлеты, купившие один из курсов {{name}}.",
+			"alreadyReviewed": "Вы уже оставили отзыв об этом тренере.",
+			"empty": "Отзывов пока нет.",
+			"anonymous": "Пользователь"
+		}
+	},
+	"member": {
+		"notFound": "Участник не найден.",
+		"empty": {
+			"workouts": "Тренировок пока нет.",
+			"articles": "Статей пока нет.",
+			"followers": "Подписчиков пока нет.",
+			"followings": "Пока ни на кого не подписан."
+		}
+	},
+	"alerts": {
+		"success": "Успешно",
+		"reviewTextRequired": "Введите текст отзыва",
+		"reviewPosted": "Отзыв опубликован!"
+	}
+}

@@ -10,13 +10,14 @@ import { CourseCategory, CourseDifficulty } from '../../libs/enums/course.enum';
 import { Direction } from '../../libs/enums/common.enum';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { useQuery } from '@apollo/client';
 import { GET_COURSES } from '../../apollo/user/query';
 import { REACT_APP_API_URL } from '../../libs/config';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'program', 'enums'])),
 	},
 });
 
@@ -28,9 +29,12 @@ const categoryColors: Record<string, string> = {
 	NUTRITION: '#ffb77f',
 };
 
+const fallbackAccent = '#00dce5';
+
 const CourseList: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
+	const { t } = useTranslation('program');
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [total, setTotal] = useState<number>(0);
 	const [searchFilter, setSearchFilter] = useState<CoursesInquiry>({
@@ -113,10 +117,10 @@ const CourseList: NextPage = () => {
 	const categories = ['ALL', 'STRENGTH', 'CARDIO', 'YOGA', 'MOBILITY', 'NUTRITION'];
 	const difficulties = ['ALL', 'BEGINNER', 'INTERMEDIATE', 'ADVANCED'];
 	const sortOptions = [
-		{ value: 'courseRank', label: 'Top Ranked' },
-		{ value: 'courseRating', label: 'Highest Rated' },
-		{ value: 'coursePrice', label: 'Price' },
-		{ value: 'createdAt', label: 'Newest' },
+		{ value: 'courseRank', label: t('list.sortTopRanked') },
+		{ value: 'courseRating', label: t('list.sortHighestRated') },
+		{ value: 'coursePrice', label: t('list.sortPrice') },
+		{ value: 'createdAt', label: t('list.sortNewest') },
 	];
 
 	const hasActiveFilters = activeCategory !== 'ALL' || activeDifficulty !== 'ALL' || searchText;
@@ -127,16 +131,16 @@ const CourseList: NextPage = () => {
 				{/* Hero */}
 				<div className="wl-hero">
 					<div className="wl-hero-glow" />
-					<span className="lp-eyebrow lp-eyebrow--orange">Structured training</span>
+					<span className="lp-eyebrow lp-eyebrow--orange">{t('list.eyebrow')}</span>
 					<h1 className="wl-title">
-						Training <span className="lp-grad">Programs</span>
+						{t('list.titleLead')} <span className="lp-grad">{t('list.titleAccent')}</span>
 					</h1>
 					<p className="lp-sub" style={{ margin: 0 }}>
-						Multi-week programs designed by elite trainers. From strength to mobility — find your path.
+						{t('list.sub')}
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? `${total} programs available` : 'Loading programs'}</span>
+						<span>{total > 0 ? t('list.programsAvailable', { count: total }) : t('list.loadingPrograms')}</span>
 					</div>
 				</div>
 
@@ -148,7 +152,7 @@ const CourseList: NextPage = () => {
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()}
-								placeholder="Search programs..."
+								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
 								<span
@@ -175,7 +179,7 @@ const CourseList: NextPage = () => {
 						<div className="wl-seg">
 							{difficulties.map((d) => (
 								<button key={d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
-									{d === 'ALL' ? 'All Levels' : d.charAt(0) + d.slice(1).toLowerCase()}
+									{d === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${d}`)}
 								</button>
 							))}
 						</div>
@@ -195,7 +199,7 @@ const CourseList: NextPage = () => {
 										onClick={() => categoryFilterHandler(cat)}
 									>
 										{accent && <span className="cl-cat-dot" style={{ background: accent }} />}
-										{cat === 'ALL' ? 'All Goals' : cat.charAt(0) + cat.slice(1).toLowerCase()}
+										{cat === 'ALL' ? t('list.allGoals') : t(`enums:category.${cat}`)}
 									</button>
 								);
 							})}
@@ -206,12 +210,12 @@ const CourseList: NextPage = () => {
 				{/* Active filters summary */}
 				{hasActiveFilters && (
 					<div className="wl-active-row">
-						<span className="wl-active-label">ACTIVE:</span>
-						{activeCategory !== 'ALL' && <span className="wl-active-chip">{activeCategory}</span>}
-						{activeDifficulty !== 'ALL' && <span className="wl-active-chip">{activeDifficulty}</span>}
+						<span className="wl-active-label">{t('list.activeLabel')}</span>
+						{activeCategory !== 'ALL' && <span className="wl-active-chip">{t(`enums:category.${activeCategory}`)}</span>}
+						{activeDifficulty !== 'ALL' && <span className="wl-active-chip">{t(`enums:difficulty.${activeDifficulty}`)}</span>}
 						{searchText && <span className="wl-active-chip">"{searchText}"</span>}
 						<button className="wl-active-clear" onClick={clearAllHandler}>
-							✕ Clear all
+							✕ {t('common:actions.clearAll')}
 						</button>
 					</div>
 				)}
@@ -229,7 +233,7 @@ const CourseList: NextPage = () => {
 								</div>
 						  ))
 						: courses.map((course) => {
-								const accent = categoryColors[course.courseCategory] || '#00dce5';
+								const accent = categoryColors[course.courseCategory] || fallbackAccent;
 								return (
 									<div
 										key={course._id}
@@ -254,27 +258,27 @@ const CourseList: NextPage = () => {
 												className="lp-chip"
 												style={{ position: 'absolute', top: '12px', left: '12px', background: `${accent}20`, borderColor: `${accent}35`, color: accent }}
 											>
-												{course.courseCategory}
+												{t(`enums:category.${course.courseCategory}`)}
 											</span>
 											{course.courseRating && course.courseRating > 0 ? (
 												<span className="cl-card-rating">★ {course.courseRating.toFixed(1)}</span>
 											) : null}
-											<span className="cl-card-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}</span>
+											<span className="cl-card-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : t('list.free')}</span>
 										</div>
 
 										<div className="cl-card-body">
 											<h3>{course.courseTitle}</h3>
-											<p className="cl-card-desc">{course.courseDesc || 'Professional training program'}</p>
+											<p className="cl-card-desc">{course.courseDesc || t('list.descFallback')}</p>
 											<div className="cl-card-foot">
 												<div className="cl-card-meta">
-													<span>{course.courseDuration}W</span>
-													<span>{course.courseDifficulty}</span>
+													<span>{t('list.weeksShort', { count: course.courseDuration })}</span>
+													<span>{t(`enums:difficulty.${course.courseDifficulty}`)}</span>
 													{(course.purchasedMembers?.length ?? 0) > 0 && (
-														<span style={{ color: '#66daba' }}>{course.purchasedMembers.length} enrolled</span>
+														<span style={{ color: '#66daba' }}>{t('list.enrolledCount', { count: course.purchasedMembers.length })}</span>
 													)}
 													{(course.courseLikes ?? 0) > 0 && <span style={{ color: '#ff8a8a' }}>♥ {course.courseLikes}</span>}
 												</div>
-												<button className="cl-card-cta">View Program →</button>
+												<button className="cl-card-cta">{t('list.viewProgram')}</button>
 											</div>
 										</div>
 									</div>
@@ -285,9 +289,9 @@ const CourseList: NextPage = () => {
 				{/* No results */}
 				{!loading && courses.length === 0 && (
 					<div className="wl-empty">
-						<span className="wl-empty-label">No results</span>
-						<h3>No programs match these filters.</h3>
-						<p>Try a different goal, level or search term.</p>
+						<span className="wl-empty-label">{t('list.emptyLabel')}</span>
+						<h3>{t('list.emptyTitle')}</h3>
+						<p>{t('list.emptyText')}</p>
 					</div>
 				)}
 

@@ -1,12 +1,16 @@
 import type { AppProps } from 'next/app';
+import { useRouter } from 'next/router';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import { CssBaseline } from '@mui/material';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { light } from '../scss/MaterialTheme';
 import { ApolloProvider } from '@apollo/client';
 import { useApollo } from '../apollo/client';
 import { appWithTranslation } from 'next-i18next';
 import useSocket from '../libs/hooks/useSocket';
+import moment from 'moment';
+import 'moment/locale/ru';
+import 'moment/locale/uz-latn';
 import '../scss/app.scss';
 
 // Keeps the presence socket connected on EVERY page while logged in — without
@@ -14,6 +18,24 @@ import '../scss/app.scss';
 // chat page itself was open.
 const PresenceSocket = () => {
 	useSocket();
+	return null;
+};
+
+// localeDetection is off, so the language picked in the switcher (NEXT_LOCALE
+// cookie) is restored manually on first load. Also keeps moment's locale in
+// sync so formatted dates (e.g. "MMM D") localize too.
+const LocaleRestore = () => {
+	const router = useRouter();
+	useEffect(() => {
+		const saved = document.cookie.match(/(?:^|;\s*)NEXT_LOCALE=(\w+)/)?.[1];
+		if (saved && router.locales?.includes(saved) && saved !== router.locale) {
+			router.replace(router.asPath, router.asPath, { locale: saved });
+		}
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, []);
+	useEffect(() => {
+		moment.locale(router.locale === 'uz' ? 'uz-latn' : router.locale || 'en');
+	}, [router.locale]);
 	return null;
 };
 
@@ -27,6 +49,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
 				<PresenceSocket />
+				<LocaleRestore />
 				<Component {...pageProps} />
 			</ThemeProvider>
 		</ApolloProvider>

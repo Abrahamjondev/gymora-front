@@ -1,34 +1,36 @@
 import React from 'react';
+import { useTranslation } from 'next-i18next';
 import useReveal from '../../hooks/useReveal';
 
-const steps = [
-	{
-		num: '01',
-		title: 'Create your free account',
-		desc: 'Join in seconds. Every workout on the platform is completely free — train with no paywall from day one.',
-	},
-	{
-		num: '02',
-		title: 'Train with elite programs',
-		desc: 'Follow trainer-built workouts, then go deeper with structured multi-week programs. Secure checkout, instant access to your first lesson.',
-	},
-	{
-		num: '03',
-		title: 'Track everything',
-		desc: 'Scan meals with AI, hit personalized nutrition targets and watch your progress timeline grow in your dashboard.',
-	},
-];
-
 const HowItWorks = () => {
+	const { t } = useTranslation('landing');
 	const sectionRef = useReveal<HTMLElement>();
+
+	const steps = [
+		{
+			num: '01',
+			title: t('howItWorks.step1.title'),
+			desc: t('howItWorks.step1.desc'),
+		},
+		{
+			num: '02',
+			title: t('howItWorks.step2.title'),
+			desc: t('howItWorks.step2.desc'),
+		},
+		{
+			num: '03',
+			title: t('howItWorks.step3.title'),
+			desc: t('howItWorks.step3.desc'),
+		},
+	];
 
 	return (
 		<section ref={sectionRef} className="lp-section lp-reveal">
 			<div className="lp-container">
 				<div className="lp-section-head">
 					<div>
-						<span className="lp-eyebrow">How it works</span>
-						<h2 className="lp-h2">From first rep to real results</h2>
+						<span className="lp-eyebrow">{t('howItWorks.eyebrow')}</span>
+						<h2 className="lp-h2">{t('howItWorks.title')}</h2>
 					</div>
 				</div>
 

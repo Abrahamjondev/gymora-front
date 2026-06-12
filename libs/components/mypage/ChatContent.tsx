@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 import { CircularProgress, Stack } from '@mui/material';
 import { useLazyQuery, useQuery, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY, GET_MEMBER, GET_PARTNER_ONLINE_STATUS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
@@ -10,6 +11,7 @@ import { sweetMixinErrorAlert } from '../../sweetAlert';
 import useSocket from '../../hooks/useSocket';
 
 const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void }) => {
+	const { t } = useTranslation('mypage');
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const partnerParam = router.query?.partner as string | undefined;
@@ -192,16 +194,16 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 	const activeConv = conversations.find((c: any) => c.partnerId === activePartner);
 
 	const lastSeenLabel = (iso?: string) => {
-		if (!iso) return 'Offline';
+		if (!iso) return t('chat.offline');
 		const diff = Date.now() - new Date(iso).getTime();
 		const m = Math.floor(diff / 60000);
-		if (m < 1) return 'Last seen just now';
-		if (m < 60) return `Last seen ${m}m ago`;
+		if (m < 1) return t('chat.lastSeenJustNow');
+		if (m < 60) return t('chat.lastSeenMinutes', { n: m });
 		const h = Math.floor(m / 60);
-		if (h < 24) return `Last seen ${h}h ago`;
+		if (h < 24) return t('chat.lastSeenHours', { n: h });
 		const d = Math.floor(h / 24);
-		if (d < 7) return `Last seen ${d}d ago`;
-		return `Last seen ${new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' })}`;
+		if (d < 7) return t('chat.lastSeenDays', { n: d });
+		return t('chat.lastSeenDate', { date: new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' }) });
 	};
 
 	const formatConvTime = (iso?: string) => {
@@ -218,10 +220,12 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		const today = new Date();
 		const yesterday = new Date(today);
 		yesterday.setDate(today.getDate() - 1);
-		if (d.toDateString() === today.toDateString()) return 'Today';
-		if (d.toDateString() === yesterday.toDateString()) return 'Yesterday';
+		if (d.toDateString() === today.toDateString()) return t('chat.today');
+		if (d.toDateString() === yesterday.toDateString()) return t('chat.yesterday');
 		return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
 	};
+
+	const formatMsgTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
 
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
@@ -229,7 +233,7 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 			{!connected && user?._id && (
 				<div className="ct-connecting">
 					<CircularProgress size={12} sx={{ color: '#ffb77f' }} />
-					Connecting to chat server...
+					{t('chat.connecting')}
 				</div>
 			)}
 
@@ -237,10 +241,10 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 				{/* Left — Conversations */}
 				<div className="ct-side">
 					<div className="ct-side-head">
-						<h3>Messages</h3>
+						<h3>{t('chat.header')}</h3>
 						<span className={`ct-live${connected ? '' : ' is-off'}`}>
 							<span className="ct-live-dot" />
-							{connected ? 'Live' : 'Offline'}
+							{connected ? t('chat.live') : t('chat.offline')}
 						</span>
 					</div>
 					<div className="ct-convs">
@@ -249,7 +253,7 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 								<CircularProgress sx={{ color: '#00dce5' }} size={'2rem'} />
 							</Stack>
 						) : conversations.length === 0 ? (
-							<p style={{ padding: '20px', color: '#9aabab', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>No conversations yet.</p>
+							<p style={{ padding: '20px', color: '#9aabab', fontFamily: 'Hanken Grotesk', fontSize: '14px' }}>{t('chat.noConversations')}</p>
 						) : (
 							conversations.map((conv: any) => (
 								<div
@@ -263,10 +267,10 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 									</div>
 									<div className="ct-conv-main">
 										<div className="ct-conv-top">
-											<span className="ct-conv-nick">{conv.partnerNick || 'User'}</span>
+											<span className="ct-conv-nick">{conv.partnerNick || t('chat.userFallback')}</span>
 											<span className="ct-conv-time">{formatConvTime(conv.lastMessageAt)}</span>
 										</div>
-										<p className="ct-conv-last">{conv.lastMessage || 'Start the conversation'}</p>
+										<p className="ct-conv-last">{conv.lastMessage || t('chat.startConversation')}</p>
 									</div>
 									{!conv.isRead && conv.lastMessage && <span className="ct-unread" />}
 								</div>
@@ -286,11 +290,11 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 									{partnerStatus?.isOnline && <span className="ct-online" />}
 								</div>
 								<div className="ct-room-id">
-									<span className="ct-room-name">{activeConv?.partnerNick || 'User'}</span>
+									<span className="ct-room-name">{activeConv?.partnerNick || t('chat.userFallback')}</span>
 									{partnerStatus && (
 										<span className={`ct-presence${partnerStatus.isOnline ? ' is-online' : ''}`}>
 											<span className="ct-presence-dot" />
-											{partnerStatus.isOnline ? 'Active now' : lastSeenLabel(partnerStatus.lastSeen)}
+											{partnerStatus.isOnline ? t('chat.activeNow') : lastSeenLabel(partnerStatus.lastSeen)}
 										</span>
 									)}
 								</div>
@@ -316,9 +320,9 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 														<p>{msg.message}</p>
 													</div>
 													<span className="ct-time">
-														{msg.createdAt ? new Date(msg.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
+														{formatMsgTime(msg.createdAt)}
 														{isMine && (
-															<span className={`ct-receipt${msg.isRead ? ' is-read' : ''}`} title={msg.isRead ? 'Read' : 'Sent'}>
+															<span className={`ct-receipt${msg.isRead ? ' is-read' : ''}`} title={msg.isRead ? t('chat.read') : t('chat.sent')}>
 																{msg.isRead ? '✓✓' : '✓'}
 															</span>
 														)}
@@ -337,19 +341,19 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 									value={messageText}
 									onChange={(e) => setMessageText(e.target.value)}
 									onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendHandler()}
-									placeholder={connected ? 'Type your message...' : 'Connecting...'}
+									placeholder={connected ? t('chat.inputPlaceholder') : t('chat.inputConnecting')}
 									disabled={!connected}
 								/>
 								<button className="ct-send" onClick={sendHandler} disabled={!connected || !messageText.trim()}>
-									Send →
+									{t('chat.send')}
 								</button>
 							</div>
 						</>
 					) : (
 						<div className="ct-empty">
 							<div className="ct-empty-ic">◬</div>
-							<h4>Your messages</h4>
-							<p>Select a conversation to start chatting.</p>
+							<h4>{t('chat.emptyTitle')}</h4>
+							<p>{t('chat.emptyDesc')}</p>
 						</div>
 					)}
 				</div>

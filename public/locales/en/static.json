@@ -1,0 +1,113 @@
+{
+	"about": {
+		"eyebrow": "About Gymora",
+		"titlePre": "Training that treats you",
+		"titleAccent": "like an athlete.",
+		"subtitle": "Gymora connects verified trainers with people who are serious about results — free workouts for everyone, structured programs for those ready to go deeper, and AI-powered tracking to prove the work is working.",
+		"stats": {
+			"freeWorkouts": "Free Workouts",
+			"verifiedTrainers": "Verified Trainers",
+			"trainingPrograms": "Training Programs",
+			"platformAccess": "Platform Access"
+		},
+		"valuesTitle": "What we stand for",
+		"values": {
+			"v1Title": "Free training, forever",
+			"v1Desc": "Every workout on Gymora is free. We believe quality coaching knowledge should be the starting point, not the paywall.",
+			"v2Title": "Verified expertise",
+			"v2Desc": "Trainers are verified before they earn their badge, and every rating comes from a member who actually trained with them.",
+			"v3Title": "Data over guesswork",
+			"v3Desc": "AI food scanning, calculated nutrition targets and a measurable progress timeline — decisions built on your numbers."
+		},
+		"cta": {
+			"title": "Built for your strongest season.",
+			"subtitle": "Join free, train with verified professionals and let the data tell your story.",
+			"primary": "Start Training Free →",
+			"secondary": "Meet the Trainers"
+		}
+	},
+	"cs": {
+		"eyebrow": "Support",
+		"titlePre": "How can we",
+		"titleAccent": "help?",
+		"subtitle": "Answers to the most common questions about training, programs and your account.",
+		"faq": {
+			"q1": "Is Gymora really free?",
+			"a1": "Yes — every workout on the platform is completely free for registered members. Trainers publish their workouts openly; you only pay if you enroll in a structured multi-week program.",
+			"q2": "How do program purchases work?",
+			"a2": "Programs are one-time purchases with lifetime access, processed through Stripe secure checkout. Your first lesson unlocks immediately after enrolling, and the following lessons unlock as you complete the previous ones.",
+			"q3": "How do I become a trainer?",
+			"a3": "Open My Page and use the \"Become Trainer\" form — add your bio, specializations and experience. Your account is upgraded to a trainer profile, and platform admins verify trainers before their badge turns green.",
+			"q4": "Who can leave reviews?",
+			"a4": "Workout reviews are open to all members. To review a program you must be enrolled in it, and to review a trainer you must have purchased one of their programs — this keeps every rating genuine.",
+			"q5": "How does the AI food scanner work?",
+			"a5": "In My Page → Nutrition, tap \"AI Scan Food\" and upload a photo of your meal. The AI estimates calories, protein, carbs and fats, and you can log the result directly as breakfast, lunch, dinner or a snack.",
+			"q6": "How does the membership subscription work?",
+			"a6": "Membership is $14.99 monthly or $119.88 yearly ($9.99/month equivalent). Payments are processed by Stripe and you can manage everything from My Page → Subscription.",
+			"q7": "Can I message trainers directly?",
+			"a7": "Yes — My Page → Messages is a real-time chat. You can see who is online and get replies instantly while you are both on the platform."
+		},
+		"cta": {
+			"title": "Still have a question?",
+			"subtitle": "The community is full of trainers and athletes who have probably been exactly where you are.",
+			"primary": "Ask the Community →",
+			"secondary": "Find a Trainer"
+		}
+	},
+	"privacy": {
+		"eyebrow": "Legal",
+		"titlePre": "Privacy",
+		"titleAccent": "Policy",
+		"subtitle": "How Gymora handles your data, in plain language.",
+		"sections": {
+			"collectH": "What we collect",
+			"collectP": "Your account details (nickname, phone), the content you publish (workouts, programs, articles, comments), training activity you log (meals, body metrics, lesson progress) and food photos you submit to the AI scanner.",
+			"useH": "How it is used",
+			"useP": "Your data powers the product itself — your dashboard, progress timeline, nutrition targets and recommendations. We do not sell personal data to third parties.",
+			"paymentsH": "Payments",
+			"paymentsP": "Card payments are processed by Stripe. Your card details never touch Gymora servers — we only store the payment status and amount needed for your purchase history.",
+			"contentH": "Your content",
+			"contentP": "Workouts, programs and articles you publish are visible to other members. You can edit or delete your own content at any time from My Page.",
+			"contactH": "Contact",
+			"contactP": "Questions about your data? Reach the team through the Support page or ask in the community."
+		},
+		"ctaSupport": "Questions? Visit Support →"
+	},
+	"terms": {
+		"eyebrow": "Legal",
+		"titlePre": "Terms of",
+		"titleAccent": "Service",
+		"subtitle": "The ground rules for training, publishing and purchasing on Gymora.",
+		"sections": {
+			"accountH": "Your account",
+			"accountP": "One account per person. You are responsible for what is published from your account, and blocked or deleted accounts lose access to the platform.",
+			"freePaidH": "Free workouts, paid programs",
+			"freePaidP": "Every workout on Gymora is free for registered members. Structured programs are one-time purchases with lifetime access; lessons unlock as you complete the previous ones.",
+			"trainersH": "Trainers and content",
+			"trainersP": "Trainers own the content they publish and must have the right to share it. Gymora may remove content that is harmful, misleading or violates these terms.",
+			"reviewsH": "Reviews",
+			"reviewsP": "Reviews are tied to real activity: you can only review a program you are enrolled in and a trainer you have purchased from. One review per item, and it should reflect your honest experience.",
+			"healthH": "Health disclaimer",
+			"healthP": "Training and nutrition content on Gymora is general guidance, not medical advice. Consult a professional before starting a new program, especially with existing health conditions.",
+			"paymentsH": "Payments and refunds",
+			"paymentsP": "Payments are processed securely by Stripe. Membership subscriptions can be cancelled anytime and remain active until the end of the paid period."
+		},
+		"ctaSupport": "Questions? Visit Support →"
+	},
+	"notFound": {
+		"chip": "Error 404",
+		"titlePre": "This page skipped",
+		"titleAccent": "leg day",
+		"subtitle": "The page you are looking for doesn't exist or has been moved.",
+		"backHome": "Back to Home",
+		"browseWorkouts": "Browse Workouts"
+	},
+	"serverError": {
+		"chip": "Error 500",
+		"titlePre": "We dropped the",
+		"titleAccent": "barbell",
+		"subtitle": "Something went wrong on our side. Please try again in a moment.",
+		"tryAgain": "Try Again",
+		"backHome": "Back to Home"
+	}
+}

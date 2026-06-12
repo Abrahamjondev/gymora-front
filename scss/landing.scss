@@ -1333,6 +1333,108 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
 
+/* ---------- language switcher ---------- */
+.gnav-lang {
+	position: relative;
+}
+.gnav-lang-btn {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 11.5px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	color: rgba(213, 226, 226, 0.8);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 9999px;
+	padding: 8px 13px;
+	cursor: pointer;
+	transition: all 0.25s ease;
+	svg {
+		opacity: 0.6;
+		transition: transform 0.25s ease;
+	}
+	&:hover {
+		color: #ffffff;
+		border-color: rgba(0, 220, 229, 0.35);
+		background: rgba(0, 220, 229, 0.06);
+	}
+}
+.gnav-lang-menu {
+	position: absolute;
+	top: calc(100% + 10px);
+	right: 0;
+	min-width: 168px;
+	background: rgba(20, 20, 22, 0.97);
+	border: 1px solid rgba(255, 255, 255, 0.09);
+	border-radius: 14px;
+	padding: 6px;
+	box-shadow: 0 18px 50px rgba(0, 0, 0, 0.55), 0 0 24px rgba(0, 220, 229, 0.06);
+	backdrop-filter: blur(14px);
+	animation: fadeInUp 0.22s $lp-ease both;
+	z-index: 50;
+}
+.gnav-lang-item {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	width: 100%;
+	font-family: 'Hanken Grotesk', sans-serif;
+	font-size: 13.5px;
+	font-weight: 600;
+	color: rgba(213, 226, 226, 0.85);
+	background: transparent;
+	border: none;
+	border-radius: 9px;
+	padding: 10px 12px;
+	cursor: pointer;
+	text-align: left;
+	transition: all 0.2s ease;
+	.gnav-lang-code {
+		font-family: 'JetBrains Mono', monospace;
+		font-size: 10px;
+		font-weight: 700;
+		letter-spacing: 0.06em;
+		color: rgba(185, 202, 202, 0.55);
+		width: 24px;
+	}
+	&:hover {
+		background: rgba(255, 255, 255, 0.05);
+		color: #ffffff;
+	}
+	&.is-active {
+		background: rgba(0, 220, 229, 0.09);
+		color: #00dce5;
+		.gnav-lang-code {
+			color: #00dce5;
+		}
+	}
+}
+.gnav-lang-row {
+	display: flex;
+	gap: 8px;
+}
+.gnav-lang-pill {
+	font-family: 'JetBrains Mono', monospace;
+	font-size: 11px;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	color: rgba(213, 226, 226, 0.7);
+	background: rgba(255, 255, 255, 0.04);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 9999px;
+	padding: 8px 16px;
+	cursor: pointer;
+	transition: all 0.25s ease;
+	&.is-active {
+		color: #00dce5;
+		border-color: rgba(0, 220, 229, 0.45);
+		background: rgba(0, 220, 229, 0.08);
+	}
+}
+
 /* ---------- footer ---------- */
 .lp-footer {
 	border-top: 1px solid rgba(255, 255, 255, 0.05);

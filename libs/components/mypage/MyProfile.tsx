@@ -5,6 +5,7 @@ import axios from 'axios';
 import { Messages, REACT_APP_API_URL } from '../../config';
 import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
 import { useMutation, useReactiveVar } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
 import { UPDATE_MEMBER } from '../../../apollo/user/mutation';
@@ -22,6 +23,7 @@ const labelStyle: React.CSSProperties = {
 
 const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 	const device = useDeviceDetect();
+	const { t } = useTranslation('mypage');
 	const token = getJwtToken();
 	const user = useReactiveVar(userVar);
 	const [updateData, setUpdateData] = useState<MemberUpdate>(initialValues);
@@ -73,7 +75,7 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			updateData.memberImage = responseImage;
 			setUpdateData({ ...updateData });
 		} catch (err: any) {
-			sweetMixinErrorAlert('Image upload failed. Please try again.').then();
+			sweetMixinErrorAlert(t('alerts.imageUploadFailed')).then();
 		} finally {
 			setUploading(false);
 		}
@@ -89,7 +91,7 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			const jwtToken = result.data.updateMember?.accessToken;
 			await updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
-			await sweetMixinSuccessAlert('Profile updated successfully.');
+			await sweetMixinSuccessAlert(t('alerts.profileUpdated'));
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		} finally {
@@ -104,15 +106,15 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow" style={{ marginBottom: '6px' }}>
-						Account
+						{t('profile.eyebrow')}
 					</span>
-					<h2>My Profile</h2>
+					<h2>{t('profile.title')}</h2>
 				</div>
 			</div>
 
 			{/* Photo */}
 			<div className="wd-form-card" style={{ marginBottom: '18px' }}>
-				<span style={labelStyle}>Profile Photo</span>
+				<span style={labelStyle}>{t('profile.photo')}</span>
 				<div style={{ display: 'flex', alignItems: 'center', gap: '22px', marginTop: '12px' }}>
 					<div
 						style={{
@@ -140,10 +142,10 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 							className="nt-markall"
 							style={{ display: 'inline-block', cursor: uploading ? 'wait' : 'pointer' }}
 						>
-							{uploading ? 'Uploading...' : 'Upload Image'}
+							{uploading ? t('profile.uploading') : t('profile.uploadImage')}
 						</label>
 						<p style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)', marginTop: '9px' }}>
-							JPG, JPEG or PNG format
+							{t('profile.photoFormats')}
 						</p>
 					</div>
 				</div>
@@ -153,21 +155,21 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			<div className="wd-form-card">
 				<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', marginBottom: '16px' }}>
 					<div>
-						<span style={labelStyle}>Username *</span>
+						<span style={labelStyle}>{t('profile.username')}</span>
 						<input
 							className="wd-input"
 							type="text"
-							placeholder="Your username"
+							placeholder={t('profile.usernamePlaceholder')}
 							value={updateData.memberNick || ''}
 							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberNick: value })}
 						/>
 					</div>
 					<div>
-						<span style={labelStyle}>Phone *</span>
+						<span style={labelStyle}>{t('profile.phone')}</span>
 						<input
 							className="wd-input"
 							type="text"
-							placeholder="Your phone"
+							placeholder={t('profile.phonePlaceholder')}
 							value={updateData.memberPhone || ''}
 							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberPhone: value })}
 						/>
@@ -175,28 +177,28 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 				</div>
 
 				<div style={{ marginBottom: '16px' }}>
-					<span style={labelStyle}>Address</span>
+					<span style={labelStyle}>{t('profile.address')}</span>
 					<input
 						className="wd-input"
 						type="text"
-						placeholder="Your address"
+						placeholder={t('profile.addressPlaceholder')}
 						value={updateData.memberAddress || ''}
 						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberAddress: value })}
 					/>
 				</div>
 
 				<div style={{ marginBottom: '22px' }}>
-					<span style={labelStyle}>Description</span>
+					<span style={labelStyle}>{t('profile.description')}</span>
 					<textarea
 						className="wd-textarea"
-						placeholder="About yourself..."
+						placeholder={t('profile.descPlaceholder')}
 						value={updateData.memberDesc || ''}
 						onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberDesc: value })}
 					/>
 				</div>
 
 				<button className="wd-btn" onClick={updateProfileHandler} disabled={isDisabled}>
-					{saving ? 'Saving...' : 'Update Profile'}
+					{saving ? t('profile.saving') : t('profile.update')}
 				</button>
 			</div>
 		</div>

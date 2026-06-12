@@ -1,0 +1,60 @@
+{
+	"list": {
+		"eyebrow": "Протокол производительности",
+		"titleLead": "Библиотека",
+		"titleAccent": "тренировок",
+		"subtitle": "Точно выверенные программы, созданные для элитных атлетов и людей, нацеленных на результат.",
+		"protocolsAvailable": "Доступно протоколов: {{count}}",
+		"loadingProtocols": "Загрузка протоколов",
+		"searchPlaceholder": "Поиск тренировок...",
+		"sort": {
+			"newest": "Сначала новые",
+			"mostLiked": "По лайкам",
+			"mostViewed": "По просмотрам",
+			"topRanked": "По рейтингу",
+			"highestBurn": "По сжиганию калорий"
+		},
+		"allLevels": "Все уровни",
+		"activeLabel": "Активно:",
+		"kcal": "{{count}} ККАЛ",
+		"empty": {
+			"title": "Ничего не соответствует этому протоколу.",
+			"subtitle": "Попробуйте другую группу мышц, уровень или поисковый запрос."
+		}
+	},
+	"detail": {
+		"back": "Библиотека",
+		"notFound": "Тренировка не найдена.",
+		"kcal": "{{count}} ККАЛ",
+		"exercises": "упражнений",
+		"exercisesCount": "Упражнений: {{count}}",
+		"summary": {
+			"title": "Сводка тренировки",
+			"estCal": "Прибл. ккал",
+			"difficulty": "Сложность",
+			"views": "Просмотры",
+			"likes": "Лайки"
+		},
+		"likeThisWorkout": "Нравится эта тренировка",
+		"about": "О тренировке",
+		"trainingPlan": "План тренировки",
+		"sets": "{{count}} ПОДХ.",
+		"reps": "{{count}} ПОВТ.",
+		"video": "Видео",
+		"comments": "Комментарии",
+		"commentsTotal": "Всего: {{count}}",
+		"commentPlaceholder": "Поделитесь своим опытом...",
+		"postComment": "Отправить комментарий",
+		"anonymous": "Аноним",
+		"userFallback": "Пользователь",
+		"noCommentsYet": "Пока нет комментариев. Будьте первым!",
+		"athleteReviews": "Отзывы атлетов",
+		"reviewsCount": "Отзывов: {{count}}",
+		"reviewPlaceholder": "Напишите отзыв...",
+		"noReviewsYet": "Пока нет оценок."
+	},
+	"alerts": {
+		"reviewTextRequired": "Введите текст отзыва",
+		"reviewPosted": "Отзыв опубликован!"
+	}
+}

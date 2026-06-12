@@ -8,6 +8,7 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE } from '../../apollo/user/mutation';
 import {
 	GET_MEMBER,
@@ -25,7 +26,7 @@ import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } f
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'trainer', 'enums'])),
 	},
 });
 
@@ -37,6 +38,7 @@ const difficultyColor: Record<string, string> = {
 
 const MemberPage: NextPage = () => {
 	const device = useDeviceDetect();
+	const { t } = useTranslation('trainer');
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
 	const memberId = router.query?.memberId as string;
@@ -113,7 +115,7 @@ const MemberPage: NextPage = () => {
 			}
 			const { data } = await memberRefetch({ input: memberId });
 			if (data?.getMember) setMember(data.getMember);
-			await sweetTopSmallSuccessAlert('success', 800);
+			await sweetTopSmallSuccessAlert(t('alerts.success'), 800);
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		} finally {
@@ -148,10 +150,10 @@ const MemberPage: NextPage = () => {
 	};
 
 	const tabs = [
-		{ key: 'workouts', label: `Workouts (${memberWorkouts.length})` },
-		{ key: 'followers', label: `Followers (${member?.memberFollowers ?? 0})` },
-		{ key: 'followings', label: `Following (${member?.memberFollowings ?? 0})` },
-		{ key: 'articles', label: `Articles (${member?.memberArticles ?? 0})` },
+		{ key: 'workouts', label: `${t('common:stats.workouts')} (${memberWorkouts.length})` },
+		{ key: 'followers', label: `${t('common:stats.followers')} (${member?.memberFollowers ?? 0})` },
+		{ key: 'followings', label: `${t('common:stats.following')} (${member?.memberFollowings ?? 0})` },
+		{ key: 'articles', label: `${t('common:stats.articles')} (${member?.memberArticles ?? 0})` },
 	];
 
 	if (memberLoading) {
@@ -165,7 +167,7 @@ const MemberPage: NextPage = () => {
 	if (!member) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
-				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>Member not found.</p>
+				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>{t('member.notFound')}</p>
 			</Stack>
 		);
 	}
@@ -183,7 +185,7 @@ const MemberPage: NextPage = () => {
 					<div key={p._id} className="td-person" style={{ border: '1px solid rgba(255,255,255,0.06)', background: 'rgba(255,255,255,0.015)', padding: '12px 14px' }} onClick={() => personClickHandler(p)}>
 						<img src={p.memberImage ? `${REACT_APP_API_URL}/${p.memberImage}` : '/img/profile/defaultUser.svg'} alt={p.memberNick} />
 						<span className="td-person-nick">{p.memberFullName || p.memberNick}</span>
-						<span className={`td-person-type${p.memberType === 'TRAINER' ? ' is-trainer' : ''}`}>{p.memberType}</span>
+						<span className={`td-person-type${p.memberType === 'TRAINER' ? ' is-trainer' : ''}`}>{t(`enums:memberType.${p.memberType}`)}</span>
 					</div>
 				))}
 			</div>
@@ -202,34 +204,34 @@ const MemberPage: NextPage = () => {
 								<img src={member.memberImage ? `${REACT_APP_API_URL}/${member.memberImage}` : '/img/profile/defaultUser.svg'} alt={memberName} />
 							</div>
 							<h2 className="td-name">{memberName}</h2>
-							<div className="td-verified is-pending">{member.memberType}</div>
+							<div className="td-verified is-pending">{t(`enums:memberType.${member.memberType}`)}</div>
 							{member.memberDesc && <p className="td-bio">{member.memberDesc}</p>}
 
 							{/* Stats */}
 							<div className="td-stats">
 								<div>
 									<span className="td-stat-value">{member.memberWorkouts ?? 0}</span>
-									<span className="td-stat-label">Workouts</span>
+									<span className="td-stat-label">{t('common:stats.workouts')}</span>
 								</div>
 								<div>
 									<span className="td-stat-value">{member.memberFollowers ?? 0}</span>
-									<span className="td-stat-label">Followers</span>
+									<span className="td-stat-label">{t('common:stats.followers')}</span>
 								</div>
 								<div>
 									<span className="td-stat-value">{member.memberFollowings ?? 0}</span>
-									<span className="td-stat-label">Following</span>
+									<span className="td-stat-label">{t('common:stats.following')}</span>
 								</div>
 								<div>
 									<span className="td-stat-value">{member.memberArticles ?? 0}</span>
-									<span className="td-stat-label">Articles</span>
+									<span className="td-stat-label">{t('common:stats.articles')}</span>
 								</div>
 								<div>
 									<span className="td-stat-value">{member.memberLikes ?? 0}</span>
-									<span className="td-stat-label">Likes</span>
+									<span className="td-stat-label">{t('common:stats.likes')}</span>
 								</div>
 								<div>
 									<span className="td-stat-value">{member.memberViews ?? 0}</span>
-									<span className="td-stat-label">Views</span>
+									<span className="td-stat-label">{t('common:stats.views')}</span>
 								</div>
 							</div>
 
@@ -251,10 +253,10 @@ const MemberPage: NextPage = () => {
 											cursor: 'pointer',
 										}}
 									>
-										Message
+										{t('common:actions.message')}
 									</button>
 									<button className={`td-follow${isFollowing ? ' is-following' : ''}`} onClick={followHandler} disabled={followBusy}>
-										{isFollowing ? 'Following' : 'Follow'}
+										{isFollowing ? t('common:actions.following') : t('common:actions.follow')}
 									</button>
 									<LikeButton liked={!!member.meLiked?.[0]?.myFavorite} count={member.memberLikes ?? 0} onClick={likeMemberHandler} variant="full" />
 								</div>
@@ -277,7 +279,7 @@ const MemberPage: NextPage = () => {
 						{/* Workouts tab */}
 						{activeTab === 'workouts' &&
 							(memberWorkouts.length === 0 && !workoutsLoading ? (
-								<p className="wd-empty-line">No workouts yet.</p>
+								<p className="wd-empty-line">{t('member.empty.workouts')}</p>
 							) : (
 								<div className="td-grid2">
 									{memberWorkouts.map((w) => (
@@ -290,7 +292,9 @@ const MemberPage: NextPage = () => {
 												/>
 												<div className="wl-card-shade" />
 												<div className="wl-card-chips">
-													{w.targetMuscle && <span className="lp-chip lp-chip--cyan">{w.targetMuscle}</span>}
+													{w.targetMuscle && (
+														<span className="lp-chip lp-chip--cyan">{t(`enums:muscle.${w.targetMuscle}`, { defaultValue: w.targetMuscle })}</span>
+													)}
 												</div>
 												<span className="wl-kcal">{w.estimatedCaloriesBurned} KCAL</span>
 											</div>
@@ -299,7 +303,7 @@ const MemberPage: NextPage = () => {
 												<div className="wl-card-foot">
 													<span className="wl-diff">
 														<span className="wl-diff-dot" style={{ background: difficultyColor[w.workoutDifficulty] || '#00dce5' }} />
-														{w.workoutDifficulty}
+														{t(`enums:difficulty.${w.workoutDifficulty}`, { defaultValue: w.workoutDifficulty })}
 													</span>
 													<span className="wl-card-arrow">→</span>
 												</div>
@@ -310,15 +314,15 @@ const MemberPage: NextPage = () => {
 							))}
 
 						{/* Followers tab */}
-						{activeTab === 'followers' && renderPeople(followers, 'followerData', 'No followers yet.')}
+						{activeTab === 'followers' && renderPeople(followers, 'followerData', t('member.empty.followers'))}
 
 						{/* Followings tab */}
-						{activeTab === 'followings' && renderPeople(followings, 'followingData', 'Not following anyone yet.')}
+						{activeTab === 'followings' && renderPeople(followings, 'followingData', t('member.empty.followings'))}
 
 						{/* Articles tab */}
 						{activeTab === 'articles' &&
 							(articles.length === 0 ? (
-								<p className="wd-empty-line">No articles yet.</p>
+								<p className="wd-empty-line">{t('member.empty.articles')}</p>
 							) : (
 								<div className="td-grid2">
 									{articles.map((article: any) => (
@@ -327,12 +331,14 @@ const MemberPage: NextPage = () => {
 											className="lp-article-card"
 											onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
 										>
-											<span className="lp-article-cat">{article.articleCategory?.replace(/_/g, ' ')}</span>
+											<span className="lp-article-cat">
+												{t(`enums:articleCategory.${article.articleCategory}`, { defaultValue: article.articleCategory?.replace(/_/g, ' ') })}
+											</span>
 											<h3>{article.articleTitle}</h3>
 											<div className="lp-article-meta">
 												<span>{new Date(article.createdAt).toLocaleDateString()}</span>
 												<span>
-													{article.articleViews} views · ♥ {article.articleLikes}
+													{article.articleViews} {t('common:stats.views')} · ♥ {article.articleLikes}
 												</span>
 											</div>
 										</div>

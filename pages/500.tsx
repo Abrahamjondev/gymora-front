@@ -2,13 +2,15 @@ import React from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: { ...(await serverSideTranslations(locale, ['common'])) },
+	props: { ...(await serverSideTranslations(locale, ['common', 'static'])) },
 });
 
 const ServerError: NextPage = () => {
 	const router = useRouter();
+	const { t } = useTranslation('static');
 
 	return (
 		<div
@@ -60,7 +62,7 @@ const ServerError: NextPage = () => {
 					marginBottom: '10px',
 				}}
 			>
-				Error 500
+				{t('serverError.chip')}
 			</span>
 			<h1
 				style={{
@@ -72,17 +74,17 @@ const ServerError: NextPage = () => {
 					margin: '0 0 14px',
 				}}
 			>
-				We dropped the <span style={{ color: '#ff8a8a' }}>barbell</span>.
+				{t('serverError.titlePre')} <span style={{ color: '#ff8a8a' }}>{t('serverError.titleAccent')}</span>.
 			</h1>
 			<p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '16px', color: '#b9caca', maxWidth: '440px', margin: '0 0 34px', lineHeight: '24px' }}>
-				Something went wrong on our side. Please try again in a moment.
+				{t('serverError.subtitle')}
 			</p>
 			<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
 				<button className="lp-btn-primary" style={{ padding: '14px 30px', fontSize: '14px' }} onClick={() => router.reload()}>
-					Try Again
+					{t('serverError.tryAgain')}
 				</button>
 				<button className="lp-btn-ghost" style={{ padding: '14px 30px', fontSize: '14px' }} onClick={() => router.push('/')}>
-					Back to Home
+					{t('serverError.backHome')}
 				</button>
 			</div>
 		</div>

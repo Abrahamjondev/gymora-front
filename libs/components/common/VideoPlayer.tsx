@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'next-i18next';
 import { REACT_APP_API_URL } from '../../config';
 
 /**
@@ -28,6 +29,7 @@ const frameStyle: React.CSSProperties = {
 };
 
 const VideoPlayer = ({ src, title }: { src: string; title?: string }) => {
+	const { t } = useTranslation('common');
 	if (!src) return null;
 
 	const yt = getYouTubeId(src);
@@ -36,7 +38,7 @@ const VideoPlayer = ({ src, title }: { src: string; title?: string }) => {
 			<div style={frameStyle}>
 				<iframe
 					src={`https://www.youtube.com/embed/${yt}`}
-					title={title ?? 'Video'}
+					title={title ?? t('videoPlayer.title')}
 					allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
 					allowFullScreen
 					style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}
@@ -51,7 +53,7 @@ const VideoPlayer = ({ src, title }: { src: string; title?: string }) => {
 			<div style={frameStyle}>
 				<iframe
 					src={`https://player.vimeo.com/video/${vimeo}`}
-					title={title ?? 'Video'}
+					title={title ?? t('videoPlayer.title')}
 					allow="autoplay; fullscreen; picture-in-picture"
 					allowFullScreen
 					style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', border: 0 }}

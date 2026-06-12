@@ -1,0 +1,78 @@
+{
+	"list": {
+		"eyebrow": "Verified professionals",
+		"titlePre": "Elite",
+		"titleAccent": "Trainers",
+		"subtitle": "Work with world-class athletes and certified professionals dedicated to pushing your limits.",
+		"rosterCount": "{{count}} trainers on the roster",
+		"loadingRoster": "Loading roster",
+		"searchPlaceholder": "Search by name or keyword...",
+		"sort": {
+			"topRanked": "Top Ranked",
+			"mostLiked": "Most Liked",
+			"mostViewed": "Most Viewed",
+			"newest": "Newest"
+		},
+		"defaultBio": "Professional fitness trainer",
+		"card": {
+			"workouts": "workouts",
+			"followers": "followers"
+		},
+		"empty": {
+			"label": "No results",
+			"title": "No trainers match this search.",
+			"hint": "Try a different name or keyword."
+		},
+		"stats": {
+			"totalTrainers": "Total Trainers",
+			"workoutsPublished": "Workouts Published",
+			"followers": "Followers",
+			"likes": "Likes"
+		}
+	},
+	"detail": {
+		"back": "← Trainers",
+		"notFound": "Trainer not found.",
+		"verified": "Verified trainer",
+		"pending": "Trainer",
+		"rank": "Rank",
+		"experienceShort": "{{count}}y",
+		"weeksShort": "{{count}}w",
+		"free": "Free",
+		"sections": {
+			"freeWorkouts": "Free Workouts",
+			"publishedCount": "{{count}} published",
+			"programsCountOne": "{{count}} program",
+			"programsCount": "{{count}} programs",
+			"latestCount": "Latest {{count}}",
+			"athleteReviews": "Athlete Reviews",
+			"reviewsCountOne": "{{count}} review",
+			"reviewsCount": "{{count}} reviews"
+		},
+		"people": {
+			"noFollowers": "No followers yet.",
+			"noFollowings": "Not following anyone yet."
+		},
+		"review": {
+			"placeholder": "Share your experience with {{name}}...",
+			"eligibilityNote": "Only athletes who have purchased one of {{name}}'s courses can leave a review.",
+			"alreadyReviewed": "You have already reviewed this trainer.",
+			"empty": "No reviews yet.",
+			"anonymous": "User"
+		}
+	},
+	"member": {
+		"notFound": "Member not found.",
+		"empty": {
+			"workouts": "No workouts yet.",
+			"articles": "No articles yet.",
+			"followers": "No followers yet.",
+			"followings": "Not following anyone yet."
+		}
+	},
+	"alerts": {
+		"success": "Success",
+		"reviewTextRequired": "Review text is required",
+		"reviewPosted": "Review posted!"
+	}
+}

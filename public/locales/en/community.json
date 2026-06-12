@@ -1,0 +1,36 @@
+{
+	"list": {
+		"eyebrow": "Community",
+		"titleLead": "Knowledge from",
+		"titleAccent": "the floor",
+		"subtitle": "Share your achievements, ask trainers, and connect with athletes.",
+		"postsPublished": "{{count}} posts published",
+		"loadingPosts": "Loading posts",
+		"writeArticle": "Write Article →",
+		"allPosts": "All Posts",
+		"sort": {
+			"newest": "Newest",
+			"mostViewed": "Most Viewed",
+			"mostLiked": "Most Liked"
+		},
+		"empty": {
+			"label": "No posts",
+			"title": "Nothing in this category yet.",
+			"subtitle": "Be the first to start the conversation."
+		}
+	},
+	"detail": {
+		"back": "← Community",
+		"notFound": "Article not found.",
+		"commentsTitle": "Comments",
+		"commentsTotal": "{{count}} total",
+		"commentPlaceholder": "Join the conversation...",
+		"anonymous": "Anonymous",
+		"emptyComments": "No comments yet. Be the first!"
+	},
+	"alerts": {
+		"commentPosted": "Comment posted!",
+		"deleteCommentConfirm": "Delete this comment?",
+		"deleted": "Deleted!"
+	}
+}

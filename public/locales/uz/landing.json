@@ -1,0 +1,88 @@
+{
+	"hero": {
+		"badgeWorkouts": "{{count}}+ mashq mavjud",
+		"badgeDefault": "Elita fitnes platformasi",
+		"badgeWelcome": "Xush kelibsiz, {{name}}",
+		"titleLine1": "Professional mashg'ulotlar.",
+		"titleLine2": "Haqiqiy natijalar.",
+		"subtitle": "Yuqori natijalar uchun aniq ishlab chiqilgan dasturlar. Professional murabbiylik va ma'lumotlarga asoslangan tahlillar.",
+		"ctaGetStarted": "Bepul boshlash",
+		"ctaBrowsePrograms": "Dasturlarni ko'rish",
+		"ctaOpenStudio": "Studiyani ochish",
+		"ctaPublicProfile": "Ochiq profilim",
+		"ctaAdminPanel": "Admin panelni ochish",
+		"ctaBrowsePlatform": "Platformani ko'rish",
+		"ctaContinueTraining": "Mashg'ulotni davom ettirish",
+		"ctaMyDashboard": "Mening sahifam",
+		"statAccess": "Doimiy kirish"
+	},
+	"hotWorkouts": {
+		"eyebrow": "Shu hafta trendda",
+		"title": "Mashhur mashqlar",
+		"trending": "Trendda",
+		"kcal": "{{count}} kkal"
+	},
+	"howItWorks": {
+		"eyebrow": "Bu qanday ishlaydi",
+		"title": "Birinchi mashqdan haqiqiy natijagacha",
+		"step1": {
+			"title": "Bepul hisob yarating",
+			"desc": "Bir necha soniyada qo'shiling. Platformadagi barcha mashqlar mutlaqo bepul — birinchi kundanoq hech qanday to'lovsiz shug'ullaning."
+		},
+		"step2": {
+			"title": "Elita dasturlar bilan shug'ullaning",
+			"desc": "Murabbiylar tuzgan mashqlarni bajaring, so'ng ko'p haftalik tizimli dasturlarga o'ting. Xavfsiz to'lov va birinchi darsga zudlik bilan kirish."
+		},
+		"step3": {
+			"title": "Hammasini kuzatib boring",
+			"desc": "Taomlarni AI yordamida skanerlang, shaxsiy ovqatlanish maqsadlariga erishing va kabinetingizda taraqqiyotingiz o'sib borishini kuzating."
+		}
+	},
+	"topCourses": {
+		"eyebrow": "Tizimli tayyorgarlik",
+		"title": "Eng yaxshi dasturlar",
+		"browseAll": "Barchasini ko'rish",
+		"free": "Bepul",
+		"rankBadge": "#1 dastur",
+		"weeksShort": "{{count}} hafta",
+		"viewProgram": "Dasturni ko'rish"
+	},
+	"eliteTrainers": {
+		"eyebrow": "Tasdiqlangan mutaxassislar",
+		"title": "Elita murabbiylar",
+		"workoutsCount": "{{count}} mashq",
+		"followersCount": "{{count}} obunachi",
+		"note": "Natijalar bo'yicha saralangan. Har bir murabbiy dastur chop etishdan oldin tekshiruvdan o'tadi."
+	},
+	"community": {
+		"eyebrow": "Hamjamiyat nabzi",
+		"title": "Zaldan olingan bilimlar",
+		"join": "Muhokamaga qo'shilish",
+		"memberFallback": "A'zo"
+	},
+	"pricing": {
+		"eyebrow": "A'zolik",
+		"title": "Oddiy va halol narxlar",
+		"subtitle": "Barcha mashqlar abadiy bepul, dasturlar esa bir martalik xarid. A'zolik orqali siz platformani va undagi murabbiylarni qo'llab-quvvatlaysiz.",
+		"perMonth": "/ oy",
+		"monthly": {
+			"plan": "Oylik",
+			"note": "Har oy to'lanadi. Istalgan vaqtda bekor qilish mumkin.",
+			"feature1": "Hamma uchun bepul mashg'ulotlarni qo'llab-quvvatlang",
+			"feature2": "Tasdiqlangan murabbiylarni bevosita qo'llab-quvvatlang",
+			"feature3": "Oylik to'lov, istalgan vaqtda bekor qilish",
+			"feature4": "Stripe orqali himoyalangan",
+			"cta": "Oylikni boshlash"
+		},
+		"yearly": {
+			"plan": "Yillik",
+			"save": "33% tejang",
+			"note": "Yiliga $119.88 to'lanadi. Istalgan vaqtda bekor qilish mumkin.",
+			"feature1": "Oylik rejadagi hammasi",
+			"feature2": "Eng qulay narx — oyiga $9.99",
+			"feature3": "Butun yil uchun bitta to'lov",
+			"feature4": "Platformaning ilk homiylaridan biri bo'lasiz",
+			"cta": "Yillikni boshlash"
+		}
+	}
+}

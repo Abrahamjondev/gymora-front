@@ -1,0 +1,502 @@
+{
+	"menu": {
+		"dashboard": "Dashboard",
+		"myProfile": "My Profile",
+		"myWorkouts": "My Workouts",
+		"myPrograms": "My Programs",
+		"myArticles": "My Articles",
+		"notifications": "Notifications",
+		"messages": "Messages",
+		"nutritionPlan": "Nutrition Plan",
+		"mealTracker": "Meal Tracker",
+		"progress": "Progress",
+		"subscription": "Subscription",
+		"becomeTrainer": "Become Trainer",
+		"createWorkout": "Create workout",
+		"createProgram": "Create program",
+		"writeArticle": "Write article",
+		"sections": {
+			"studio": "Studio",
+			"training": "Training",
+			"activity": "Activity",
+			"health": "Health"
+		}
+	},
+	"dashboard": {
+		"welcome": "Welcome back, {{name}}",
+		"stats": {
+			"workoutsPublished": "Workouts Published",
+			"likes": "Likes",
+			"totalCalories": "Total Calories",
+			"progress": "Progress",
+			"points": "Points"
+		},
+		"recommendations": {
+			"title": "Recommendations for You",
+			"suggestionsCount": "{{count}} suggestions",
+			"suggestionsCountOne": "{{count}} suggestion"
+		},
+		"subscription": {
+			"monthlyPlan": "Monthly plan",
+			"yearlyPlan": "Yearly plan",
+			"premiumPlan": "Premium plan",
+			"active": "Active",
+			"freePlan": "You're on the Free plan",
+			"thanks": "Thanks for supporting Gymora.",
+			"upgradeHint": "Upgrade to support free training and back verified trainers.",
+			"manage": "Manage",
+			"upgrade": "Upgrade →"
+		},
+		"quickActions": {
+			"createWorkout": "Create Workout",
+			"createWorkoutDesc": "Publish a free workout",
+			"createProgram": "Create Program",
+			"createProgramDesc": "Build a paid program",
+			"writeArticle": "Write Article",
+			"writeArticleDesc": "Share your expertise",
+			"nutrition": "Nutrition",
+			"nutritionDesc": "Track meals & macros",
+			"progress": "Progress",
+			"progressDesc": "Log body metrics",
+			"community": "Community",
+			"communityDesc": "Read & write articles"
+		}
+	},
+	"workouts": {
+		"title": "My Workouts",
+		"create": "+ Create",
+		"editTitle": "Edit Workout",
+		"empty": "No workouts yet.",
+		"kcalValue": "{{count}} kcal",
+		"createHeading": "Create Workout",
+		"freePublishedCount": "{{count}} free workouts published",
+		"freePublishedCountOne": "{{count}} free workout published",
+		"form": {
+			"title": "Title *",
+			"titlePlaceholder": "Workout title",
+			"description": "Description",
+			"descPlaceholder": "Describe this workout...",
+			"targetMuscle": "Target Muscle *",
+			"difficulty": "Difficulty",
+			"calories": "Est. Calories Burned",
+			"kcalPlaceholder": "Kcal",
+			"media": "Media",
+			"saveChanges": "Save Changes",
+			"publish": "Publish Workout →",
+			"trainingPlan": "Training Plan (exercises)",
+			"exercisePlaceholder": "Exercise {{n}} name",
+			"sets": "Sets",
+			"reps": "Reps",
+			"addExercise": "+ Add Exercise"
+		},
+		"media": {
+			"noImage": "NO IMAGE",
+			"uploading": "Uploading...",
+			"uploadThumbnail": "Upload Thumbnail",
+			"changeThumbnail": "Change Thumbnail",
+			"uploadingVideo": "Uploading video...",
+			"uploadVideo": "Upload Video",
+			"replaceVideo": "Replace Video",
+			"videoAttached": "Video attached ✓",
+			"videoUrlPlaceholder": "...or paste a video URL (YouTube, Vimeo, mp4)"
+		}
+	},
+	"programs": {
+		"title": "My Programs",
+		"create": "+ Create",
+		"editTitle": "Edit Program",
+		"createHeading": "Create Program",
+		"createHint": "Lesson videos are added right after publishing — the Lesson Manager opens automatically.",
+		"empty": "No programs yet.",
+		"browse": "Browse programs →",
+		"emptyTrainer": "No programs created yet.",
+		"weeksShort": "{{count}}w",
+		"noRatings": "No ratings",
+		"lessons": "Lessons",
+		"hideLessons": "Hide Lessons",
+		"form": {
+			"title": "Title *",
+			"titlePlaceholder": "Program title",
+			"description": "Description",
+			"descPlaceholder": "Describe this program...",
+			"category": "Category",
+			"difficulty": "Difficulty",
+			"price": "Price ($)",
+			"pricePlaceholder": "Price $",
+			"duration": "Duration (weeks)",
+			"weeksPlaceholder": "Weeks",
+			"thumbnail": "Thumbnail",
+			"saveChanges": "Save Changes",
+			"publish": "Publish Program →"
+		}
+	},
+	"lessons": {
+		"header": "Lessons — {{title}}",
+		"count": "{{count}} lessons",
+		"countOne": "{{count}} lesson",
+		"weekShort": "W{{n}}",
+		"minutes": "{{count}} min",
+		"empty": "No lessons yet — add the first one below.",
+		"editLesson": "Edit lesson",
+		"addLesson": "Add lesson",
+		"form": {
+			"title": "Title *",
+			"titlePlaceholder": "Lesson title",
+			"week": "Week *",
+			"order": "Order *",
+			"duration": "Duration (min)",
+			"description": "Description",
+			"descPlaceholder": "Short description...",
+			"video": "Video",
+			"videoPlaceholder": "Upload or paste URL...",
+			"upload": "Upload",
+			"uploading": "Uploading...",
+			"saving": "Saving...",
+			"saveChanges": "Save Changes",
+			"add": "+ Add Lesson"
+		}
+	},
+	"articles": {
+		"eyebrow": "Community",
+		"title": "My Articles",
+		"publishedCount": "{{count}} published",
+		"writeShortcut": "+ Write Article",
+		"emptyTitle": "No articles yet",
+		"emptyDesc": "Share your first piece of knowledge with the community.",
+		"writeTitle": "Write an Article",
+		"editTitle": "Edit Article",
+		"writeSubtitle": "Share your fitness knowledge with the community.",
+		"editSubtitle": "Update your article — changes go live immediately.",
+		"form": {
+			"category": "Category",
+			"categoryFixed": "Category (fixed after publish)",
+			"title": "Title *",
+			"titlePlaceholder": "Give your article a strong title...",
+			"contentPlaceholder": "Share your fitness knowledge...",
+			"publish": "Publish Article →",
+			"saveChanges": "Save Changes →",
+			"publishing": "Publishing...",
+			"saving": "Saving..."
+		}
+	},
+	"profile": {
+		"eyebrow": "Account",
+		"title": "My Profile",
+		"photo": "Profile Photo",
+		"uploadImage": "Upload Image",
+		"uploading": "Uploading...",
+		"photoFormats": "JPG, JPEG or PNG format",
+		"username": "Username *",
+		"usernamePlaceholder": "Your username",
+		"phone": "Phone *",
+		"phonePlaceholder": "Your phone",
+		"address": "Address",
+		"addressPlaceholder": "Your address",
+		"description": "Description",
+		"descPlaceholder": "About yourself...",
+		"saving": "Saving...",
+		"update": "Update Profile",
+		"identity": {
+			"verifiedTrainer": "Verified Trainer",
+			"newTrainer": "New trainer",
+			"points": "Points",
+			"viewPublicProfile": "View Public Profile →"
+		},
+		"becomeTrainer": {
+			"title": "Become a Trainer",
+			"subtitle": "Create your trainer profile to start sharing workouts and programs.",
+			"bio": "Bio *",
+			"bioPlaceholder": "Tell us about your training background...",
+			"specializations": "Specializations (comma separated)",
+			"specializationsPlaceholder": "Strength, HIIT, Mobility",
+			"experience": "Years of Experience",
+			"apply": "Apply as Trainer"
+		}
+	},
+	"notifications": {
+		"title": "Notifications",
+		"unreadCount": "{{count}} unread",
+		"all": "All",
+		"unread": "Unread",
+		"markAllRead": "Mark all read",
+		"allCaughtUp": "All caught up",
+		"allCaughtUpDesc": "You have read everything.",
+		"emptyTitle": "No notifications yet",
+		"emptyDesc": "Activity around your account will appear here.",
+		"types": {
+			"SYSTEM": "System",
+			"WORKOUT": "Workout",
+			"NUTRITION": "Nutrition",
+			"SUBSCRIPTION": "Subscription",
+			"CHAT": "Chat"
+		},
+		"time": {
+			"now": "now",
+			"minutesAgo": "{{n}}m ago",
+			"hoursAgo": "{{n}}h ago",
+			"daysAgo": "{{n}}d ago"
+		}
+	},
+	"alerts": {
+		"uploadFailed": "Upload failed",
+		"imageUploadFailed": "Image upload failed. Please try again.",
+		"videoUploaded": "Video uploaded!",
+		"videoUploadFailed": "Video upload failed",
+		"titleMuscleRequired": "Title and target muscle required",
+		"titleRequired": "Title required",
+		"programTitleRequired": "Program title required",
+		"workoutUpdated": "Workout updated!",
+		"workoutCreated": "Workout created!",
+		"programUpdated": "Program updated!",
+		"programCreated": "Program created! Now add your lessons and videos below.",
+		"bioRequired": "Bio is required",
+		"trainerCreated": "Trainer profile created! Please log in again to activate your Studio.",
+		"profileUpdated": "Profile updated successfully.",
+		"deleteArticleConfirm": "Delete this article permanently?",
+		"deleted": "Deleted",
+		"success": "Success!",
+		"articleUpdated": "Article updated!",
+		"articlePublished": "Article published!",
+		"lessonTitleRequired": "Lesson title is required",
+		"weekMin": "Week number must be at least 1",
+		"orderMin": "Order must be at least 1",
+		"lessonUpdated": "Lesson updated!",
+		"lessonAdded": "Lesson added!",
+		"deleteLessonConfirm": "Delete this lesson?"
+	},
+	"chat": {
+		"connecting": "Connecting to chat server...",
+		"header": "Messages",
+		"live": "Live",
+		"offline": "Offline",
+		"noConversations": "No conversations yet.",
+		"userFallback": "User",
+		"startConversation": "Start the conversation",
+		"activeNow": "Active now",
+		"lastSeenJustNow": "Last seen just now",
+		"lastSeenMinutes": "Last seen {{n}}m ago",
+		"lastSeenHours": "Last seen {{n}}h ago",
+		"lastSeenDays": "Last seen {{n}}d ago",
+		"lastSeenDate": "Last seen {{date}}",
+		"today": "Today",
+		"yesterday": "Yesterday",
+		"read": "Read",
+		"sent": "Sent",
+		"inputPlaceholder": "Type your message...",
+		"inputConnecting": "Connecting...",
+		"send": "Send →",
+		"emptyTitle": "Your messages",
+		"emptyDesc": "Select a conversation to start chatting."
+	},
+	"nutrition": {
+		"eyebrowPlan": "Fuel your training",
+		"eyebrowYourPlan": "Your plan",
+		"eyebrowTracker": "Track your intake",
+		"planTitle": "Nutrition Plan",
+		"trackerTitle": "Meal Tracker",
+		"recalculate": "Recalculate",
+		"scanFood": "AI Scan Food",
+		"scanning": "Scanning...",
+		"logMealBtn": "+ Log Meal",
+		"analyzing": "Analyzing food...",
+		"analyzingSub": "AI is identifying nutritional content",
+		"aiDetected": "AI Detected",
+		"logAs": "Log as",
+		"mealTypes": {
+			"BREAKFAST": "Breakfast",
+			"LUNCH": "Lunch",
+			"DINNER": "Dinner",
+			"SNACK": "Snack"
+		},
+		"macros": {
+			"calories": "Calories",
+			"protein": "Protein",
+			"carbs": "Carbs",
+			"fats": "Fats"
+		},
+		"macroShort": {
+			"protein": "P:{{n}}g",
+			"carbs": "C:{{n}}g",
+			"fats": "F:{{n}}g"
+		},
+		"units": {
+			"kcal": "kcal",
+			"g": "g",
+			"perDay": "/day",
+			"kcalValue": "{{n}} kcal",
+			"kcalPerDay": "kcal/day",
+			"proteinGrams": "{{n}}g P"
+		},
+		"calc": {
+			"title": "Calculate Your Nutrition Plan",
+			"subtitle": "Enter your details to get personalized daily calorie and macro targets",
+			"gender": "Gender",
+			"male": "Male",
+			"female": "Female",
+			"age": "Age",
+			"agePlaceholder": "e.g. 25",
+			"height": "Height (cm)",
+			"heightPlaceholder": "e.g. 175",
+			"weight": "Weight (kg)",
+			"weightPlaceholder": "e.g. 75",
+			"activityLevel": "Activity Level",
+			"activity": {
+				"SEDENTARY": "Sedentary",
+				"LIGHTLY_ACTIVE": "Lightly Active",
+				"MODERATELY_ACTIVE": "Moderately Active",
+				"VERY_ACTIVE": "Very Active",
+				"EXTRA_ACTIVE": "Extra Active"
+			},
+			"goal": "Goal",
+			"goals": {
+				"WEIGHT_LOSS": "Weight Loss",
+				"MAINTENANCE": "Maintenance",
+				"MUSCLE_GAIN": "Muscle Gain"
+			},
+			"calculate": "Calculate My Plan",
+			"calculating": "Calculating..."
+		},
+		"results": {
+			"dailyCalories": "Daily Calories",
+			"bodyMetrics": "Body Metrics",
+			"bmi": "BMI",
+			"bmr": "BMR",
+			"tdee": "TDEE",
+			"goal": "Goal",
+			"mealsPerDay": "{{n}} meals/day",
+			"tips": "Tips",
+			"suggestedMealPlan": "Suggested Meal Plan"
+		},
+		"tracker": {
+			"eaten": "Eaten"
+		},
+		"history": {
+			"title": "Calorie history",
+			"week": "Week",
+			"month": "Month",
+			"year": "Year",
+			"barTitle": "{{label}}: {{n}} kcal",
+			"kcalTotal": "kcal total",
+			"avgPerActiveDay": "avg / active day",
+			"daysLogged": "days logged",
+			"activeMonths": "active months"
+		},
+		"form": {
+			"title": "Log a Meal",
+			"mealNamePlaceholder": "Meal name",
+			"save": "Save Meal"
+		},
+		"recentMeals": "Recent Meals",
+		"loggedCount": "{{count}} logged",
+		"loggedCountOne": "{{count}} logged",
+		"emptyTitle": "No meals logged yet",
+		"emptyDesc": "Log a meal manually or scan your food with AI.",
+		"aiHistoryTitle": "AI Scan History",
+		"alerts": {
+			"loggedAs": "Logged as {{type}}!",
+			"mealLogged": "Meal logged!",
+			"deleteMealConfirm": "Delete this meal?",
+			"deleteMealFailed": "Could not delete meal",
+			"fillBasics": "Please fill in age, height, and weight",
+			"mealNameRequired": "Meal name required",
+			"analysisFailed": "Analysis failed"
+		}
+	},
+	"progress": {
+		"eyebrow": "Body metrics",
+		"title": "Progress Tracker",
+		"logBtn": "+ Log Progress",
+		"form": {
+			"weight": "Weight (kg)*",
+			"chest": "Chest (cm)",
+			"waist": "Waist (cm)",
+			"hips": "Hips (cm)",
+			"bodyFat": "Body Fat %",
+			"note": "Note",
+			"notePlaceholder": "Optional note...",
+			"save": "Save Entry"
+		},
+		"emptyTitle": "No progress entries yet",
+		"emptyDesc": "Log your first measurement to start tracking your transformation.",
+		"summary": {
+			"currentWeight": "Current Weight",
+			"totalChange": "Total Change",
+			"bodyFat": "Body Fat",
+			"entries": "Entries",
+			"noChange": "no change"
+		},
+		"weightTrend": "Weight trend",
+		"latest": "Latest",
+		"metrics": {
+			"chest": "CHEST",
+			"waist": "WAIST",
+			"hips": "HIPS",
+			"fat": "FAT"
+		},
+		"units": {
+			"kg": "kg",
+			"cm": "cm"
+		},
+		"alerts": {
+			"weightRequired": "Weight is required",
+			"logged": "Progress logged!"
+		}
+	},
+	"subscription": {
+		"eyebrow": "Membership",
+		"titlePrefix": "Invest in",
+		"titleHighlight": "Performance",
+		"activePlan": "Active Plan",
+		"daysLeftSuffix": "days left",
+		"expires": "Expires",
+		"notAvailable": "N/A",
+		"bestValue": "Best Value",
+		"perMonth": "/month",
+		"perYear": "/year",
+		"yearlySub": "$9.99/mo — Save 33%",
+		"plans": {
+			"monthly": {
+				"name": "Monthly",
+				"features": [
+					"Support free training for everyone",
+					"Back verified trainers directly",
+					"Billed monthly, cancel anytime",
+					"Secured by Stripe"
+				]
+			},
+			"yearly": {
+				"name": "Yearly",
+				"features": [
+					"Everything in Monthly",
+					"Best value — $9.99 a month",
+					"One payment for the whole year",
+					"Founding supporter of the platform"
+				]
+			}
+		},
+		"subscribe": "Subscribe to {{plan}} Plan",
+		"processing": "Processing...",
+		"paymentHistory": "Payment History",
+		"paymentsCount": "{{count}} payments",
+		"paymentsCountOne": "{{count}} payment",
+		"status": {
+			"PAID": "PAID",
+			"PENDING": "PENDING"
+		},
+		"modal": {
+			"securePayment": "Secure Payment",
+			"heading": "{{plan}} Plan — ${{price}}",
+			"testHint": "Test: 4242 4242 4242 4242 | Any future date | Any CVC",
+			"pay": "Pay ${{price}}",
+			"securedByStripe": "Secured by Stripe",
+			"paymentFailed": "Payment failed",
+			"notCompleted": "Payment was not completed. Please try again."
+		},
+		"alerts": {
+			"alreadyActive": "You already have an active subscription",
+			"initiationFailed": "Payment initiation failed",
+			"activated": "Subscription activated!"
+		},
+		"loginRequired": "Please login to manage subscription."
+	}
+}

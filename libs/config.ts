@@ -1,11 +1,27 @@
+import { i18n } from 'next-i18next';
+
 export const REACT_APP_API_URL = `${process.env.REACT_APP_API_URL}`;
 
+// Localized at ACCESS time via getters so every existing `Messages.errorN`
+// call site stays unchanged; falls back to English before i18n is ready.
+const message = (key: string, fallback: string) => i18n?.t(`common:alerts.${key}`, { defaultValue: fallback }) ?? fallback;
+
 export const Messages = {
-	error1: 'Something went wrong!',
-	error2: 'Please login first!',
-	error3: 'Please fulfill all inputs!',
-	error4: 'Message is empty!',
-	error5: 'Only images with jpeg, jpg, png format allowed!',
+	get error1() {
+		return message('somethingWrong', 'Something went wrong!');
+	},
+	get error2() {
+		return message('loginFirst', 'Please login first!');
+	},
+	get error3() {
+		return message('fillAllInputs', 'Please fulfill all inputs!');
+	},
+	get error4() {
+		return message('messageEmpty', 'Message is empty!');
+	},
+	get error5() {
+		return message('imageFormatOnly', 'Only images with jpeg, jpg, png format allowed!');
+	},
 };
 
 export const topWorkoutRank = 2;

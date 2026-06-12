@@ -1,0 +1,88 @@
+{
+	"hero": {
+		"badgeWorkouts": "{{count}}+ workouts available",
+		"badgeDefault": "Elite fitness platform",
+		"badgeWelcome": "Welcome back, {{name}}",
+		"titleLine1": "Expert training.",
+		"titleLine2": "Real results.",
+		"subtitle": "Precision-engineered programs for elite performance. Professional-grade coaching and data-driven insights.",
+		"ctaGetStarted": "Get Started Free",
+		"ctaBrowsePrograms": "Browse Programs",
+		"ctaOpenStudio": "Open Your Studio",
+		"ctaPublicProfile": "My Public Profile",
+		"ctaAdminPanel": "Open Admin Panel",
+		"ctaBrowsePlatform": "Browse Platform",
+		"ctaContinueTraining": "Continue Training",
+		"ctaMyDashboard": "My Dashboard",
+		"statAccess": "Access"
+	},
+	"hotWorkouts": {
+		"eyebrow": "Trending this week",
+		"title": "Hot Workouts",
+		"trending": "Trending",
+		"kcal": "{{count}} kcal"
+	},
+	"howItWorks": {
+		"eyebrow": "How it works",
+		"title": "From first rep to real results",
+		"step1": {
+			"title": "Create your free account",
+			"desc": "Join in seconds. Every workout on the platform is completely free — train with no paywall from day one."
+		},
+		"step2": {
+			"title": "Train with elite programs",
+			"desc": "Follow trainer-built workouts, then go deeper with structured multi-week programs. Secure checkout, instant access to your first lesson."
+		},
+		"step3": {
+			"title": "Track everything",
+			"desc": "Scan meals with AI, hit personalized nutrition targets and watch your progress timeline grow in your dashboard."
+		}
+	},
+	"topCourses": {
+		"eyebrow": "Structured training",
+		"title": "Top Programs",
+		"browseAll": "Browse all",
+		"free": "Free",
+		"rankBadge": "#1 Program",
+		"weeksShort": "{{count}}w",
+		"viewProgram": "View Program"
+	},
+	"eliteTrainers": {
+		"eyebrow": "Verified professionals",
+		"title": "Elite Trainers",
+		"workoutsCount": "{{count}} workouts",
+		"followersCount": "{{count}} followers",
+		"note": "Ranked by performance. Every trainer is verified before publishing programs."
+	},
+	"community": {
+		"eyebrow": "Community pulse",
+		"title": "Knowledge from the floor",
+		"join": "Join the conversation",
+		"memberFallback": "Member"
+	},
+	"pricing": {
+		"eyebrow": "Membership",
+		"title": "Simple, honest pricing",
+		"subtitle": "Every workout is free forever and programs are one-time purchases. Membership is how you back the platform and the trainers behind it.",
+		"perMonth": "/ month",
+		"monthly": {
+			"plan": "Monthly",
+			"note": "Billed monthly. Cancel anytime.",
+			"feature1": "Support free training for everyone",
+			"feature2": "Back verified trainers directly",
+			"feature3": "Billed monthly, cancel anytime",
+			"feature4": "Secured by Stripe",
+			"cta": "Start Monthly"
+		},
+		"yearly": {
+			"plan": "Yearly",
+			"save": "Save 33%",
+			"note": "$119.88 billed yearly. Cancel anytime.",
+			"feature1": "Everything in Monthly",
+			"feature2": "Best value — $9.99 a month",
+			"feature3": "One payment for the whole year",
+			"feature4": "Founding supporter of the platform",
+			"cta": "Start Yearly"
+		}
+	}
+}

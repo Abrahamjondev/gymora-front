@@ -9,6 +9,7 @@ import { T } from '../../types/common'; //@ts-ignore
 import '@toast-ui/editor/dist/toastui-editor.css'; //@ts-ignore
 import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 import { useMutation } from '@apollo/client';
+import { useTranslation } from 'next-i18next';
 import { CREATE_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSuccessAlert } from '../../sweetAlert';
 import { Message } from '../../enums/common.enum';
@@ -32,6 +33,7 @@ const labelStyle: React.CSSProperties = {
 };
 
 const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
+	const { t } = useTranslation('mypage');
 	const editorRef = useRef<Editor>(null),
 		token = getJwtToken(),
 		router = useRouter();
@@ -93,7 +95,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 
 			return `${REACT_APP_API_URL}/${responseImage}`;
 		} catch (err) {
-			sweetMixinErrorAlert('Image upload failed').then();
+			sweetMixinErrorAlert(t('alerts.imageUploadFailed')).then();
 		}
 	};
 
@@ -133,7 +135,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 				});
 			}
 
-			await sweetTopSuccessAlert(isEdit ? 'Article updated!' : 'Article published!', 700);
+			await sweetTopSuccessAlert(isEdit ? t('alerts.articleUpdated') : t('alerts.articlePublished'), 700);
 			await router.push({ pathname: '/mypage', query: { category: 'myArticles' } });
 		} catch (err: any) {
 			setPublishing(false);
@@ -147,7 +149,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 			{/* Category + Title */}
 			<div className="wd-form-card" style={{ marginBottom: '16px' }}>
 				<div style={{ marginBottom: '18px' }}>
-					<span style={labelStyle}>Category{isEdit ? ' (fixed after publish)' : ''}</span>
+					<span style={labelStyle}>{isEdit ? t('articles.form.categoryFixed') : t('articles.form.category')}</span>
 					<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
 						{categories.map((cat) => {
 							const isActive = articleCategory === cat.value;
@@ -163,18 +165,18 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 									onClick={() => !isEdit && setArticleCategory(cat.value)}
 								>
 									<span className="cl-cat-dot" style={{ background: cat.accent }} />
-									{cat.label}
+									{t(`enums:articleCategory.${cat.value}`, { defaultValue: cat.label })}
 								</button>
 							);
 						})}
 					</div>
 				</div>
 				<div>
-					<span style={labelStyle}>Title *</span>
+					<span style={labelStyle}>{t('articles.form.title')}</span>
 					<input
 						className="wd-input"
 						type="text"
-						placeholder="Give your article a strong title..."
+						placeholder={t('articles.form.titlePlaceholder')}
 						value={articleTitle}
 						onChange={(e) => setArticleTitle(e.target.value)}
 					/>
@@ -188,7 +190,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 			>
 				<Editor
 					initialValue={' '}
-					placeholder={'Share your fitness knowledge...'}
+					placeholder={t('articles.form.contentPlaceholder')}
 					previewStyle={'vertical'}
 					height={'560px'}
 					theme={'dark'}
@@ -215,7 +217,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 
 			{/* Publish */}
 			<button className="wd-btn" onClick={handleRegisterButton} disabled={publishing} style={{ padding: '14px 36px' }}>
-				{publishing ? (isEdit ? 'Saving...' : 'Publishing...') : isEdit ? 'Save Changes →' : 'Publish Article →'}
+				{publishing ? (isEdit ? t('articles.form.saving') : t('articles.form.publishing')) : isEdit ? t('articles.form.saveChanges') : t('articles.form.publish')}
 			</button>
 		</div>
 	);

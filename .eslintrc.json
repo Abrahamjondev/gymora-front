@@ -1,0 +1,49 @@
+{
+	"extends": "next/core-web-vitals",
+	"plugins": ["i18next"],
+	"rules": {
+		"react/no-unescaped-entities": "off",
+		"react/display-name": "off",
+		"i18next/no-literal-string": [
+			"warn",
+			{
+				"mode": "jsx-only",
+				"jsx-attributes": {
+					"include": ["placeholder", "title", "alt", "aria-label", "label"]
+				},
+				"words": {
+					"exclude": [
+						"[0-9!-/:-@[-`{-~\\s]+",
+						"^\\W+$",
+						"^[A-Z0-9_]+$",
+						"gymora",
+						"Gymora",
+						"GYMORA",
+						"G",
+						"Stripe",
+						"YouTube",
+						"Vimeo",
+						"kcal",
+						"BMI",
+						"BMR",
+						"TDEE"
+					]
+				}
+			}
+		]
+	},
+	"overrides": [
+		{
+			"files": [
+				"pages/_admin/**",
+				"libs/components/admin/**",
+				"libs/components/layout/LayoutAdmin.tsx",
+				"scripts/**",
+				"pages/_document.tsx"
+			],
+			"rules": {
+				"i18next/no-literal-string": "off"
+			}
+		}
+	]
+}

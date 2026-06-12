@@ -6,10 +6,12 @@ import { CircularProgress, Stack } from '@mui/material';
 import { GET_BOARD_ARTICLE } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import dynamic from 'next/dynamic';
+import { useTranslation } from 'next-i18next';
 const TuiEditor = dynamic(() => import('../community/Teditor'), { ssr: false });
 
 const WriteArticle: NextPage = () => {
 	const router = useRouter();
+	const { t } = useTranslation('mypage');
 	const articleId = router.query?.articleId as string | undefined;
 
 	const { data, loading } = useQuery(GET_BOARD_ARTICLE, {
@@ -25,13 +27,13 @@ const WriteArticle: NextPage = () => {
 			<div className="nt-head">
 				<div>
 					<span className="lp-eyebrow lp-eyebrow--violet" style={{ marginBottom: '6px' }}>
-						Community
+						{t('articles.eyebrow')}
 					</span>
-					<h2>{isEdit ? 'Edit Article' : 'Write an Article'}</h2>
+					<h2>{isEdit ? t('articles.editTitle') : t('articles.writeTitle')}</h2>
 				</div>
 			</div>
 			<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.6)', margin: '-8px 0 22px' }}>
-				{isEdit ? 'Update your article — changes go live immediately.' : 'Share your fitness knowledge with the community.'}
+				{isEdit ? t('articles.editSubtitle') : t('articles.writeSubtitle')}
 			</p>
 			{isEdit && (loading || !editArticle) ? (
 				<Stack alignItems="center" sx={{ py: 8 }}>

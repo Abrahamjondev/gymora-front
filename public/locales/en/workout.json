@@ -1,0 +1,60 @@
+{
+	"list": {
+		"eyebrow": "Performance Protocol",
+		"titleLead": "Workout",
+		"titleAccent": "Library",
+		"subtitle": "Precision-engineered routines designed for elite athletes and performance-driven individuals.",
+		"protocolsAvailable": "{{count}} protocols available",
+		"loadingProtocols": "Loading protocols",
+		"searchPlaceholder": "Search workouts...",
+		"sort": {
+			"newest": "Newest",
+			"mostLiked": "Most Liked",
+			"mostViewed": "Most Viewed",
+			"topRanked": "Top Ranked",
+			"highestBurn": "Highest Burn"
+		},
+		"allLevels": "All Levels",
+		"activeLabel": "Active:",
+		"kcal": "{{count}} KCAL",
+		"empty": {
+			"title": "Nothing matches this protocol.",
+			"subtitle": "Try a different muscle group, level or search term."
+		}
+	},
+	"detail": {
+		"back": "Library",
+		"notFound": "Workout not found.",
+		"kcal": "{{count}} KCAL",
+		"exercises": "exercises",
+		"exercisesCount": "{{count}} exercises",
+		"summary": {
+			"title": "Workout Summary",
+			"estCal": "Est. Cal",
+			"difficulty": "Difficulty",
+			"views": "Views",
+			"likes": "Likes"
+		},
+		"likeThisWorkout": "Like this workout",
+		"about": "About",
+		"trainingPlan": "Training Plan",
+		"sets": "{{count}} SETS",
+		"reps": "{{count}} REPS",
+		"video": "Video",
+		"comments": "Comments",
+		"commentsTotal": "{{count}} total",
+		"commentPlaceholder": "Share your experience...",
+		"postComment": "Post Comment",
+		"anonymous": "Anonymous",
+		"userFallback": "User",
+		"noCommentsYet": "No comments yet. Be the first!",
+		"athleteReviews": "Athlete Reviews",
+		"reviewsCount": "{{count}} reviews",
+		"reviewPlaceholder": "Write a review...",
+		"noReviewsYet": "No star reviews yet."
+	},
+	"alerts": {
+		"reviewTextRequired": "Review text required",
+		"reviewPosted": "Review posted!"
+	}
+}

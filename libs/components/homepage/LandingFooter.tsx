@@ -1,38 +1,40 @@
 import React from 'react';
 import moment from 'moment';
 import Link from 'next/link';
-
-const columns = [
-	{
-		title: 'Platform',
-		links: [
-			{ label: 'Workouts', href: '/workout' },
-			{ label: 'Programs', href: '/course' },
-			{ label: 'Trainers', href: '/trainer' },
-			{ label: 'Community', href: '/community' },
-		],
-	},
-	{
-		title: 'Account',
-		links: [
-			{ label: 'Join Free', href: '/account/join' },
-			{ label: 'My Page', href: '/mypage' },
-			{ label: 'Membership', href: '/subscription' },
-		],
-	},
-	{
-		title: 'Company',
-		links: [
-			{ label: 'About', href: '/about' },
-			{ label: 'Support', href: '/cs' },
-			{ label: 'Privacy', href: '/privacy' },
-			{ label: 'Terms', href: '/terms' },
-		],
-	},
-];
+import { useTranslation } from 'next-i18next';
 
 const LandingFooter = () => {
+	const { t } = useTranslation('common');
 	const scrollTop = () => window.scrollTo({ top: 0, behavior: 'smooth' });
+
+	const columns = [
+		{
+			title: t('footer.platform'),
+			links: [
+				{ label: t('nav.workouts'), href: '/workout' },
+				{ label: t('nav.programs'), href: '/course' },
+				{ label: t('nav.trainers'), href: '/trainer' },
+				{ label: t('nav.community'), href: '/community' },
+			],
+		},
+		{
+			title: t('footer.account'),
+			links: [
+				{ label: t('footer.joinFree'), href: '/account/join' },
+				{ label: t('nav.myPage'), href: '/mypage' },
+				{ label: t('footer.membership'), href: '/subscription' },
+			],
+		},
+		{
+			title: t('footer.company'),
+			links: [
+				{ label: t('footer.about'), href: '/about' },
+				{ label: t('footer.support'), href: '/cs' },
+				{ label: t('footer.privacy'), href: '/privacy' },
+				{ label: t('footer.terms'), href: '/terms' },
+			],
+		},
+	];
 
 	return (
 		<footer className="lp-footer">
@@ -57,7 +59,7 @@ const LandingFooter = () => {
 								gymora
 							</span>
 						</div>
-						<p>The elite platform for high-performance training and athletic development.</p>
+						<p>{t('footer.tagline')}</p>
 					</div>
 
 					{columns.map((col) => (
@@ -75,9 +77,11 @@ const LandingFooter = () => {
 				</div>
 
 				<div className="lp-footer-bottom" style={{ marginTop: '56px' }}>
-					<span>{moment().year()} Gymora. All rights reserved.</span>
+					<span>
+						{moment().year()} {t('footer.rightsReserved')}
+					</span>
 					<button className="lp-footer-top-btn" onClick={scrollTop}>
-						Back to top ↑
+						{t('footer.backToTop')}
 					</button>
 				</div>
 			</div>

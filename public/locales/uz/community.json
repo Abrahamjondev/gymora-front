@@ -1,0 +1,36 @@
+{
+	"list": {
+		"eyebrow": "Hamjamiyat",
+		"titleLead": "Bilim",
+		"titleAccent": "zalning o'zidan",
+		"subtitle": "Yutuqlaringizni ulashing, murabbiylardan so'rang va sportchilar bilan bog'laning.",
+		"postsPublished": "{{count}} ta post chop etilgan",
+		"loadingPosts": "Postlar yuklanmoqda",
+		"writeArticle": "Maqola yozish →",
+		"allPosts": "Barcha postlar",
+		"sort": {
+			"newest": "Eng yangi",
+			"mostViewed": "Eng ko'p ko'rilgan",
+			"mostLiked": "Eng ko'p yoqqan"
+		},
+		"empty": {
+			"label": "Postlar yo'q",
+			"title": "Bu kategoriyada hozircha hech narsa yo'q.",
+			"subtitle": "Suhbatni birinchi bo'lib boshlang."
+		}
+	},
+	"detail": {
+		"back": "← Hamjamiyat",
+		"notFound": "Maqola topilmadi.",
+		"commentsTitle": "Izohlar",
+		"commentsTotal": "Jami: {{count}}",
+		"commentPlaceholder": "Suhbatga qo'shiling...",
+		"anonymous": "Anonim",
+		"emptyComments": "Hozircha izohlar yo'q. Birinchi bo'ling!"
+	},
+	"alerts": {
+		"commentPosted": "Izoh yuborildi!",
+		"deleteCommentConfirm": "Bu izoh o'chirilsinmi?",
+		"deleted": "O'chirildi!"
+	}
+}

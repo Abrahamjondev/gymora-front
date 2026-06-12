@@ -2,13 +2,15 @@ import React from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
+import { useTranslation } from 'next-i18next';
 
 export const getStaticProps = async ({ locale }: any) => ({
-	props: { ...(await serverSideTranslations(locale, ['common'])) },
+	props: { ...(await serverSideTranslations(locale, ['common', 'static'])) },
 });
 
 const NotFound: NextPage = () => {
 	const router = useRouter();
+	const { t } = useTranslation('static');
 
 	return (
 		<div
@@ -60,7 +62,7 @@ const NotFound: NextPage = () => {
 					marginBottom: '10px',
 				}}
 			>
-				Error 404
+				{t('notFound.chip')}
 			</span>
 			<h1
 				style={{
@@ -72,10 +74,10 @@ const NotFound: NextPage = () => {
 					margin: '0 0 14px',
 				}}
 			>
-				This page skipped <span style={{ color: '#00dce5' }}>leg day</span>.
+				{t('notFound.titlePre')} <span style={{ color: '#00dce5' }}>{t('notFound.titleAccent')}</span>.
 			</h1>
 			<p style={{ fontFamily: 'Hanken Grotesk, sans-serif', fontSize: '16px', color: '#b9caca', maxWidth: '440px', margin: '0 0 34px', lineHeight: '24px' }}>
-				The page you are looking for doesn't exist or has been moved.
+				{t('notFound.subtitle')}
 			</p>
 			<div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', justifyContent: 'center' }}>
 				<button
@@ -83,14 +85,14 @@ const NotFound: NextPage = () => {
 					style={{ padding: '14px 30px', fontSize: '14px' }}
 					onClick={() => router.push('/')}
 				>
-					Back to Home
+					{t('notFound.backHome')}
 				</button>
 				<button
 					className="lp-btn-ghost"
 					style={{ padding: '14px 30px', fontSize: '14px' }}
 					onClick={() => router.push('/workout')}
 				>
-					Browse Workouts
+					{t('notFound.browseWorkouts')}
 				</button>
 			</div>
 		</div>

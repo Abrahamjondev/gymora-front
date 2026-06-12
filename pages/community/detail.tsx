@@ -11,6 +11,7 @@ import { CommentGroup, CommentStatus } from '../../libs/enums/comment.enum';
 import { CommentUpdate } from '../../libs/types/comment/comment.update';
 import { T } from '../../libs/types/common';
 import LikeButton from '../../libs/components/common/LikeButton';
+import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLE, GET_COMMENTS } from '../../apollo/user/query';
@@ -24,13 +25,16 @@ import dynamic from 'next/dynamic';
 
 const ToastViewerComponent = dynamic(() => import('../../libs/components/community/TViewer'), { ssr: false });
 
+const dateFormatOptions: Intl.DateTimeFormatOptions = { year: 'numeric', month: 'long', day: 'numeric' };
+
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
-		...(await serverSideTranslations(locale, ['common'])),
+		...(await serverSideTranslations(locale, ['common', 'community', 'enums'])),
 	},
 });
 
 const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
+	const { t } = useTranslation('community');
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
@@ -115,7 +119,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 			const { data: ad } = await articleRefetch({ input: articleId });
 			if (ad?.getBoardArticle) setBoardArticle(ad.getBoardArticle);
 			setComment('');
-			await sweetMixinSuccessAlert('Comment posted!');
+			await sweetMixinSuccessAlert(t('alerts.commentPosted'));
 		} catch (err: any) {
 			await sweetMixinErrorAlert(err.message);
 		}
@@ -124,7 +128,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	const deleteCommentHandler = async (commentId: string, isOwn: boolean) => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			if (await sweetConfirmAlert('Delete this comment?')) {
+			if (await sweetConfirmAlert(t('alerts.deleteCommentConfirm'))) {
 				if (isOwn) {
 					const updateData: CommentUpdate = { _id: commentId, commentStatus: CommentStatus.DELETE };
 					await updateComment({ variables: { input: updateData } });
@@ -134,7 +138,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 				}
 				const { data: cd } = await commentsRefetch({ input: searchFilter });
 				if (cd?.getComments) { setComments(cd.getComments.list ?? []); setTotal(cd.getComments.metaCounter?.[0]?.total ?? 0); }
-				await sweetMixinSuccessAlert('Deleted!');
+				await sweetMixinSuccessAlert(t('alerts.deleted'));
 			}
 		} catch (err: any) {
 			await sweetMixinErrorAlert(err.message);
@@ -171,7 +175,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	if (!boardArticle) {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
-				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>Article not found.</p>
+				<p style={{ color: '#b9caca', fontFamily: 'Hanken Grotesk', fontSize: '18px' }}>{t('detail.notFound')}</p>
 			</Stack>
 		);
 	}
@@ -184,18 +188,18 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		<div className="wd-page">
 			<div style={{ maxWidth: '800px', margin: '0 auto', padding: '36px 24px 96px' }}>
 				<button className="wd-back" style={{ marginBottom: '28px' }} onClick={() => router.push('/community')}>
-					← Community
+					{t('detail.back')}
 				</button>
 
 				{/* Meta row */}
 				<div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '18px', flexWrap: 'wrap' }}>
 					<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}35`, color: accent }}>
-						{boardArticle.articleCategory?.replace(/_/g, ' ')}
+						{boardArticle.articleCategory ? t(`enums:articleCategory.${boardArticle.articleCategory}`) : ''}
 					</span>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>
-						{new Date(boardArticle.createdAt).toLocaleDateString([], { year: 'numeric', month: 'long', day: 'numeric' })}
+						{new Date(boardArticle.createdAt).toLocaleDateString([], dateFormatOptions)}
 					</span>
-					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>{readMinutes} min read</span>
+					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>{t('common:stats.minRead', { count: readMinutes })}</span>
 				</div>
 
 				{/* Title */}
@@ -229,7 +233,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 								{boardArticle.memberData.memberNick}
 							</span>
 							<span className={`td-person-type${boardArticle.memberData.memberType === 'TRAINER' ? ' is-trainer' : ''}`} style={{ marginTop: '3px', display: 'inline-block' }}>
-								{boardArticle.memberData.memberType}
+								{boardArticle.memberData.memberType ? t(`enums:memberType.${boardArticle.memberData.memberType}`) : ''}
 							</span>
 						</div>
 					</div>
@@ -257,10 +261,10 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 				>
 					<LikeButton liked={!!boardArticle.meLiked?.[0]?.myFavorite} count={boardArticle.articleLikes ?? 0} onClick={likeBoardArticleHandler} />
 					<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13.5px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-						<b style={{ color: '#ffffff' }}>{boardArticle.articleViews ?? 0}</b> views
+						<b style={{ color: '#ffffff' }}>{boardArticle.articleViews ?? 0}</b> {t('common:stats.views')}
 					</span>
 					<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13.5px', fontWeight: 600, color: 'rgba(213,226,226,0.75)' }}>
-						<b style={{ color: '#ffffff' }}>{total}</b> comments
+						<b style={{ color: '#ffffff' }}>{total}</b> {t('common:stats.comments')}
 					</span>
 				</div>
 
@@ -272,8 +276,8 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 				{/* Comments */}
 				<div className="wd-section">
 					<div className="wd-section-head">
-						<h3>Comments</h3>
-						<span className="wd-section-count">{total} total</span>
+						<h3>{t('detail.commentsTitle')}</h3>
+						<span className="wd-section-count">{t('detail.commentsTotal', { count: total })}</span>
 					</div>
 
 					{/* Input */}
@@ -287,10 +291,10 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 									if (e.target.value.length <= 100) setComment(e.target.value);
 								}}
 								onKeyDown={(e) => e.key === 'Enter' && createCommentHandler()}
-								placeholder="Join the conversation..."
+								placeholder={t('detail.commentPlaceholder')}
 							/>
 							<button className="wd-btn" onClick={createCommentHandler} disabled={!comment}>
-								Post
+								{t('common:actions.post')}
 							</button>
 						</div>
 					</div>
@@ -311,7 +315,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 										onClick={() => goMemberPage(c.memberData?._id, (c.memberData as any)?.memberType)}
 										style={{ cursor: 'pointer' }}
 									>
-										{c.memberData?.memberNick ?? 'Anonymous'}
+										{c.memberData?.memberNick ?? t('detail.anonymous')}
 									</span>
 									<span className="wd-comment-date">{new Date(c.createdAt).toLocaleDateString()}</span>
 									{(c.memberId === user?._id || user?.memberType === 'ADMIN') && (
@@ -325,7 +329,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 						</div>
 					))}
 
-					{comments.length === 0 && !commentsLoading && <p className="wd-empty-line">No comments yet. Be the first!</p>}
+					{comments.length === 0 && !commentsLoading && <p className="wd-empty-line">{t('detail.emptyComments')}</p>}
 
 					{total > searchFilter.limit && (
 						<Stack alignItems="center" sx={{ mt: 3 }}>

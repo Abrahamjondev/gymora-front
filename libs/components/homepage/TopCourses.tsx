@@ -1,11 +1,14 @@
 import React, { useState } from 'react';
 import { useQuery } from '@apollo/client';
 import { useRouter } from 'next/router';
+import { useTranslation } from 'next-i18next';
 import { GET_COURSES } from '../../../apollo/user/query';
 import { Course } from '../../types/course/course';
 import { REACT_APP_API_URL } from '../../config';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+
+const DEFAULT_ACCENT = '#00dce5';
 
 const categoryAccent: Record<string, string> = {
 	STRENGTH: '#ff8a00',
@@ -17,6 +20,7 @@ const categoryAccent: Record<string, string> = {
 
 const TopCourses = () => {
 	const router = useRouter();
+	const { t } = useTranslation('landing');
 	const [courses, setCourses] = useState<Course[]>([]);
 	const sectionRef = useReveal<HTMLElement>(courses.length > 0);
 
@@ -29,7 +33,7 @@ const TopCourses = () => {
 	if (!courses.length) return null;
 
 	const [featured, ...rest] = courses;
-	const featuredAccent = categoryAccent[featured.courseCategory] || '#00dce5';
+	const featuredAccent = categoryAccent[featured.courseCategory] || DEFAULT_ACCENT;
 	const openCourse = (id: string) => router.push({ pathname: '/course/detail', query: { id } });
 
 	return (
@@ -37,11 +41,11 @@ const TopCourses = () => {
 			<div className="lp-container">
 				<div className="lp-section-head">
 					<div>
-						<span className="lp-eyebrow lp-eyebrow--orange">Structured training</span>
-						<h2 className="lp-h2">Top Programs</h2>
+						<span className="lp-eyebrow lp-eyebrow--orange">{t('topCourses.eyebrow')}</span>
+						<h2 className="lp-h2">{t('topCourses.title')}</h2>
 					</div>
 					<button className="lp-view-btn" onClick={() => router.push('/course')}>
-						Browse all →
+						{t('topCourses.browseAll')} →
 					</button>
 				</div>
 
@@ -65,7 +69,7 @@ const TopCourses = () => {
 							loading="lazy"
 						/>
 						<div className="lp-course-feature-shade" />
-						<span className="lp-course-feature-price">{featured.coursePrice > 0 ? `$${featured.coursePrice}` : 'Free'}</span>
+						<span className="lp-course-feature-price">{featured.coursePrice > 0 ? `$${featured.coursePrice}` : t('topCourses.free')}</span>
 
 						<div className="lp-course-feature-body">
 							<div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
@@ -73,9 +77,9 @@ const TopCourses = () => {
 									className="lp-chip"
 									style={{ background: `${featuredAccent}20`, borderColor: `${featuredAccent}35`, color: featuredAccent }}
 								>
-									{featured.courseCategory}
+									{t(`enums:category.${featured.courseCategory}`)}
 								</span>
-								<span className="lp-chip">#1 Program</span>
+								<span className="lp-chip">{t('topCourses.rankBadge')}</span>
 								{featured.courseRating && featured.courseRating > 0 && (
 									<span className="lp-chip" style={{ color: '#ff8a00' }}>
 										★ {featured.courseRating.toFixed(1)}
@@ -86,11 +90,11 @@ const TopCourses = () => {
 							{featured.courseDesc && <p className="lp-course-feature-desc">{featured.courseDesc}</p>}
 							<div className="lp-course-feature-foot">
 								<div className="lp-course-feature-meta">
-									<span>{featured.courseDuration} weeks</span>
-									<span>{featured.courseDifficulty}</span>
+									<span>{t('common:stats.weeks', { count: featured.courseDuration })}</span>
+									<span>{t(`enums:difficulty.${featured.courseDifficulty}`)}</span>
 								</div>
 								<span className="lp-course-feature-go">
-									View Program <span>→</span>
+									{t('topCourses.viewProgram')} <span>→</span>
 								</span>
 							</div>
 						</div>
@@ -99,7 +103,7 @@ const TopCourses = () => {
 					{/* Ranked rows: #2 — #4 */}
 					<div className="lp-course-rows">
 						{rest.map((course, i) => {
-							const accent = categoryAccent[course.courseCategory] || '#00dce5';
+							const accent = categoryAccent[course.courseCategory] || DEFAULT_ACCENT;
 							return (
 								<div
 									key={course._id}
@@ -118,16 +122,16 @@ const TopCourses = () => {
 									<div className="lp-course-row-info">
 										<h3>{course.courseTitle}</h3>
 										<div className="lp-course-row-meta">
-											<span style={{ color: accent }}>{course.courseCategory}</span>
-											<span>{course.courseDuration}w</span>
-											<span>{course.courseDifficulty}</span>
+											<span style={{ color: accent }}>{t(`enums:category.${course.courseCategory}`)}</span>
+											<span>{t('topCourses.weeksShort', { count: course.courseDuration })}</span>
+											<span>{t(`enums:difficulty.${course.courseDifficulty}`)}</span>
 										</div>
 									</div>
 									<div className="lp-course-row-right">
 										{course.courseRating && course.courseRating > 0 ? (
 											<span className="lp-course-row-rating">★ {course.courseRating.toFixed(1)}</span>
 										) : null}
-										<span className="lp-course-row-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : 'Free'}</span>
+										<span className="lp-course-row-price">{course.coursePrice > 0 ? `$${course.coursePrice}` : t('topCourses.free')}</span>
 									</div>
 									<span className="lp-course-row-arrow">→</span>
 								</div>
