@@ -6,7 +6,16 @@ import { light } from '../scss/MaterialTheme';
 import { ApolloProvider } from '@apollo/client';
 import { useApollo } from '../apollo/client';
 import { appWithTranslation } from 'next-i18next';
+import useSocket from '../libs/hooks/useSocket';
 import '../scss/app.scss';
+
+// Keeps the presence socket connected on EVERY page while logged in — without
+// this, members only counted as "online" (and got a lastSeen stamp) while the
+// chat page itself was open.
+const PresenceSocket = () => {
+	useSocket();
+	return null;
+};
 
 const App = ({ Component, pageProps }: AppProps) => {
 	// @ts-ignore
@@ -17,6 +26,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 		<ApolloProvider client={client}>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
+				<PresenceSocket />
 				<Component {...pageProps} />
 			</ThemeProvider>
 		</ApolloProvider>

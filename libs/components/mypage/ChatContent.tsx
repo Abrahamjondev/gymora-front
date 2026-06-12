@@ -104,7 +104,11 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 			// Optimistically clear the local unread flag and tell the parent so the
 			// sidebar badge updates without waiting for a refresh/poll.
 			setConversations((prev) => prev.map((c: any) => (c.partnerId === activePartner ? { ...c, isRead: true } : c)));
-			msgsRefetch({ input: activePartner }).then(() => onConversationsRead?.());
+			msgsRefetch({ input: activePartner }).then(({ data }: any) => {
+				// Set manually — refetch doesn't reliably re-fire onCompleted
+				if (data?.getMessageHistory) setMessages(data.getMessageHistory);
+				onConversationsRead?.();
+			});
 			checkPartnerOnline({ variables: { input: activePartner } });
 		}
 	}, [activePartner]);
@@ -155,8 +159,11 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 					updated.sort((a: any, b: any) => new Date(b.lastMessageAt).getTime() - new Date(a.lastMessageAt).getTime());
 					return updated;
 				}
-				// New conversation — refetch to get partner info
-				convsRefetch();
+				// New conversation — refetch to get partner info (set manually,
+				// refetch doesn't reliably re-fire onCompleted)
+				convsRefetch().then(({ data }: any) => {
+					if (data?.getConversations) setConversations(data.getConversations);
+				});
 				return prev;
 			});
 		};

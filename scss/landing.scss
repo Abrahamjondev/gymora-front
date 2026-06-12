@@ -1039,15 +1039,60 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	align-items: center;
 	gap: 16px;
 }
-@keyframes gnavLetterFlip {
+// Logo hover — "slot machine": the G blurs and rolls through G-Y-M-O-R-A,
+// overshoots, then bounces back onto the final G (strip is 7 letters tall, so
+// one letter step = 14.2857%; -85.714% = the last G).
+@keyframes gnavRoll {
 	0% {
-		transform: rotateY(0deg) scale(1);
+		transform: translateY(0);
+		filter: blur(0);
 	}
-	50% {
-		transform: rotateY(360deg) scale(1.35);
+	12% {
+		filter: blur(2px);
+	}
+	58% {
+		transform: translateY(-71.43%);
+		filter: blur(2px);
+	}
+	78% {
+		transform: translateY(-88.2%);
+		filter: blur(0);
+	}
+	88% {
+		transform: translateY(-84.6%);
 	}
 	100% {
-		transform: rotateY(720deg) scale(1);
+		transform: translateY(-85.714%);
+	}
+}
+
+// Landing pop — the mark squashes the moment the final G snaps in
+@keyframes gnavMarkLand {
+	0%,
+	100% {
+		transform: scale(1.1);
+	}
+	40% {
+		transform: scale(1.24) rotate(-7deg);
+	}
+}
+
+// Shockwave ring fired outward on landing
+@keyframes gnavPing {
+	0% {
+		transform: scale(0.7);
+		opacity: 0.9;
+	}
+	100% {
+		transform: scale(2.2);
+		opacity: 0;
+	}
+}
+
+// Cyan glint sweeping across the "gymora" wordmark
+@keyframes gnavWordShine {
+	to {
+		background-position: -160% 0;
 	}
 }
 
@@ -1057,32 +1102,54 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 	}
 }
 .gnav-logo {
+	position: relative;
 	display: flex;
 	align-items: center;
 	gap: 11px;
 	text-decoration: none;
+	// shockwave ring, drawn over the mark
+	&::before {
+		content: '';
+		position: absolute;
+		left: 0;
+		top: 50%;
+		margin-top: -17.5px;
+		width: 35px;
+		height: 35px;
+		border-radius: 50%;
+		border: 2px solid rgba(0, 220, 229, 0.85);
+		opacity: 0;
+		pointer-events: none;
+		z-index: 3;
+	}
 	.gnav-logo-mark {
 		position: relative;
 		width: 35px;
 		height: 35px;
 		border-radius: 10px;
 		background: linear-gradient(135deg, #00dce5 0%, #00f5ff 55%, #e9feff 130%);
-		display: flex;
-		align-items: center;
-		justify-content: center;
 		box-shadow: 0 0 18px rgba(0, 220, 229, 0.3);
 		overflow: hidden;
-		perspective: 120px;
 		transition: transform 0.4s $lp-ease, box-shadow 0.4s ease, border-radius 0.4s $lp-ease;
-		span {
+		.gnav-roll {
 			position: relative;
 			z-index: 2;
-			font-size: 17px;
-			font-weight: 900;
-			color: #003739;
-			font-family: 'Hanken Grotesk', sans-serif;
-			transform-style: preserve-3d;
-			backface-visibility: hidden;
+			display: flex;
+			flex-direction: column;
+			will-change: transform;
+			i {
+				width: 35px;
+				height: 35px;
+				display: flex;
+				align-items: center;
+				justify-content: center;
+				flex-shrink: 0;
+				font-style: normal;
+				font-size: 17px;
+				font-weight: 900;
+				color: #003739;
+				font-family: 'Hanken Grotesk', sans-serif;
+			}
 		}
 		&::after {
 			content: '';
@@ -1093,6 +1160,7 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			height: 200%;
 			background: linear-gradient(115deg, transparent, rgba(255, 255, 255, 0.75), transparent);
 			transform: translateX(-120%) skewX(-18deg);
+			z-index: 3;
 		}
 	}
 	.gnav-logo-word {
@@ -1100,23 +1168,35 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		font-size: 22px;
 		font-weight: 800;
 		letter-spacing: -0.03em;
-		color: #ffffff;
+		// white text with an off-screen cyan band — identical to plain white
+		// until the hover animation sweeps the band through the letters
+		background: linear-gradient(100deg, #ffffff 42%, #00dce5 50%, #00f5ff 54%, #ffffff 62%);
+		background-size: 220% 100%;
+		background-position: 130% 0;
+		-webkit-background-clip: text;
+		background-clip: text;
+		-webkit-text-fill-color: transparent;
 		transition: letter-spacing 0.4s $lp-ease;
 	}
 	&:hover {
+		&::before {
+			animation: gnavPing 0.8s ease-out 0.78s;
+		}
 		.gnav-logo-mark {
-			transform: rotate(-10deg) scale(1.1);
+			transform: scale(1.1);
 			border-radius: 50%;
 			box-shadow: 0 0 34px rgba(0, 220, 229, 0.55), 0 0 60px rgba(0, 220, 229, 0.2);
+			animation: gnavMarkLand 0.45s $lp-ease 0.78s;
 			&::after {
-				animation: gnavShine 0.7s $lp-ease forwards;
+				animation: gnavShine 0.7s $lp-ease 0.62s forwards;
 			}
-			span {
-				animation: gnavLetterFlip 0.9s $lp-ease;
+			.gnav-roll {
+				animation: gnavRoll 1.05s cubic-bezier(0.65, 0, 0.35, 1) both;
 			}
 		}
 		.gnav-logo-word {
 			letter-spacing: 0.005em;
+			animation: gnavWordShine 0.9s ease 0.2s forwards;
 		}
 	}
 }

@@ -49,8 +49,16 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 				<div className="gnav-inner">
 					{/* Logo */}
 					<Link href="/" className="gnav-logo">
-						<div className="gnav-logo-mark">
-							<span>G</span>
+						<div className="gnav-logo-mark" aria-hidden="true">
+							<span className="gnav-roll">
+								<i>G</i>
+								<i>Y</i>
+								<i>M</i>
+								<i>O</i>
+								<i>R</i>
+								<i>A</i>
+								<i>G</i>
+							</span>
 						</div>
 						<span className="gnav-logo-word">gymora</span>
 					</Link>

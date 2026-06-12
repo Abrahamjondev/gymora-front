@@ -120,6 +120,17 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 	const [deleteMealLog] = useMutation(DELETE_MEAL_LOG);
 	const [analyzeFoodImage] = useMutation(ANALYZE_FOOD_IMAGE);
 
+	// refetch() alone doesn't reliably re-fire onCompleted — the lists must be
+	// re-set manually from the refetch results or the UI only updates on reload.
+	const reloadMeals = async () => {
+		await mealsRefetch()
+			.then(({ data }: any) => data?.getMealHistory && setMeals(data.getMealHistory))
+			.catch(() => {});
+		await nutritionHistoryRefetch()
+			.then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory))
+			.catch(() => {});
+	};
+
 	// AI scan state
 	const [scanResult, setScanResult] = useState<any>(null);
 	const [scanning, setScanning] = useState(false);
@@ -169,8 +180,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 					},
 				},
 			});
-			await mealsRefetch();
-			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
+			await reloadMeals();
 			await sweetMixinSuccessAlert(`Logged as ${mealType.toLowerCase()}!`);
 			setScanResult(null);
 			setScanPreview(null);
@@ -215,8 +225,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 			if (!user?._id) throw new Error(Messages.error2);
 			if (!newMeal.mealName) throw new Error('Meal name required');
 			await addMealLog({ variables: { input: { ...newMeal, calories: Number(newMeal.calories), protein: Number(newMeal.protein), carbs: Number(newMeal.carbs), fats: Number(newMeal.fats) } } });
-			await mealsRefetch();
-			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
+			await reloadMeals();
 			setShowAddMeal(false);
 			setNewMeal({ mealType: 'BREAKFAST', mealName: '', calories: 0, protein: 0, carbs: 0, fats: 0, mealDate: new Date().toISOString() });
 			await sweetMixinSuccessAlert('Meal logged!');
@@ -237,9 +246,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 				sweetMixinErrorAlert(msg || 'Could not delete meal').then();
 			}
 		}
-		const { data } = await mealsRefetch();
-		if (data?.getMealHistory) setMeals(data.getMealHistory);
-		await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
+		await reloadMeals();
 	};
 
 	// "Today's intake" must only count TODAY — getMealHistory returns the full history
@@ -823,8 +830,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 															},
 														},
 													});
-													await mealsRefetch();
-			await nutritionHistoryRefetch().then(({ data }: any) => data?.getNutritionHistory && setNutritionHistory(data.getNutritionHistory)).catch(() => {});
+													await reloadMeals();
 													await sweetMixinSuccessAlert(`Logged as ${type.toLowerCase()}!`);
 												} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
 											}} style={{

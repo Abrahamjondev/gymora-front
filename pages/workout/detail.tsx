@@ -186,7 +186,10 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 			await createComment({ variables: { input: insertCommentData } });
 			notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New comment on your workout', `${user.memberNick} commented on "${workout?.workoutTitle}"`);
 			setInsertCommentData({ ...insertCommentData, commentContent: '' });
-			await getCommentsRefetch({ input: commentInquiry });
+			// Set manually — refetch doesn't reliably re-fire onCompleted
+			const { data } = await getCommentsRefetch({ input: commentInquiry });
+			if (data?.getComments?.list) setWorkoutComments(data.getComments.list);
+			setCommentTotal(data?.getComments?.metaCounter?.[0]?.total ?? 0);
 		} catch (err: any) {
 			await sweetErrorHandling(err);
 		}
