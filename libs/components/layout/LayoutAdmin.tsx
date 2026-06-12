@@ -12,7 +12,6 @@ import Avatar from '@mui/material/Avatar';
 import IconButton from '@mui/material/IconButton';
 import Divider from '@mui/material/Divider';
 import Typography from '@mui/material/Typography';
-import Tooltip from '@mui/material/Tooltip';
 import useMediaQuery from '@mui/material/useMediaQuery';
 import MenuIcon from '@mui/icons-material/Menu';
 import { getJwtToken, logOut, updateUserInfo } from '../../auth';
@@ -28,7 +27,6 @@ const withAdminLayout = (Component: ComponentType) => {
 		const user = useReactiveVar(userVar);
 		const [settingsState, setSettingsStateState] = useState(false);
 		const [anchorElUser, setAnchorElUser] = React.useState<null | HTMLElement>(null);
-		const [openMenu, setOpenMenu] = useState(false);
 		const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' });
 		const [title, setTitle] = useState('admin');
 		const [loading, setLoading] = useState(true);
@@ -71,85 +69,27 @@ const withAdminLayout = (Component: ComponentType) => {
 		return (
 			<main id="pc-wrap" className="admin" style={{ background: '#0d0d0e', minHeight: '100vh' }}>
 				<Box component={'div'} sx={{ display: 'flex' }}>
-					<AppBar
-						position="fixed"
-						sx={{
-							width: isMobile ? '100%' : `calc(100% - ${drawerWidth}px)`,
-							ml: isMobile ? 0 : `${drawerWidth}px`,
-							boxShadow: 'none',
-							background: 'rgba(13,13,14,0.85)',
-							backdropFilter: 'blur(16px)',
-							borderBottom: '1px solid rgba(255,255,255,0.06)',
-						}}
-					>
-						<Toolbar>
-							{isMobile && (
+					{/* Mobile-only top bar: just the burger that opens the drawer. On
+					    desktop there is NO top bar — the old fixed AppBar was an empty
+					    strip with a floating avatar overlapping the page content. */}
+					{isMobile && (
+						<AppBar
+							position="fixed"
+							sx={{
+								width: '100%',
+								boxShadow: 'none',
+								background: 'rgba(13,13,14,0.85)',
+								backdropFilter: 'blur(16px)',
+								borderBottom: '1px solid rgba(255,255,255,0.06)',
+							}}
+						>
+							<Toolbar>
 								<IconButton onClick={() => setDrawerOpen(true)} sx={{ color: '#e9feff', mr: 'auto' }} aria-label="Open menu">
 									<MenuIcon />
 								</IconButton>
-							)}
-							<Tooltip title="Open settings">
-								<IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-									<Avatar
-										src={
-											user?.memberImage ? `${REACT_APP_API_URL}/${user?.memberImage}` : '/img/profile/defaultUser.svg'
-										}
-									/>
-								</IconButton>
-							</Tooltip>
-							<Menu
-								sx={{ mt: '45px' }}
-								id="menu-appbar"
-								className={'pop-menu'}
-								PaperProps={{
-									sx: {
-										background: '#161618',
-										border: '1px solid rgba(255,255,255,0.08)',
-										borderRadius: '14px',
-										color: '#e5e2e3',
-										boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
-									},
-								}}
-								anchorEl={anchorElUser}
-								anchorOrigin={{
-									vertical: 'top',
-									horizontal: 'right',
-								}}
-								keepMounted
-								transformOrigin={{
-									vertical: 'top',
-									horizontal: 'right',
-								}}
-								open={Boolean(anchorElUser)}
-								onClose={handleCloseUserMenu}
-							>
-								<Box
-									component={'div'}
-									onClick={handleCloseUserMenu}
-									sx={{
-										width: '200px',
-									}}
-								>
-									<Stack sx={{ px: '20px', my: '12px' }}>
-										<Typography variant={'h6'} component={'h6'} sx={{ mb: '4px', color: '#ffffff', fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: '15px' }}>
-											{user?.memberNick}
-										</Typography>
-										<Typography variant={'subtitle1'} component={'p'} sx={{ color: 'rgba(185,202,202,0.55)', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>
-											{user?.memberPhone}
-										</Typography>
-									</Stack>
-									<Divider sx={{ borderColor: 'rgba(255,255,255,0.07)' }} />
-									<Box component={'div'} sx={{ p: 1, py: '6px' }} onClick={logoutHandler}>
-										<MenuItem sx={{ px: '16px', py: '6px', borderRadius: '8px', '&:hover': { background: 'rgba(255,138,138,0.08)' } }}>
-											<Typography variant={'subtitle1'} component={'span'} sx={{ color: '#ffb4a8', fontFamily: 'Hanken Grotesk', fontWeight: 600, fontSize: '13.5px' }}>
-												Logout
-											</Typography>
-										</MenuItem>
-									</Box>
-								</Box>
-							</Menu>
-						</Toolbar>
-					</AppBar>
+							</Toolbar>
+						</AppBar>
+					)}
 
 					<Drawer
 						sx={{
@@ -191,15 +131,22 @@ const withAdminLayout = (Component: ComponentType) => {
 								</span>
 							</Stack>
 
+							{/* User chip doubles as the account menu trigger (Logout) —
+							    the old top-bar avatar lived here instead. */}
 							<Stack
 								className="user"
 								direction={'row'}
 								alignItems={'center'}
+								onClick={handleOpenUserMenu}
 								sx={{
-									bgcolor: openMenu ? 'rgba(255, 255, 255, 0.04)' : 'none',
-									borderRadius: '8px',
-									px: '24px',
-									py: '11px',
+									bgcolor: anchorElUser ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+									border: '1px solid rgba(255,255,255,0.06)',
+									borderRadius: '12px',
+									px: '16px',
+									py: '9px',
+									cursor: 'pointer',
+									transition: 'background 0.2s ease',
+									'&:hover': { bgcolor: 'rgba(255,255,255,0.05)' },
 								}}
 							>
 								<Avatar
@@ -210,6 +157,44 @@ const withAdminLayout = (Component: ComponentType) => {
 									{user?.memberPhone}
 								</Typography>
 							</Stack>
+							<Menu
+								id="menu-admin-account"
+								className={'pop-menu'}
+								PaperProps={{
+									sx: {
+										background: '#161618',
+										border: '1px solid rgba(255,255,255,0.08)',
+										borderRadius: '14px',
+										color: '#e5e2e3',
+										boxShadow: '0 16px 48px rgba(0,0,0,0.6)',
+									},
+								}}
+								anchorEl={anchorElUser}
+								anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+								keepMounted
+								transformOrigin={{ vertical: 'top', horizontal: 'center' }}
+								open={Boolean(anchorElUser)}
+								onClose={handleCloseUserMenu}
+							>
+								<Box component={'div'} onClick={handleCloseUserMenu} sx={{ width: '200px' }}>
+									<Stack sx={{ px: '20px', my: '12px' }}>
+										<Typography variant={'h6'} component={'h6'} sx={{ mb: '4px', color: '#ffffff', fontFamily: 'Hanken Grotesk', fontWeight: 700, fontSize: '15px' }}>
+											{user?.memberNick}
+										</Typography>
+										<Typography variant={'subtitle1'} component={'p'} sx={{ color: 'rgba(185,202,202,0.55)', fontFamily: 'JetBrains Mono', fontSize: '11px' }}>
+											{user?.memberPhone}
+										</Typography>
+									</Stack>
+									<Divider sx={{ borderColor: 'rgba(255,255,255,0.07)' }} />
+									<Box component={'div'} sx={{ p: 1, py: '6px' }} onClick={logoutHandler}>
+										<MenuItem sx={{ px: '16px', py: '6px', borderRadius: '8px', '&:hover': { background: 'rgba(255,138,138,0.08)' } }}>
+											<Typography variant={'subtitle1'} component={'span'} sx={{ color: '#ffb4a8', fontFamily: 'Hanken Grotesk', fontWeight: 600, fontSize: '13.5px' }}>
+												Logout
+											</Typography>
+										</MenuItem>
+									</Box>
+								</Box>
+							</Menu>
 						</Toolbar>
 
 						<Divider />
