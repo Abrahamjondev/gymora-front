@@ -7,7 +7,7 @@ import { userVar } from '../../apollo/store';
 import { GET_MEMBER_SUBSCRIPTIONS, GET_PAYMENT_HISTORY } from '../../apollo/user/query';
 import { INITIATE_PAYMENT, CREATE_SUBSCRIPTION } from '../../apollo/user/mutation';
 import { T } from '../../libs/types/common';
-import { Messages } from '../../libs/config';
+import { Messages, appLocale } from '../../libs/config';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { useRouter } from 'next/router';
@@ -301,7 +301,7 @@ const SubscriptionPage: NextPage = () => {
 						</div>
 						<div style={{ textAlign: 'right' }}>
 							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', display: 'block' }}>{t('subscription.expires')}</span>
-							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3' }}>{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : t('subscription.notAvailable')}</span>
+							<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: '#e5e2e3' }}>{activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString(appLocale()) : t('subscription.notAvailable')}</span>
 						</div>
 					</div>
 				)}
@@ -392,7 +392,7 @@ const SubscriptionPage: NextPage = () => {
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', marginLeft: '10px' }}>{p.paymentProvider}</span>
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', marginLeft: '8px', color: p.paymentStatus === 'PAID' ? '#66daba' : p.paymentStatus === 'PENDING' ? '#ff8a00' : '#849495' }}>{statusLabels[p.paymentStatus] || p.paymentStatus}</span>
 									</div>
-									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{new Date(p.createdAt).toLocaleDateString()}</span>
+									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.3)' }}>{new Date(p.createdAt).toLocaleDateString(appLocale())}</span>
 								</div>
 							))}
 						</div>

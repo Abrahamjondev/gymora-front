@@ -22,8 +22,7 @@ const PresenceSocket = () => {
 };
 
 // localeDetection is off, so the language picked in the switcher (NEXT_LOCALE
-// cookie) is restored manually on first load. Also keeps moment's locale in
-// sync so formatted dates (e.g. "MMM D") localize too.
+// cookie) is restored manually on first load.
 const LocaleRestore = () => {
 	const router = useRouter();
 	useEffect(() => {
@@ -33,16 +32,18 @@ const LocaleRestore = () => {
 		}
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
-	useEffect(() => {
-		moment.locale(router.locale === 'uz' ? 'uz-latn' : router.locale || 'en');
-	}, [router.locale]);
 	return null;
 };
 
 const App = ({ Component, pageProps }: AppProps) => {
+	const router = useRouter();
 	// @ts-ignore
 	const [theme, setTheme] = useState(createTheme(light));
 	const client = useApollo(pageProps.initialApolloState);
+
+	// Set during render (not in an effect) so SERVER-rendered moment dates use
+	// the page's locale too — an effect would leave SSR output in English.
+	moment.locale(router.locale === 'uz' ? 'uz-latn' : router.locale || 'en');
 
 	return (
 		<ApolloProvider client={client}>

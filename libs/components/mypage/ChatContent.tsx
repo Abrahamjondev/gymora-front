@@ -6,7 +6,7 @@ import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { GET_CONVERSATIONS, GET_MESSAGE_HISTORY, GET_MEMBER, GET_PARTNER_ONLINE_STATUS } from '../../../apollo/user/query';
 import { T } from '../../types/common';
-import { REACT_APP_API_URL, Messages } from '../../config';
+import { REACT_APP_API_URL, Messages, appLocale } from '../../config';
 import { sweetMixinErrorAlert } from '../../sweetAlert';
 import useSocket from '../../hooks/useSocket';
 
@@ -203,7 +203,7 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		if (h < 24) return t('chat.lastSeenHours', { n: h });
 		const d = Math.floor(h / 24);
 		if (d < 7) return t('chat.lastSeenDays', { n: d });
-		return t('chat.lastSeenDate', { date: new Date(iso).toLocaleDateString([], { month: 'short', day: 'numeric' }) });
+		return t('chat.lastSeenDate', { date: new Date(iso).toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' }) });
 	};
 
 	const formatConvTime = (iso?: string) => {
@@ -211,8 +211,8 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		const d = new Date(iso);
 		const today = new Date();
 		return d.toDateString() === today.toDateString()
-			? d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-			: d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+			? d.toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' })
+			: d.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
 	};
 
 	const dayLabel = (iso: string) => {
@@ -222,10 +222,10 @@ const ChatContent = ({ onConversationsRead }: { onConversationsRead?: () => void
 		yesterday.setDate(today.getDate() - 1);
 		if (d.toDateString() === today.toDateString()) return t('chat.today');
 		if (d.toDateString() === yesterday.toDateString()) return t('chat.yesterday');
-		return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+		return d.toLocaleDateString(appLocale(), { month: 'short', day: 'numeric' });
 	};
 
-	const formatMsgTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '');
+	const formatMsgTime = (iso?: string) => (iso ? new Date(iso).toLocaleTimeString(appLocale(), { hour: '2-digit', minute: '2-digit' }) : '');
 
 	return (
 		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>

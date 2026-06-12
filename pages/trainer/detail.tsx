@@ -24,7 +24,7 @@ import {
 	GET_BOARD_ARTICLES,
 } from '../../apollo/user/query';
 import { LIKE_TARGET_MEMBER, SUBSCRIBE, UNSUBSCRIBE, CREATE_REVIEW } from '../../apollo/user/mutation';
-import { REACT_APP_API_URL, Messages } from '../../libs/config';
+import { REACT_APP_API_URL, Messages, appLocale } from '../../libs/config';
 import { Workout } from '../../libs/types/workout/workout';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
@@ -476,7 +476,7 @@ const TrainerDetail: NextPage = () => {
 											</span>
 											<h3>{article.articleTitle}</h3>
 											<div className="lp-article-meta">
-												<span>{new Date(article.createdAt).toLocaleDateString()}</span>
+												<span>{new Date(article.createdAt).toLocaleDateString(appLocale())}</span>
 												<span>
 													{article.articleViews} {t('common:stats.views')} · ♥ {article.articleLikes}
 												</span>
@@ -545,7 +545,7 @@ const TrainerDetail: NextPage = () => {
 													{'★'.repeat(r.reviewRating)}
 													{'☆'.repeat(5 - r.reviewRating)}
 												</span>
-												<span className="wd-comment-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+												<span className="wd-comment-date">{new Date(r.createdAt).toLocaleDateString(appLocale())}</span>
 											</div>
 											<p>{r.reviewText}</p>
 										</div>

@@ -17,7 +17,7 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLE, GET_COMMENTS } from '../../apollo/user/query';
 import { CREATE_COMMENT, LIKE_TARGET_BOARD_ARTICLE, UPDATE_COMMENT } from '../../apollo/user/mutation';
 import { REMOVE_COMMENT_BY_ADMIN } from '../../apollo/admin/mutation';
-import { Messages, REACT_APP_API_URL } from '../../libs/config';
+import { Messages, REACT_APP_API_URL, appLocale } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
@@ -197,7 +197,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 						{boardArticle.articleCategory ? t(`enums:articleCategory.${boardArticle.articleCategory}`) : ''}
 					</span>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>
-						{new Date(boardArticle.createdAt).toLocaleDateString([], dateFormatOptions)}
+						{new Date(boardArticle.createdAt).toLocaleDateString(appLocale(), dateFormatOptions)}
 					</span>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10.5px', color: 'rgba(185,202,202,0.5)' }}>{t('common:stats.minRead', { count: readMinutes })}</span>
 				</div>
@@ -317,7 +317,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 									>
 										{c.memberData?.memberNick ?? t('detail.anonymous')}
 									</span>
-									<span className="wd-comment-date">{new Date(c.createdAt).toLocaleDateString()}</span>
+									<span className="wd-comment-date">{new Date(c.createdAt).toLocaleDateString(appLocale())}</span>
 									{(c.memberId === user?._id || user?.memberType === 'ADMIN') && (
 										<button className="nm-del" style={{ marginLeft: 'auto' }} onClick={() => deleteCommentHandler(c._id, c.memberId === user?._id)}>
 											✕

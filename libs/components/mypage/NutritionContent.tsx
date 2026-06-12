@@ -6,7 +6,7 @@ import { userVar } from '../../../apollo/store';
 import { GET_MEAL_HISTORY, GET_NUTRITION_RECOMMENDATION, GET_AI_ANALYZE_HISTORY, GET_NUTRITION_HISTORY } from '../../../apollo/user/query';
 import { ADD_MEAL_LOG, DELETE_MEAL_LOG, ANALYZE_FOOD_IMAGE } from '../../../apollo/user/mutation';
 import { T } from '../../types/common';
-import { Messages, REACT_APP_API_URL } from '../../config';
+import { Messages, REACT_APP_API_URL, appLocale } from '../../config';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
 const mealTypeColors: Record<string, string> = {
@@ -273,7 +273,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 			for (let i = 11; i >= 0; i--) {
 				const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
 				const key = `${d.getFullYear()}-${d.getMonth()}`;
-				buckets[key] = { label: d.toLocaleDateString([], { month: 'short' }), calories: 0, protein: 0 };
+				buckets[key] = { label: d.toLocaleDateString(appLocale(), { month: 'short' }), calories: 0, protein: 0 };
 			}
 			docs.forEach((doc) => {
 				const d = new Date(doc.nutritionDate);
@@ -292,7 +292,7 @@ const NutritionContent = ({ view = 'plan' }: { view?: 'plan' | 'tracker' }) => {
 			d.setDate(now.getDate() - i);
 			const doc = docs.find((x) => new Date(x.nutritionDate).toDateString() === d.toDateString());
 			out.push({
-				label: d.toLocaleDateString([], historyPeriod === 'WEEK' ? { weekday: 'short' } : { day: 'numeric' }),
+				label: d.toLocaleDateString(appLocale(), historyPeriod === 'WEEK' ? { weekday: 'short' } : { day: 'numeric' }),
 				calories: doc?.totalCalories || 0,
 				protein: doc?.totalProtein || 0,
 			});

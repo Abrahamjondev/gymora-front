@@ -2,6 +2,10 @@ import { i18n } from 'next-i18next';
 
 export const REACT_APP_API_URL = `${process.env.REACT_APP_API_URL}`;
 
+/** Active UI locale for Intl date/time formatting — keeps dates in the app's
+ *  language instead of the browser's ('uz' renders Latin by default). */
+export const appLocale = (): string => i18n?.language || 'en';
+
 // Localized at ACCESS time via getters so every existing `Messages.errorN`
 // call site stays unchanged; falls back to English before i18n is ready.
 const message = (key: string, fallback: string) => i18n?.t(`common:alerts.${key}`, { defaultValue: fallback }) ?? fallback;

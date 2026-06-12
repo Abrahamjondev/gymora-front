@@ -5,7 +5,7 @@ import { userVar } from '../../../apollo/store';
 import { GET_MEMBER_SUBSCRIPTIONS, GET_PAYMENT_HISTORY } from '../../../apollo/user/query';
 import { INITIATE_PAYMENT, CREATE_SUBSCRIPTION } from '../../../apollo/user/mutation';
 import { T } from '../../types/common';
-import { Messages } from '../../config';
+import { Messages, appLocale } from '../../config';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 import { useRouter } from 'next/router';
 import { loadStripe } from '@stripe/stripe-js';
@@ -303,7 +303,7 @@ const SubscriptionContent = () => {
 								</span>
 							)}
 							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.45)', display: 'block', marginTop: '6px' }}>
-								{t('subscription.expires')} {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString() : t('subscription.notAvailable')}
+								{t('subscription.expires')} {activeSub.expiresAt ? new Date(activeSub.expiresAt).toLocaleDateString(appLocale()) : t('subscription.notAvailable')}
 							</span>
 						</div>
 					</div>
@@ -418,7 +418,7 @@ const SubscriptionContent = () => {
 										<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.5)' }}>{p.paymentProvider}</span>
 									</div>
 									<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: 'rgba(185,202,202,0.4)', flexShrink: 0 }}>
-										{new Date(p.createdAt).toLocaleDateString()}
+										{new Date(p.createdAt).toLocaleDateString(appLocale())}
 									</span>
 								</div>
 							);

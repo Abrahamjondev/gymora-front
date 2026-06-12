@@ -12,7 +12,7 @@ import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_COURSE, GET_COURSE_REVIEWS, GET_LESSON_PROGRESS, GET_TRAINER } from '../../apollo/user/query';
 import CreatorCard from '../../libs/components/common/CreatorCard';
 import { PURCHASE_COURSE, CREATE_REVIEW, COMPLETE_LESSON, CREATE_COURSE_CHECKOUT_SESSION, CONFIRM_COURSE_PAYMENT, LIKE_TARGET_COURSE } from '../../apollo/user/mutation';
-import { REACT_APP_API_URL, Messages } from '../../libs/config';
+import { REACT_APP_API_URL, Messages, appLocale } from '../../libs/config';
 import { userVar } from '../../apollo/store';
 import VideoPlayer from '../../libs/components/common/VideoPlayer';
 import LikeButton from '../../libs/components/common/LikeButton';
@@ -545,7 +545,7 @@ const CourseDetail: NextPage = () => {
 												{'★'.repeat(r.reviewRating)}
 												{'☆'.repeat(5 - r.reviewRating)}
 											</span>
-											<span className="wd-comment-date">{new Date(r.createdAt).toLocaleDateString()}</span>
+											<span className="wd-comment-date">{new Date(r.createdAt).toLocaleDateString(appLocale())}</span>
 										</div>
 										<p>{r.reviewText}</p>
 									</div>

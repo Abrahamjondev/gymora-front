@@ -9,7 +9,7 @@ import { BoardArticle } from '../../types/board-article/board-article';
 import { LIKE_TARGET_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../sweetAlert';
-import { Messages, REACT_APP_API_URL } from '../../config';
+import { Messages, REACT_APP_API_URL, appLocale } from '../../config';
 import { useRouter } from 'next/router';
 import { useTranslation } from 'next-i18next';
 
@@ -119,7 +119,7 @@ const MyArticles: NextPage = ({ initialInput, ...props }: T) => {
 										<span className="lp-chip" style={{ background: `${accent}18`, borderColor: `${accent}30`, color: accent }}>
 											{t(`enums:articleCategory.${article.articleCategory}`, { defaultValue: article.articleCategory?.replace(/_/g, ' ') })}
 										</span>
-										<span className="cm-date">{new Date(article.createdAt).toLocaleDateString()}</span>
+										<span className="cm-date">{new Date(article.createdAt).toLocaleDateString(appLocale())}</span>
 									</div>
 									<h3 style={{ fontSize: '17px' }}>{article.articleTitle}</h3>
 									<div className="cm-foot">

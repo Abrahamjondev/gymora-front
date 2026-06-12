@@ -16,7 +16,7 @@ import { userVar } from '../../apollo/store';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 import { getJwtToken, updateUserInfo, logOut } from '../../libs/auth';
-import { REACT_APP_API_URL, Messages } from '../../libs/config';
+import { REACT_APP_API_URL, Messages, appLocale } from '../../libs/config';
 import {
 	GET_MEMBER_WORKOUTS, GET_DASHBOARD_STATS, GET_NOTIFICATIONS,
 	GET_MEMBER_PURCHASED_COURSES, GET_TRAINER_COURSES, GET_RECOMMENDATIONS,
@@ -123,7 +123,7 @@ const notifTimeAgo = (iso: string, t: (key: string, opts?: Record<string, unknow
 	if (h < 24) return t('notifications.time.hoursAgo', { n: h });
 	const d = Math.floor(h / 24);
 	if (d < 7) return t('notifications.time.daysAgo', { n: d });
-	return new Date(iso).toLocaleDateString();
+	return new Date(iso).toLocaleDateString(appLocale());
 };
 
 const isItemVisible = (item: MenuItem, memberType?: string) => {

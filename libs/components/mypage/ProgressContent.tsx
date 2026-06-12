@@ -6,7 +6,7 @@ import { userVar } from '../../../apollo/store';
 import { GET_PROGRESS_TIMELINE } from '../../../apollo/user/query';
 import { ADD_PROGRESS } from '../../../apollo/user/mutation';
 import { T } from '../../types/common';
-import { Messages } from '../../config';
+import { Messages, appLocale } from '../../config';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
 const labelStyle: React.CSSProperties = {
@@ -98,7 +98,7 @@ const ProgressContent = () => {
 	const latestFat = timeline.find((e: any) => e.bodyFat != null)?.bodyFat;
 	const chartWeights = [...timeline].reverse().map((e: any) => e.weight);
 
-	const formatEntryDate = (iso: string) => new Date(iso).toLocaleDateString([], { year: 'numeric', month: 'short', day: 'numeric' });
+	const formatEntryDate = (iso: string) => new Date(iso).toLocaleDateString(appLocale(), { year: 'numeric', month: 'short', day: 'numeric' });
 
 	const deltaChip = (delta: number | null, unit: string = t('progress.units.kg')) => {
 		if (delta === null || delta === 0) return null;
@@ -208,7 +208,7 @@ const ProgressContent = () => {
 							<div className="pg-chart-head">
 								<span>{t('progress.weightTrend')}</span>
 								<span>
-									{new Date(oldest.progressDate).toLocaleDateString()} — {new Date(latest.progressDate).toLocaleDateString()}
+									{new Date(oldest.progressDate).toLocaleDateString(appLocale())} — {new Date(latest.progressDate).toLocaleDateString(appLocale())}
 								</span>
 							</div>
 							<WeightSparkline weights={chartWeights} />

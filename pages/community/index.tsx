@@ -14,7 +14,7 @@ import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../apollo/user/query';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
-import { Messages, REACT_APP_API_URL } from '../../libs/config';
+import { Messages, REACT_APP_API_URL, appLocale } from '../../libs/config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
@@ -260,7 +260,7 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 													<span>{article.memberData.memberNick}</span>
 												</span>
 											)}
-											<span className="cm-date">{new Date(article.createdAt).toLocaleDateString()}</span>
+											<span className="cm-date">{new Date(article.createdAt).toLocaleDateString(appLocale())}</span>
 										</div>
 										<h3>{article.articleTitle}</h3>
 										<p className="cm-excerpt">

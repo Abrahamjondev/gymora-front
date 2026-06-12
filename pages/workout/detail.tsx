@@ -13,7 +13,7 @@ import { useTranslation } from 'next-i18next';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_WORKOUT, GET_COMMENTS, GET_WORKOUT_REVIEWS } from '../../apollo/user/query';
 import { LIKE_WORKOUT, CREATE_COMMENT, CREATE_REVIEW } from '../../apollo/user/mutation';
-import { REACT_APP_API_URL, Messages } from '../../libs/config';
+import { REACT_APP_API_URL, Messages, appLocale } from '../../libs/config';
 import { Comment } from '../../libs/types/comment/comment';
 import { CommentInput, CommentsInquiry } from '../../libs/types/comment/comment.input';
 import { CommentGroup } from '../../libs/enums/comment.enum';
@@ -394,7 +394,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 								<div className="wd-comment-body">
 									<div className="wd-comment-head">
 										<span className="wd-comment-nick">{comment.memberData?.memberNick ?? t('detail.anonymous')}</span>
-										<span className="wd-comment-date">{new Date(comment.createdAt).toLocaleDateString()}</span>
+										<span className="wd-comment-date">{new Date(comment.createdAt).toLocaleDateString(appLocale())}</span>
 									</div>
 									<p>{comment.commentContent}</p>
 								</div>
