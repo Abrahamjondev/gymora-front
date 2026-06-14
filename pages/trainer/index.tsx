@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { CircularProgress, Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
@@ -23,6 +24,22 @@ export const getStaticProps = async ({ locale }: any) => ({
 	},
 });
 
+interface TrainersInquiry {
+	page: number;
+	limit: number;
+	sort: string;
+	direction: Direction;
+	search: { text?: string };
+}
+
+const TRAINER_DEFAULT_INPUT: TrainersInquiry = {
+	page: 1,
+	limit: 6,
+	sort: 'memberRank',
+	direction: Direction.DESC,
+	search: {},
+};
+
 const TrainerList: NextPage = () => {
 	const device = useDeviceDetect();
 	const { t } = useTranslation('trainer');
@@ -30,15 +47,11 @@ const TrainerList: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const [trainers, setTrainers] = useState<Member[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useState({
-		page: 1,
-		limit: 6,
-		sort: 'memberRank',
-		direction: Direction.DESC,
-		search: {} as { text?: string },
-	});
+	const [searchFilter, setSearchFilter] = useUrlFilter<TrainersInquiry>(TRAINER_DEFAULT_INPUT, '/trainer');
 	const [searchText, setSearchText] = useState<string>('');
-	const [activeSort, setActiveSort] = useState<string>('memberRank');
+
+	// Sort control derived from the URL-synced filter so a shared link / refresh reflects it.
+	const activeSort = searchFilter.sort ?? 'memberRank';
 
 	/** APOLLO REQUESTS **/
 	const {
@@ -58,6 +71,11 @@ const TrainerList: NextPage = () => {
 	useEffect(() => {
 		refetch({ input: searchFilter });
 	}, [searchFilter]);
+
+	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
+	useEffect(() => {
+		setSearchText(searchFilter.search?.text ?? '');
+	}, [searchFilter.search?.text]);
 
 	const [likeMember] = useMutation(LIKE_TARGET_MEMBER);
 
@@ -88,7 +106,6 @@ const TrainerList: NextPage = () => {
 	};
 
 	const sortHandler = (sort: string) => {
-		setActiveSort(sort);
 		setSearchFilter({ ...searchFilter, page: 1, sort });
 	};
 

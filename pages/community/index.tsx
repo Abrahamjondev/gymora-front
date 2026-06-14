@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { T } from '../../libs/types/common';
@@ -11,6 +12,7 @@ import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
 import { BoardArticleCategory } from '../../libs/enums/board-article.enum';
+import { Direction } from '../../libs/enums/common.enum';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { GET_BOARD_ARTICLES } from '../../apollo/user/query';
 import { LIKE_TARGET_BOARD_ARTICLE } from '../../apollo/user/mutation';
@@ -36,6 +38,14 @@ const categories = [
 
 const DEFAULT_ACCENT = '#00dce5';
 
+const COMMUNITY_DEFAULT_INPUT: BoardArticlesInquiry = {
+	page: 1,
+	limit: 6,
+	sort: 'createdAt',
+	direction: Direction.DESC,
+	search: {},
+};
+
 const categoryAccent: Record<string, string> = {
 	FITNESS_TIPS: '#00dce5',
 	NUTRITION: '#ffb77f',
@@ -44,17 +54,14 @@ const categoryAccent: Record<string, string> = {
 	SUCCESS_STORY: '#66daba',
 };
 
-const Community: NextPage = ({ initialInput, ...props }: T) => {
+const Community: NextPage = () => {
 	const { t } = useTranslation('community');
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const { query } = router;
-	const articleCategory = query?.articleCategory as string;
-	const [searchCommunity, setSearchCommunity] = useState<BoardArticlesInquiry>(initialInput);
+	const [searchCommunity, setSearchCommunity] = useUrlFilter<BoardArticlesInquiry>(COMMUNITY_DEFAULT_INPUT, '/community');
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
-	const [activeSort, setActiveSort] = useState<string>('createdAt');
 
 	/** APOLLO REQUESTS **/
 	const [likeTargetBoardArticle] = useMutation(LIKE_TARGET_BOARD_ARTICLE);
@@ -72,31 +79,20 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 		},
 	});
 
+	// View-state derived from the URL-synced filter so a shared link / refresh reflects it.
 	const activeCategory = searchCommunity.search.articleCategory ?? 'ALL';
-
-	/** LIFECYCLES **/
-	useEffect(() => {
-		if (articleCategory && articleCategory !== activeCategory) {
-			setSearchCommunity({
-				...searchCommunity,
-				page: 1,
-				search: articleCategory === 'ALL' ? {} : { articleCategory: articleCategory as BoardArticleCategory },
-			});
-		}
-	}, [articleCategory]);
+	const activeSort = searchCommunity.sort ?? 'createdAt';
 
 	/** HANDLERS **/
-	const tabChangeHandler = async (value: string) => {
+	const tabChangeHandler = (value: string) => {
 		setSearchCommunity({
 			...searchCommunity,
 			page: 1,
 			search: value === 'ALL' ? {} : { articleCategory: value as BoardArticleCategory },
 		});
-		await router.push({ pathname: '/community', query: { articleCategory: value } }, router.pathname, { shallow: true });
 	};
 
 	const sortHandler = (sort: string) => {
-		setActiveSort(sort);
 		setSearchCommunity({ ...searchCommunity, page: 1, sort });
 	};
 
@@ -306,16 +302,6 @@ const Community: NextPage = ({ initialInput, ...props }: T) => {
 			</div>
 		</div>
 	);
-};
-
-Community.defaultProps = {
-	initialInput: {
-		page: 1,
-		limit: 6,
-		sort: 'createdAt',
-		direction: 'DESC',
-		search: {},
-	},
 };
 
 export default withLayoutBasic(Community);

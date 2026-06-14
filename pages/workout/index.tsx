@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Stack, Pagination } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Workout } from '../../libs/types/workout/workout';
 import { WorkoutsInquiry } from '../../libs/types/workout/workout.input';
@@ -32,6 +33,14 @@ const difficultyColor: Record<string, string> = {
 	ADVANCED: '#ff8a8a',
 };
 
+const WORKOUT_DEFAULT_INPUT: WorkoutsInquiry = {
+	page: 1,
+	limit: 9,
+	sort: 'createdAt',
+	direction: Direction.DESC,
+	search: {},
+};
+
 const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
@@ -39,19 +48,15 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const user = useReactiveVar(userVar);
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useState<WorkoutsInquiry>({
-		page: 1,
-		limit: 9,
-		sort: 'createdAt',
-		direction: Direction.DESC,
-		search: {},
-	});
-	const [activeFilter, setActiveFilter] = useState<string>('ALL');
+	const [searchFilter, setSearchFilter] = useUrlFilter<WorkoutsInquiry>(WORKOUT_DEFAULT_INPUT, '/workout');
 	const [searchText, setSearchText] = useState<string>('');
-	const [activeMuscle, setActiveMuscle] = useState<string>('');
 	const [likingWorkoutId, setLikingWorkoutId] = useState<string | null>(null);
 
-	const [activeSort, setActiveSort] = useState<string>('createdAt');
+	// View-state derived from the URL-synced filter so a shared link / refresh
+	// lights up the correct controls.
+	const activeFilter = (searchFilter.search?.workoutDifficulty as string) ?? 'ALL';
+	const activeMuscle = (searchFilter.search?.targetMuscle as string) ?? '';
+	const activeSort = searchFilter.sort ?? 'createdAt';
 
 	/** APOLLO REQUESTS **/
 	const {
@@ -75,6 +80,11 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 		if (!user?._id) return;
 		refetch({ input: searchFilter });
 	}, [user?._id]);
+
+	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
+	useEffect(() => {
+		setSearchText((searchFilter.search?.text as string) ?? '');
+	}, [searchFilter.search?.text]);
 
 	/** HANDLERS **/
 	const likeHandler = async (e: any, id: string) => {
@@ -145,18 +155,15 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const filterHandler = (difficulty: string) => {
-		setActiveFilter(difficulty);
 		buildSearch({ difficulty });
 	};
 
 	const muscleHandler = (muscle: string) => {
 		const val = activeMuscle === muscle ? '' : muscle;
-		setActiveMuscle(val);
 		buildSearch({ muscle: val });
 	};
 
 	const sortHandler = (sort: string) => {
-		setActiveSort(sort);
 		buildSearch({ sort });
 	};
 
@@ -173,10 +180,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const clearAllHandler = () => {
-		setActiveFilter('ALL');
-		setActiveMuscle('');
 		setSearchText('');
-		setActiveSort('createdAt');
 		setSearchFilter({ ...searchFilter, page: 1, sort: 'createdAt', search: {} });
 	};
 

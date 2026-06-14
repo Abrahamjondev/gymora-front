@@ -1,5 +1,8 @@
 # Completed Tasks
 
+## 2026-06-14
+- Shareable filter URLs across all list pages (workout, course, trainer, community): adopted the nestar-next "URL = state store" idea but centralized it into a reusable `libs/hooks/useUrlFilter.ts`. The whole search/filter object is serialized into a single `?input=` query param, so every filter/sort/pagination/search change is written to the URL and reproduced when the link is shared or the page is refreshed (back/forward supported). Key improvement over the nestar pattern: `setSearchFilter` always updates state AND the URL in one call, so the URL write can never be forgotten — this fixes nestar's real defect where `sortingHandler` changed state but not the URL (sort was not shareable) and removes the ~40x duplicated `router.push` blocks in nestar's Filter.tsx. View-state (active difficulty/category/muscle/sort, search box) is now derived from the URL-synced filter so shared links light up the correct controls. Community page's legacy partial `?articleCategory=` sync replaced by the full `?input=` sync. TypeScript 0 errors; ESLint clean (only pre-existing img/exhaustive-deps warnings); all 4 pages verified rendering with filtered share URLs on the dev server (HTTP 200, no error overlay). No GraphQL/backend contracts changed.
+
 ## 2026-06-10
 
 - Landing page premium redesign: full-bleed athletic hero photo with editorial typography and count-up stats, discipline marquee, bento workout grid, agency-style trainer list with hover portrait, new HowItWorks / CommunityPulse / Pricing sections (all driven by existing public backend queries; pricing mirrors canonical PLAN_PRICES). AthleteReviews and FinalCTA sections were removed on user request; Top Courses rebuilt as spotlight feature card + ranked rows.

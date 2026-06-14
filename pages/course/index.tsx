@@ -3,6 +3,7 @@ import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
+import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Course } from '../../libs/types/course/course';
 import { CoursesInquiry } from '../../libs/types/course/course.input';
@@ -31,23 +32,28 @@ const categoryColors: Record<string, string> = {
 
 const fallbackAccent = '#00dce5';
 
+const COURSE_DEFAULT_INPUT: CoursesInquiry = {
+	page: 1,
+	limit: 6,
+	sort: 'courseRank',
+	direction: Direction.DESC,
+	search: {},
+};
+
 const CourseList: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const { t } = useTranslation('program');
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useState<CoursesInquiry>({
-		page: 1,
-		limit: 6,
-		sort: 'courseRank',
-		direction: Direction.DESC,
-		search: {},
-	});
-	const [activeCategory, setActiveCategory] = useState<string>('ALL');
-	const [activeDifficulty, setActiveDifficulty] = useState<string>('ALL');
+	const [searchFilter, setSearchFilter] = useUrlFilter<CoursesInquiry>(COURSE_DEFAULT_INPUT, '/course');
 	const [searchText, setSearchText] = useState<string>('');
-	const [activeSort, setActiveSort] = useState<string>('courseRank');
+
+	// View-state derived from the URL-synced filter so a shared link / refresh
+	// lights up the correct controls.
+	const activeCategory = (searchFilter.search?.courseCategory as string) ?? 'ALL';
+	const activeDifficulty = (searchFilter.search?.courseDifficulty as string) ?? 'ALL';
+	const activeSort = searchFilter.sort ?? 'courseRank';
 
 	/** APOLLO REQUESTS **/
 	const { loading, refetch } = useQuery(GET_COURSES, {
@@ -63,6 +69,11 @@ const CourseList: NextPage = () => {
 	useEffect(() => {
 		refetch({ input: searchFilter });
 	}, [searchFilter]);
+
+	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
+	useEffect(() => {
+		setSearchText((searchFilter.search?.text as string) ?? '');
+	}, [searchFilter.search?.text]);
 
 	/** HANDLERS **/
 	const buildCourseSearch = (overrides: any = {}) => {
@@ -80,17 +91,14 @@ const CourseList: NextPage = () => {
 	};
 
 	const categoryFilterHandler = (cat: string) => {
-		setActiveCategory(cat);
 		buildCourseSearch({ category: cat });
 	};
 
 	const difficultyFilterHandler = (diff: string) => {
-		setActiveDifficulty(diff);
 		buildCourseSearch({ difficulty: diff });
 	};
 
 	const courseSortHandler = (sort: string) => {
-		setActiveSort(sort);
 		buildCourseSearch({ sort });
 	};
 
@@ -107,10 +115,7 @@ const CourseList: NextPage = () => {
 	};
 
 	const clearAllHandler = () => {
-		setActiveCategory('ALL');
-		setActiveDifficulty('ALL');
 		setSearchText('');
-		setActiveSort('courseRank');
 		setSearchFilter({ ...searchFilter, page: 1, sort: 'courseRank', search: {} });
 	};
 
