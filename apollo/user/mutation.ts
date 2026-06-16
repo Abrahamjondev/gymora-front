@@ -63,6 +63,35 @@ export const LOGIN = gql`
 	}
 `;
 
+export const TELEGRAM_AUTH = gql`
+	mutation TelegramAuth($input: TelegramAuthInput!) {
+		telegramAuth(input: $input) {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberPhone
+			memberNick
+			memberFullName
+			memberImage
+			memberAddress
+			memberDesc
+			memberWarnings
+			memberBlocks
+			memberCourses
+			memberWorkouts
+			memberRank
+			memberPoints
+			memberLikes
+			memberViews
+			deletedAt
+			createdAt
+			updatedAt
+			accessToken
+		}
+	}
+`;
+
 export const UPDATE_MEMBER = gql`
 	mutation UpdateMember($input: MemberUpdate!) {
 		updateMember(input: $input) {

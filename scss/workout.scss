@@ -1398,6 +1398,32 @@ $wl-ease: cubic-bezier(0.22, 1, 0.36, 1);
 			}
 		}
 	}
+	.au-divider {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		margin: 22px 0 18px;
+		&::before,
+		&::after {
+			content: '';
+			flex: 1;
+			height: 1px;
+			background: rgba(185, 202, 202, 0.14);
+		}
+		span {
+			font-family: 'JetBrains Mono', monospace;
+			font-size: 10px;
+			letter-spacing: 0.08em;
+			text-transform: uppercase;
+			color: rgba(154, 171, 171, 0.7);
+			white-space: nowrap;
+		}
+	}
+	.au-telegram {
+		display: flex;
+		justify-content: center;
+		min-height: 40px;
+	}
 }
 @media (max-width: 920px) {
 	.au-shell {

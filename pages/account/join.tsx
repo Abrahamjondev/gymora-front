@@ -3,8 +3,10 @@ import { NextPage } from 'next';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
-import { logIn, signUp } from '../../libs/auth';
+import { logIn, signUp, telegramLogin } from '../../libs/auth';
 import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
+import TelegramLoginButton from '../../libs/components/common/TelegramLoginButton';
+import { TelegramAuthInput } from '../../libs/types/telegramAuth';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
 
@@ -74,6 +76,21 @@ const Join: NextPage = () => {
 			await sweetMixinErrorAlert(msg);
 		}
 	}, [input, t]);
+
+	const doTelegramLogin = useCallback(
+		async (payload: TelegramAuthInput) => {
+			try {
+				setBusy(true);
+				await telegramLogin(payload);
+				await router.push(`${router.query.referrer ?? '/'}`);
+			} catch (err: any) {
+				setBusy(false);
+				const msg = (err.message || t('alerts.telegramFailed')).replace('Definer: ', '');
+				await sweetMixinErrorAlert(msg);
+			}
+		},
+		[router, t],
+	);
 
 	const submitDisabled = busy || (loginView ? !input.nick || !input.password : !input.nick || !input.password || !input.phone);
 
@@ -168,7 +185,13 @@ const Join: NextPage = () => {
 						<span style={{ fontSize: '16px' }}>→</span>
 					</button>
 
-					{/* Switch */}
+						{/* Telegram login */}
+						<div className="au-divider">
+							<span>{t('form.orContinueWith')}</span>
+						</div>
+						<TelegramLoginButton onAuth={doTelegramLogin} />
+
+						{/* Switch */}
 					<p className="au-switch">
 						{loginView ? t('form.switchToSignupPrompt') : t('form.switchToLoginPrompt')}{' '}
 						<span onClick={() => viewChangeHandler(!loginView)}>

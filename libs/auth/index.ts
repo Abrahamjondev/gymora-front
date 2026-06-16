@@ -3,7 +3,8 @@ import { initializeApollo } from '../../apollo/client';
 import { userVar } from '../../apollo/store';
 import { CustomJwtPayload } from '../types/customJwtPayload';
 import { sweetMixinErrorAlert } from '../sweetAlert';
-import { LOGIN, SIGN_UP } from '../../apollo/user/mutation';
+import { LOGIN, SIGN_UP, TELEGRAM_AUTH } from '../../apollo/user/mutation';
+import { TelegramAuthInput } from '../types/telegramAuth';
 
 export function getJwtToken(): any {
 	if (typeof window !== 'undefined') {
@@ -97,6 +98,40 @@ const requestSignUpJwtToken = async ({
 	} catch (err: any) {
 		console.log('request token err', err.graphQLErrors);
 		const message = err.graphQLErrors?.[0]?.message || err.message || 'Signup failed';
+		throw new Error(message);
+	}
+};
+
+export const telegramLogin = async (payload: TelegramAuthInput): Promise<void> => {
+	try {
+		const { jwtToken } = await requestTelegramJwtToken(payload);
+
+		if (jwtToken) {
+			updateStorage({ jwtToken });
+			updateUserInfo(jwtToken);
+		}
+	} catch (err: any) {
+		console.warn('telegram login err', err);
+		throw err;
+	}
+};
+
+const requestTelegramJwtToken = async (payload: TelegramAuthInput): Promise<{ jwtToken: string }> => {
+	const apolloClient = await initializeApollo();
+
+	try {
+		const result = await apolloClient.mutate({
+			mutation: TELEGRAM_AUTH,
+			variables: { input: payload },
+			fetchPolicy: 'network-only',
+		});
+
+		const { accessToken } = result?.data?.telegramAuth;
+
+		return { jwtToken: accessToken };
+	} catch (err: any) {
+		console.log('request telegram token err', err.graphQLErrors);
+		const message = err.graphQLErrors?.[0]?.message || err.message || 'Telegram login failed';
 		throw new Error(message);
 	}
 };
