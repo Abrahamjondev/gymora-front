@@ -1,19 +1,19 @@
 {
 	"hero": {
 		"badgeWorkouts": "{{count}}+ workouts available",
-		"badgeDefault": "Elite fitness platform",
+		"badgeDefault": "The Gymora method",
 		"badgeWelcome": "Welcome back, {{name}}",
-		"titleLine1": "Expert training.",
-		"titleLine2": "Real results.",
-		"subtitle": "Precision-engineered programs for elite performance. Professional-grade coaching and data-driven insights.",
-		"ctaGetStarted": "Get Started Free",
-		"ctaBrowsePrograms": "Browse Programs",
+		"titleLine1": "Make your",
+		"titleLine2": "next rep count.",
+		"subtitle": "Trainer-built workouts, structured programs, and a clear path from showing up to getting stronger.",
+		"ctaGetStarted": "Start training",
+		"ctaBrowsePrograms": "Explore programs",
 		"ctaOpenStudio": "Open Your Studio",
 		"ctaPublicProfile": "My Public Profile",
 		"ctaAdminPanel": "Open Admin Panel",
 		"ctaBrowsePlatform": "Browse Platform",
-		"ctaContinueTraining": "Continue Training",
-		"ctaMyDashboard": "My Dashboard",
+		"ctaContinueTraining": "Continue training",
+		"ctaMyDashboard": "Open dashboard",
 		"statAccess": "Access"
 	},
 	"hotWorkouts": {

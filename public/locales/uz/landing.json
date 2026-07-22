@@ -1,19 +1,19 @@
 {
 	"hero": {
 		"badgeWorkouts": "{{count}}+ mashq mavjud",
-		"badgeDefault": "Elita fitnes platformasi",
+		"badgeDefault": "Gymora usuli",
 		"badgeWelcome": "Xush kelibsiz, {{name}}",
-		"titleLine1": "Professional mashg'ulotlar.",
-		"titleLine2": "Haqiqiy natijalar.",
-		"subtitle": "Yuqori natijalar uchun aniq ishlab chiqilgan dasturlar. Professional murabbiylik va ma'lumotlarga asoslangan tahlillar.",
-		"ctaGetStarted": "Bepul boshlash",
+		"titleLine1": "Har bir",
+		"titleLine2": "takror muhim.",
+		"subtitle": "Murabbiylar tuzgan mashqlar, tizimli dasturlar va kuchayish sari aniq yo'l.",
+		"ctaGetStarted": "Mashg'ulotni boshlash",
 		"ctaBrowsePrograms": "Dasturlarni ko'rish",
 		"ctaOpenStudio": "Studiyani ochish",
 		"ctaPublicProfile": "Ochiq profilim",
 		"ctaAdminPanel": "Admin panelni ochish",
 		"ctaBrowsePlatform": "Platformani ko'rish",
 		"ctaContinueTraining": "Mashg'ulotni davom ettirish",
-		"ctaMyDashboard": "Mening sahifam",
+		"ctaMyDashboard": "Kabinetni ochish",
 		"statAccess": "Doimiy kirish"
 	},
 	"hotWorkouts": {

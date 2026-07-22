@@ -1,19 +1,19 @@
 {
 	"hero": {
 		"badgeWorkouts": "Доступно {{count}}+ тренировок",
-		"badgeDefault": "Элитная фитнес-платформа",
+		"badgeDefault": "Метод Gymora",
 		"badgeWelcome": "С возвращением, {{name}}",
-		"titleLine1": "Экспертные тренировки.",
-		"titleLine2": "Реальные результаты.",
-		"subtitle": "Точно выверенные программы для высоких результатов. Профессиональный коучинг и аналитика на основе данных.",
-		"ctaGetStarted": "Начать бесплатно",
+		"titleLine1": "Пусть каждый",
+		"titleLine2": "повтор работает.",
+		"subtitle": "Тренировки от тренеров, структурированные программы и понятный путь к силе.",
+		"ctaGetStarted": "Начать тренировку",
 		"ctaBrowsePrograms": "Смотреть программы",
 		"ctaOpenStudio": "Открыть студию",
 		"ctaPublicProfile": "Мой публичный профиль",
 		"ctaAdminPanel": "Открыть админ-панель",
 		"ctaBrowsePlatform": "Обзор платформы",
-		"ctaContinueTraining": "Продолжить тренировки",
-		"ctaMyDashboard": "Моя панель",
+		"ctaContinueTraining": "Продолжить тренировку",
+		"ctaMyDashboard": "Открыть кабинет",
 		"statAccess": "Доступ"
 	},
 	"hotWorkouts": {

@@ -79,12 +79,20 @@ const HeroSection = () => {
 	return (
 		<>
 			<section className="lp-hero">
-				{/* Background: athletic photo + duotone tint + atmosphere */}
+				{/* Background: trainer campaign image + duotone tint + atmosphere */}
 				<div className="lp-hero-bg" />
 				<div className="lp-hero-tint" />
 				<div className="lp-hero-orb" />
 				<div className="lp-hero-grain" />
 				<div className="lp-hero-tint-bottom" />
+
+				<div className="lp-hero-visual" aria-hidden="true">
+					<span className="lp-hero-motion-ring lp-hero-motion-ring--wide" />
+					<span className="lp-hero-motion-ring lp-hero-motion-ring--tight" />
+					<span className="lp-hero-motion-sweep" />
+					<span className="lp-hero-motion-spark lp-hero-motion-spark--one" />
+					<span className="lp-hero-motion-spark lp-hero-motion-spark--two" />
+				</div>
 
 				<div className="lp-container">
 					<div className="lp-hero-content">
@@ -105,18 +113,20 @@ const HeroSection = () => {
 									</React.Fragment>
 								))}
 							<br />
-							{t('hero.titleLine2')
-								.split(' ')
-								.map((word, i) => (
-									<React.Fragment key={`l2-${i}`}>
-										{i > 0 && ' '}
-										<span className="lp-word">
-											<span className="lp-grad" style={{ animationDelay: `${0.32 + i * 0.1}s` }}>
-												{word}
+							<span className="lp-hero-line lp-hero-line--signal">
+								{t('hero.titleLine2')
+									.split(' ')
+									.map((word, i) => (
+										<React.Fragment key={`l2-${i}`}>
+											{i > 0 && ' '}
+											<span className="lp-word">
+												<span className="lp-grad" style={{ animationDelay: `${0.32 + i * 0.1}s` }}>
+													{word}
+												</span>
 											</span>
-										</span>
-									</React.Fragment>
-								))}
+										</React.Fragment>
+									))}
+							</span>
 						</h1>
 
 						<p className="lp-hero-subtitle">{t('hero.subtitle')}</p>

@@ -1,5 +1,8 @@
 # Completed Tasks
 
+## 2026-07-22
+- Landing art-direction pass completed: replaced the abstract pulse-only hero with a generated trainer campaign asset (`public/img/banner/hero-trainers-v2.png`) showing a three-trainer coaching squad on the right and intentional dark negative space for copy on the left. Added CSS-only camera drift, light sweep, motion rings, and spark overlays; adjusted the wide-screen image framing so all trainer heads remain visible beneath the floating navbar. Reworked the hero message to `Make your next rep count.` in all `en`/`ru`/`uz` locales and added a reduced-motion-safe headline scan line/beacon animation. Mobile menu/auth behavior, Apollo/GraphQL logic, and backend contracts remain unchanged. Verified desktop/mobile with no overflow/error overlay, and run `yarn tsc --noEmit`, `yarn i18n:check`, `yarn lint`, and production `yarn build`.
+
 ## 2026-07-21
 - Mobile responsive pass completed across Gymora’s shared shell, landing, workout/program/trainer/community lists and details, MyPage, subscription, and auth surfaces. Added viewport-safe sizing, horizontal-overflow guards, mobile filter/card stacking, compact MyPage navigation, responsive Stripe modal hooks, footer reflow, and an accessible burger menu with body-scroll locking. GraphQL/Apollo behavior and backend contracts were unchanged. Verified with `yarn tsc --noEmit`, `yarn i18n:check`, production `yarn build`, and browser checks at 390px with no horizontal overflow, blank page, error overlay, or console errors.
 

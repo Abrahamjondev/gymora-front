@@ -169,7 +169,7 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 			</header>
 
 			{/* Spacer keeps content below the fixed bar on non-hero pages */}
-			{!overlay && <div style={{ height: '62px' }} />}
+			{!overlay && <div style={{ height: '100px' }} />}
 		</>
 	);
 };
