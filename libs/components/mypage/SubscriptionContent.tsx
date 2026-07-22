@@ -56,7 +56,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 	};
 
 	return (
-		<div style={{
+		<div className="subscription-modal-overlay" style={{
 			position: 'fixed', inset: 0, zIndex: 1000,
 			background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
 			display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -64,7 +64,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 		}}
 			onClick={(e) => { if (e.target === e.currentTarget && !processing) onCancel(); }}
 		>
-			<div style={{
+			<div className="subscription-modal-panel" style={{
 				background: '#1a1a1c', borderRadius: '20px', padding: '36px',
 				width: '100%', maxWidth: '440px',
 				border: '1px solid rgba(0,220,229,0.15)',
@@ -112,7 +112,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 					</p>
 
 					{/* Buttons */}
-					<div style={{ display: 'flex', gap: '10px' }}>
+					<div className="subscription-modal-actions" style={{ display: 'flex', gap: '10px' }}>
 						<button
 							type="button"
 							onClick={onCancel}
@@ -273,7 +273,7 @@ const SubscriptionContent = () => {
 	};
 
 	return (
-		<div style={{ animation: 'fadeInUp 0.5s ease both' }}>
+		<div className="subscription-content" style={{ animation: 'fadeInUp 0.5s ease both' }}>
 			{/* Header */}
 			<div style={{ textAlign: 'center', marginBottom: '44px' }}>
 				<span className="lp-eyebrow lp-eyebrow--orange" style={{ marginBottom: '8px' }}>{t('subscription.eyebrow')}</span>
@@ -286,7 +286,7 @@ const SubscriptionContent = () => {
 			{activeSub && (() => {
 				const daysLeft = activeSub.expiresAt ? Math.max(0, Math.ceil((new Date(activeSub.expiresAt).getTime() - Date.now()) / 86400000)) : null;
 				return (
-					<div style={{ background: 'linear-gradient(135deg, rgba(102,218,186,0.07), rgba(102,218,186,0.02))', border: '1px solid rgba(102,218,186,0.22)', borderRadius: '16px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
+					<div className="subscription-active" style={{ background: 'linear-gradient(135deg, rgba(102,218,186,0.07), rgba(102,218,186,0.02))', border: '1px solid rgba(102,218,186,0.22)', borderRadius: '16px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '16px', flexWrap: 'wrap' }}>
 						<div>
 							<span className="ct-live" style={{ marginBottom: '8px' }}>
 								<span className="ct-live-dot" />
@@ -311,12 +311,13 @@ const SubscriptionContent = () => {
 			})()}
 
 			{/* Plan cards */}
-			<div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
+			<div className="subscription-plans" style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '16px', marginBottom: '32px' }}>
 				{plans.map((plan) => {
 					const isSelected = selectedPlan === plan.key;
 					return (
 						<div
 							key={plan.key}
+							className="subscription-plan-card"
 							onClick={() => !activeSub && setSelectedPlan(plan.key)}
 							style={{
 								padding: '32px', borderRadius: '16px', position: 'relative', cursor: activeSub ? 'default' : 'pointer',

@@ -32,6 +32,15 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 		setMenuOpen(false);
 	}, [router.asPath]);
 
+	useEffect(() => {
+		if (!menuOpen || !window.matchMedia('(max-width: 768px)').matches) return;
+		const previousOverflow = document.body.style.overflow;
+		document.body.style.overflow = 'hidden';
+		return () => {
+			document.body.style.overflow = previousOverflow;
+		};
+	}, [menuOpen]);
+
 	const logoutHandler = async () => {
 		if (await sweetConfirmAlert(t('actions.confirmLogout'))) logOut();
 	};
@@ -105,6 +114,8 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 						<button
 							className={`gnav-burger${menuOpen ? ' is-open' : ''}`}
 							aria-label={t('nav.menu')}
+							aria-expanded={menuOpen}
+							aria-controls="gymora-mobile-menu"
 							onClick={() => setMenuOpen((v) => !v)}
 						>
 							<span />
@@ -115,7 +126,7 @@ const GymNavbar = ({ overlay = false }: GymNavbarProps) => {
 				</div>
 
 				{/* Mobile menu */}
-				<div className={`gnav-mobile${menuOpen ? ' is-open' : ''}`}>
+				<div id="gymora-mobile-menu" className={`gnav-mobile${menuOpen ? ' is-open' : ''}`}>
 					<nav className="gnav-mobile-links">
 						{navLinks.map((link) => (
 							<Link

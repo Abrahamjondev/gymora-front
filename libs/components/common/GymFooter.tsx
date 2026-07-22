@@ -26,8 +26,9 @@ const GymFooter = () => {
 	];
 
 	return (
-		<footer style={{ background: '#0e0e0f', borderTop: '1px solid #3a494a', padding: '48px 0 0' }}>
+		<footer className="gym-footer" style={{ background: '#0e0e0f', borderTop: '1px solid #3a494a', padding: '48px 0 0' }}>
 			<div
+				className="gym-footer-grid"
 				style={{
 					maxWidth: '1200px',
 					margin: '0 auto',
@@ -97,6 +98,7 @@ const GymFooter = () => {
 				))}
 			</div>
 			<div
+				className="gym-footer-bottom"
 				style={{
 					maxWidth: '1200px',
 					margin: '32px auto 0',

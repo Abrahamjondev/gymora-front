@@ -1817,3 +1817,247 @@ $lp-ease: cubic-bezier(0.22, 1, 0.36, 1);
 		}
 	}
 }
+
+/* ---------- mobile composition pass ---------- */
+@media (max-width: 768px) {
+	.lp-container {
+		padding-inline: 16px;
+	}
+
+	.gnav {
+		height: 60px;
+		padding-inline: 16px;
+	}
+
+	.gnav-inner {
+		gap: 8px;
+	}
+
+	.gnav-logo {
+		gap: 8px;
+		min-width: 0;
+	}
+
+	.gnav-logo-word {
+		font-size: 20px;
+	}
+
+	.gnav-right {
+		gap: 6px;
+		margin-left: auto;
+	}
+
+	.gnav-lang-btn {
+		padding-inline: 9px;
+	}
+
+	.gnav-burger {
+		width: 44px;
+		height: 44px;
+	}
+
+	.gnav-mobile {
+		top: 60px;
+		max-height: calc(100dvh - 60px);
+		overflow-y: auto;
+	}
+
+	.gnav-mobile-links {
+		padding: 8px 16px 4px;
+	}
+
+	.gnav-mobile-link {
+		min-height: 52px;
+		padding: 13px 4px;
+		white-space: nowrap;
+	}
+
+	.gnav-mobile-foot {
+		padding: 14px 16px 18px;
+		flex-wrap: wrap;
+		gap: 10px;
+	}
+
+	.gnav-mobile-foot .gnav-lang-row {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.gnav-mobile-foot .gnav-login,
+	.gnav-mobile-foot .gnav-cta {
+		min-height: 44px;
+		flex: 1 1 140px;
+	}
+
+	.lp-section {
+		padding: 64px 0;
+	}
+
+	.lp-section-head {
+		margin-bottom: 24px;
+	}
+
+	.lp-h2 {
+		font-size: clamp(28px, 8vw, 38px);
+		line-height: 1.08;
+	}
+
+	.lp-sub {
+		font-size: 14px;
+		line-height: 1.55;
+	}
+
+	.lp-hero {
+		min-height: max(650px, 92svh);
+	}
+
+	.lp-hero-content {
+		padding: 108px 0 72px;
+	}
+
+	.lp-hero-badge {
+		max-width: 100%;
+		margin-bottom: 26px;
+		padding-right: 12px;
+	}
+
+	.lp-hero-title {
+		font-size: clamp(42px, 14vw, 64px);
+		line-height: 0.98;
+		max-width: 100%;
+		overflow-wrap: anywhere;
+	}
+
+	.lp-hero-sub {
+		font-size: 15px;
+		line-height: 1.55;
+		max-width: 34rem;
+	}
+
+	.lp-hero-actions,
+	.lp-cta-actions {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr);
+		gap: 10px;
+		width: 100%;
+	}
+
+	.lp-hero-actions .lp-btn-primary,
+	.lp-hero-actions .lp-btn-ghost,
+	.lp-cta-actions .lp-btn-primary,
+	.lp-cta-actions .lp-btn-ghost {
+		width: 100%;
+		min-height: 48px;
+		justify-content: center;
+	}
+
+	.lp-hero-stats {
+		display: grid;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 22px 16px;
+		margin-top: 44px;
+	}
+
+	.lp-hero-stats > * {
+		min-width: 0;
+	}
+
+	.lp-stat-label {
+		line-height: 1.35;
+	}
+
+	.lp-workout-grid,
+	.lp-how-grid,
+	.lp-community-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
+	}
+
+	.lp-wcard,
+	.lp-how-card,
+	.lp-community-card,
+	.lp-price-card {
+		min-width: 0;
+	}
+
+	.lp-wcard--feature {
+		grid-column: span 1;
+		min-height: 360px;
+	}
+
+	.lp-course-feature {
+		min-height: 340px;
+	}
+
+	.lp-course-row {
+		align-items: flex-start;
+		gap: 10px;
+		padding: 12px;
+	}
+
+	.lp-course-row-info {
+		min-width: 0;
+	}
+
+	.lp-course-row-info h3 {
+		white-space: normal;
+		display: -webkit-box;
+		-webkit-line-clamp: 2;
+		line-clamp: 2;
+		-webkit-box-orient: vertical;
+		overflow: hidden;
+	}
+
+	.lp-course-row-meta {
+		flex-wrap: wrap;
+		gap: 6px 10px;
+	}
+
+	.lp-course-row-right {
+		margin-left: auto;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: 4px;
+	}
+
+	.lp-course-row-arrow {
+		display: none;
+	}
+
+	.lp-pricing-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 12px;
+	}
+
+	.lp-price-card {
+		padding: 24px 20px;
+	}
+
+	.lp-cta {
+		padding: 48px 20px;
+		border-radius: 16px;
+	}
+
+	.lp-footer-grid {
+		grid-template-columns: minmax(0, 1fr);
+		gap: 28px;
+	}
+
+	.lp-footer-bottom {
+		gap: 8px;
+	}
+}
+
+@media (max-width: 359px) {
+	.gnav-logo-word {
+		display: none;
+	}
+
+	.gnav-lang-btn {
+		padding-inline: 7px;
+	}
+
+	.lp-container {
+		padding-inline: 14px;
+	}
+}

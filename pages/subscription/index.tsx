@@ -61,7 +61,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 	};
 
 	return (
-		<div style={{
+		<div className="subscription-modal-overlay" style={{
 			position: 'fixed', inset: 0, zIndex: 1000,
 			background: 'rgba(0,0,0,0.7)', backdropFilter: 'blur(8px)',
 			display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -69,7 +69,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 		}}
 			onClick={(e) => { if (e.target === e.currentTarget && !processing) onCancel(); }}
 		>
-			<div style={{
+			<div className="subscription-modal-panel" style={{
 				background: '#1a1a1c', borderRadius: '20px', padding: '36px',
 				width: '100%', maxWidth: '440px',
 				border: '1px solid rgba(0,220,229,0.15)',
@@ -117,7 +117,7 @@ const CardPaymentForm = ({ clientSecret, onSuccess, onCancel, planName, price }:
 					</p>
 
 					{/* Buttons */}
-					<div style={{ display: 'flex', gap: '10px' }}>
+					<div className="subscription-modal-actions" style={{ display: 'flex', gap: '10px' }}>
 						<button
 							type="button"
 							onClick={onCancel}
@@ -284,8 +284,8 @@ const SubscriptionPage: NextPage = () => {
 	if (!user?._id) return <div style={{ background: '#0d0d0e', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><p style={{ color: 'rgba(185,202,202,0.5)', fontFamily: 'Hanken Grotesk' }}>{t('subscription.loginRequired')}</p></div>;
 
 	return (
-		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
-			<div style={{ maxWidth: '900px', margin: '0 auto', padding: '0 32px' }}>
+		<div className="subscription-page" style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
+			<div className="subscription-shell" style={{ maxWidth: '900px', margin: '0 auto', padding: '0 32px' }}>
 				{/* Header */}
 				<div style={{ textAlign: 'center', marginBottom: '48px', animation: 'fadeInUp 0.6s ease both' }}>
 					<span style={{ fontFamily: 'JetBrains Mono', fontSize: '11px', letterSpacing: '0.15em', color: 'rgba(255,138,0,0.7)', textTransform: 'uppercase' as const, display: 'block', marginBottom: '8px' }}>{t('subscription.eyebrow')}</span>
@@ -294,7 +294,7 @@ const SubscriptionPage: NextPage = () => {
 
 				{/* Active subscription */}
 				{activeSub && (
-					<div style={{ background: 'rgba(102,218,186,0.05)', border: '1px solid rgba(102,218,186,0.15)', borderRadius: '14px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: 'fadeInUp 0.5s ease 0.1s both' }}>
+					<div className="subscription-active" style={{ background: 'rgba(102,218,186,0.05)', border: '1px solid rgba(102,218,186,0.15)', borderRadius: '14px', padding: '20px 24px', marginBottom: '32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', animation: 'fadeInUp 0.5s ease 0.1s both' }}>
 						<div>
 							<span style={{ fontFamily: 'JetBrains Mono', fontSize: '10px', color: '#66daba', textTransform: 'uppercase' as const, letterSpacing: '0.06em' }}>{t('subscription.activePlan')}</span>
 							<h3 style={{ fontFamily: 'Hanken Grotesk', fontSize: '20px', fontWeight: 700, color: '#e5e2e3', marginTop: '4px' }}>{activeSub.subscriptionPlan === 'MONTHLY' ? t('subscription.plans.monthly.name') : t('subscription.plans.yearly.name')} — ${activeSub.price}</h3>
@@ -307,12 +307,13 @@ const SubscriptionPage: NextPage = () => {
 				)}
 
 				{/* Plan cards */}
-				<div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px', animation: 'fadeInUp 0.5s ease 0.15s both' }}>
+				<div className="subscription-plans" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px', marginBottom: '32px', animation: 'fadeInUp 0.5s ease 0.15s both' }}>
 					{plans.map((plan) => {
 						const isSelected = selectedPlan === plan.key;
 						return (
 							<div
 								key={plan.key}
+								className="subscription-plan-card"
 								onClick={() => !activeSub && setSelectedPlan(plan.key)}
 								style={{
 									padding: '32px', borderRadius: '16px', position: 'relative', cursor: activeSub ? 'default' : 'pointer',

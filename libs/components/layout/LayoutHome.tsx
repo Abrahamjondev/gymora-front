@@ -39,7 +39,7 @@ const withLayoutMain = (Component: any) => {
 					</Head>
 					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />
-						<Stack id={'main'} >
+						<Stack id={'main'} className="gymora-main">
 							<Component {...props} />
 						</Stack>
 					</Stack>
@@ -56,7 +56,7 @@ const withLayoutMain = (Component: any) => {
 					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar overlay />
 
-						<Stack id={'main'} >
+						<Stack id={'main'} className="gymora-main">
 							<Component {...props} />
 						</Stack>
 

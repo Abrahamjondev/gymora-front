@@ -57,7 +57,7 @@ const withLayoutBasic = (Component: any) => {
 					</Head>
 					<Stack id="mobile-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar />
-						<Stack id={'main'} >
+						<Stack id={'main'} className="gymora-main">
 							<Component {...props} />
 						</Stack>
 						<GymFooter />
@@ -75,7 +75,7 @@ const withLayoutBasic = (Component: any) => {
 					<Stack id="pc-wrap" sx={{ background: '#131314', minHeight: '100vh' }}>
 						<GymNavbar />
 
-						<Stack id={'main'} >
+						<Stack id={'main'} className="gymora-main">
 							<Component {...props} />
 						</Stack>
 

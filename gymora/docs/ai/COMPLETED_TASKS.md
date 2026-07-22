@@ -1,5 +1,8 @@
 # Completed Tasks
 
+## 2026-07-21
+- Mobile responsive pass completed across Gymora’s shared shell, landing, workout/program/trainer/community lists and details, MyPage, subscription, and auth surfaces. Added viewport-safe sizing, horizontal-overflow guards, mobile filter/card stacking, compact MyPage navigation, responsive Stripe modal hooks, footer reflow, and an accessible burger menu with body-scroll locking. GraphQL/Apollo behavior and backend contracts were unchanged. Verified with `yarn tsc --noEmit`, `yarn i18n:check`, production `yarn build`, and browser checks at 390px with no horizontal overflow, blank page, error overlay, or console errors.
+
 ## 2026-07-10
 - Docker deploy connectivity fixed for local production-style run: backend compose now publishes the real Nest API port (`4001:3003`, matching `PORT_API=3003`) instead of forwarding to unused container port `3000`; backend `.env` now allows the local frontend origin via `CORS_ORIGINS=http://localhost:4003`. Root cause was verified before editing: `gymora-api` responded on container `3003/graphql` but not `3000/graphql`, while the frontend build was correctly targeting `http://localhost:4001/graphql`.
 

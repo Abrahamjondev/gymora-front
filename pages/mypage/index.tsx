@@ -469,7 +469,7 @@ const MyPage: NextPage = () => {
 	const newCourseMedia = mediaControls('newCourse', newCourse, setNewCourse, false);
 
 	return (
-		<div style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
+		<div className="mp-page" style={{ background: '#0d0d0e', minHeight: '100vh', padding: '40px 0' }}>
 			<div className="mp-layout">
 				{/* Sidebar */}
 				<div className="mp-side">
@@ -592,7 +592,7 @@ const MyPage: NextPage = () => {
 				</div>
 
 				{/* Content */}
-				<div>
+				<div className="mp-content">
 					{/* Dashboard */}
 					{cat === 'dashboard' && (
 						<div style={{ animation: 'fadeInUp 0.5s ease both' }}>

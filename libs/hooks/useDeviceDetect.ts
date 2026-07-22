@@ -1,13 +1,21 @@
 import { useEffect, useState } from 'react';
 
+const getDevice = (): string => {
+	if (typeof window === 'undefined') return 'desktop';
+	return window.matchMedia('(max-width: 768px)').matches ? 'mobile' : 'desktop';
+};
+
 const useDeviceDetect = (): string => {
-	const [device, setDevice] = useState('desktop');
+	const [device, setDevice] = useState(getDevice);
 
 	useEffect(() => {
-		const userAgent = navigator.userAgent;
-		const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(userAgent);
-		setDevice(isMobile ? 'mobile' : 'desktop');
-	}, [device]);
+		const mediaQuery = window.matchMedia('(max-width: 768px)');
+		const updateDevice = () => setDevice(mediaQuery.matches ? 'mobile' : 'desktop');
+
+		updateDevice();
+		mediaQuery.addEventListener?.('change', updateDevice);
+		return () => mediaQuery.removeEventListener?.('change', updateDevice);
+	}, []);
 
 	return device;
 };
