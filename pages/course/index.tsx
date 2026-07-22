@@ -15,6 +15,7 @@ import { useTranslation } from 'next-i18next';
 import { useQuery } from '@apollo/client';
 import { GET_COURSES } from '../../apollo/user/query';
 import { REACT_APP_API_URL } from '../../libs/config';
+import QueryState from '../../libs/components/common/QueryState';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -40,13 +41,18 @@ const COURSE_DEFAULT_INPUT: CoursesInquiry = {
 	search: {},
 };
 
+const COURSE_SORTS = ['courseRank', 'courseRating', 'coursePrice', 'createdAt'] as const;
+
 const CourseList: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const { t } = useTranslation('program');
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<CoursesInquiry>(COURSE_DEFAULT_INPUT, '/course');
+	const [searchFilter, setSearchFilter] = useUrlFilter<CoursesInquiry>(COURSE_DEFAULT_INPUT, '/course', {
+		allowedSorts: COURSE_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 
 	// View-state derived from the URL-synced filter so a shared link / refresh
@@ -56,7 +62,7 @@ const CourseList: NextPage = () => {
 	const activeSort = searchFilter.sort ?? 'courseRank';
 
 	/** APOLLO REQUESTS **/
-	const { loading, refetch } = useQuery(GET_COURSES, {
+	const { loading, error, refetch } = useQuery(GET_COURSES, {
 		fetchPolicy: 'network-only',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
@@ -65,10 +71,6 @@ const CourseList: NextPage = () => {
 			setTotal(data?.getCourses?.metaCounter?.[0]?.total ?? 0);
 		},
 	});
-
-	useEffect(() => {
-		refetch({ input: searchFilter });
-	}, [searchFilter]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -145,7 +147,7 @@ const CourseList: NextPage = () => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? t('list.programsAvailable', { count: total }) : t('list.loadingPrograms')}</span>
+						<span>{loading ? t('list.loadingPrograms') : total > 0 ? t('list.programsAvailable', { count: total }) : t('list.emptyStatus')}</span>
 					</div>
 				</div>
 
@@ -153,14 +155,17 @@ const CourseList: NextPage = () => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-							<input
+								<input
+									aria-label={t('common:actions.search')}
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<span
+								<button
+									type="button"
+									aria-label={t('common:actions.clearSearch')}
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -168,10 +173,10 @@ const CourseList: NextPage = () => {
 									}}
 								>
 									✕
-								</span>
+								</button>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => courseSortHandler(e.target.value)}>
+						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => courseSortHandler(e.target.value)}>
 							{sortOptions.map((s) => (
 								<option key={s.value} value={s.value}>
 									{s.label}
@@ -181,20 +186,22 @@ const CourseList: NextPage = () => {
 					</div>
 
 					<div className="wl-console-row">
-						<div className="wl-seg">
+						<div className="wl-seg" role="group" aria-label={t('common:filters.level')}>
 							{difficulties.map((d) => (
-								<button key={d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
+								<button type="button" key={d} aria-pressed={activeDifficulty === d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
 									{d === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${d}`)}
 								</button>
 							))}
 						</div>
-						<div className="wl-muscles" style={{ gap: '6px' }}>
+						<div className="wl-muscles" role="group" aria-label={t('common:filters.category')} style={{ gap: '6px' }}>
 							{categories.map((cat) => {
 								const accent = categoryColors[cat];
 								const isActive = activeCategory === cat;
 								return (
-									<button
-										key={cat}
+										<button
+											type="button"
+											key={cat}
+											aria-pressed={isActive}
 										className="cl-cat-btn"
 										style={
 											isActive
@@ -225,8 +232,10 @@ const CourseList: NextPage = () => {
 					</div>
 				)}
 
+				<QueryState loading={loading} error={error} hasData={courses.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
+
 				{/* Program Grid */}
-				<div className="cl-grid">
+				<div id="list-results-start" className="cl-grid" aria-busy={loading}>
 					{loading && !courses.length
 						? [1, 2, 3, 4, 5, 6].map((i) => (
 								<div key={i} className="wl-skel">
@@ -240,9 +249,12 @@ const CourseList: NextPage = () => {
 						: courses.map((course) => {
 								const accent = categoryColors[course.courseCategory] || fallbackAccent;
 								return (
-									<div
-										key={course._id}
-										className="cl-card"
+										<div
+											key={course._id}
+											className="cl-card"
+											role="link"
+											tabIndex={0}
+											aria-label={t('common:actions.openItem', { title: course.courseTitle })}
 										style={
 											{
 												'--accent': accent,
@@ -250,7 +262,13 @@ const CourseList: NextPage = () => {
 												'--accent-glow': `${accent}14`,
 											} as React.CSSProperties
 										}
-										onClick={() => pushDetailHandler(course._id)}
+											onClick={() => pushDetailHandler(course._id)}
+											onKeyDown={(e) => {
+												if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+													e.preventDefault();
+													pushDetailHandler(course._id);
+												}
+											}}
 									>
 										<div className="cl-card-img">
 											<img
@@ -292,7 +310,7 @@ const CourseList: NextPage = () => {
 				</div>
 
 				{/* No results */}
-				{!loading && courses.length === 0 && (
+				{!loading && !error && courses.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.emptyLabel')}</span>
 						<h3>{t('list.emptyTitle')}</h3>

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 
-const getDevice = (): string => {
-	if (typeof window === 'undefined') return 'desktop';
-	return window.matchMedia('(max-width: 768px)').matches ? 'mobile' : 'desktop';
-};
-
 const useDeviceDetect = (): string => {
-	const [device, setDevice] = useState(getDevice);
+	// Keep the first client render identical to SSR. Reading matchMedia in the
+	// initial state makes mobile hydration render a different root tree.
+	const [device, setDevice] = useState('desktop');
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia('(max-width: 768px)');

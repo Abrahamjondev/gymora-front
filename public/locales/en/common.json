@@ -51,7 +51,15 @@
 		"post": "Post",
 		"backToTop": "Back to top",
 		"like": "Like",
-		"liked": "Liked"
+		"liked": "Liked",
+		"sortBy": "Sort results by",
+		"clearSearch": "Clear search",
+		"openItem": "Open {{title}}"
+	},
+	"filters": {
+		"level": "Filter by level",
+		"muscle": "Filter by muscle group",
+		"category": "Filter by category"
 	},
 	"stats": {
 		"views": "views",
@@ -79,6 +87,13 @@
 	"empty": {
 		"noResults": "No results found",
 		"tryAdjusting": "Try adjusting your filters or search."
+	},
+	"query": {
+		"errorTitle": "We couldn't load this right now.",
+		"errorHint": "Check your connection and try again.",
+		"retry": "Try again",
+		"loading": "Loading data...",
+		"refreshing": "Updating results..."
 	},
 	"videoPlayer": {
 		"title": "Video"

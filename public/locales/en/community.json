@@ -14,6 +14,7 @@
 			"mostLiked": "Most Liked"
 		},
 		"empty": {
+			"status": "No posts found",
 			"label": "No posts",
 			"title": "Nothing in this category yet.",
 			"subtitle": "Be the first to start the conversation."

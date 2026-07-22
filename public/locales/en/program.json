@@ -20,6 +20,7 @@
 		"enrolledCount": "{{count}} enrolled",
 		"viewProgram": "View Program →",
 		"emptyLabel": "No results",
+		"emptyStatus": "No programs found",
 		"emptyTitle": "No programs match these filters.",
 		"emptyText": "Try a different goal, level or search term."
 	},

@@ -18,6 +18,7 @@
 		"activeLabel": "Active:",
 		"kcal": "{{count}} KCAL",
 		"empty": {
+			"status": "No protocols found",
 			"title": "Nothing matches this protocol.",
 			"subtitle": "Try a different muscle group, level or search term."
 		}

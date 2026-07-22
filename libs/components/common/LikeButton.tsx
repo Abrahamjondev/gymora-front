@@ -15,7 +15,12 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 	const { t } = useTranslation('common');
 	if (variant === 'full') {
 		return (
-			<button onClick={onClick} style={{
+			<button
+				type="button"
+				onClick={onClick}
+				aria-pressed={liked}
+				aria-label={label || (liked ? t('actions.liked') : t('actions.like'))}
+				style={{
 				width: '100%', padding: '13px 16px', borderRadius: '10px',
 				fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 600,
 				cursor: 'pointer', transition: 'all 0.3s cubic-bezier(0.22,1,0.36,1)',
@@ -27,7 +32,8 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 				border: liked
 					? '1.5px solid rgba(255,55,95,0.35)'
 					: '1px solid rgba(255,255,255,0.1)',
-			}}>
+				}}
+			>
 				<svg
 					width="20" height="20" viewBox="0 0 24 24"
 					style={{
@@ -60,7 +66,12 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 
 	// Chip variant
 	return (
-		<span onClick={onClick} style={{
+		<button
+			type="button"
+			onClick={onClick}
+			aria-pressed={liked}
+			aria-label={label || (liked ? t('actions.liked') : t('actions.like'))}
+			style={{
 			display: 'inline-flex', alignItems: 'center', gap: '6px',
 			padding: '6px 12px', borderRadius: '20px', cursor: 'pointer',
 			fontFamily: 'JetBrains Mono', fontSize: '12px', fontWeight: 500,
@@ -68,7 +79,8 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 			background: liked ? 'rgba(255,55,95,0.12)' : 'rgba(255,255,255,0.06)',
 			border: liked ? '1px solid rgba(255,55,95,0.3)' : '1px solid rgba(255,255,255,0.1)',
 			color: liked ? '#ff375f' : '#c8d6d6',
-		}}>
+			}}
+		>
 			<svg
 				width="15" height="15" viewBox="0 0 24 24"
 				style={{
@@ -86,7 +98,7 @@ const LikeButton = ({ liked, count, onClick, variant = 'chip', label }: LikeButt
 				/>
 			</svg>
 			<span style={{ transition: 'color 0.2s ease' }}>{count}</span>
-		</span>
+		</button>
 	);
 };
 

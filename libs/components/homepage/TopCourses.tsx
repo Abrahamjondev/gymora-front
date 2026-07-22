@@ -7,6 +7,7 @@ import { Course } from '../../types/course/course';
 import { REACT_APP_API_URL } from '../../config';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+import QueryState from '../common/QueryState';
 
 const DEFAULT_ACCENT = '#00dce5';
 
@@ -24,13 +25,22 @@ const TopCourses = () => {
 	const [courses, setCourses] = useState<Course[]>([]);
 	const sectionRef = useReveal<HTMLElement>(courses.length > 0);
 
-	useQuery(GET_COURSES, {
+	const { loading, error, refetch } = useQuery(GET_COURSES, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: { page: 1, limit: 4, sort: 'courseRank', direction: 'DESC', search: {} } },
 		onCompleted: (d: T) => setCourses(d?.getCourses?.list ?? []),
 	});
 
-	if (!courses.length) return null;
+	if (!courses.length && !loading && !error) return null;
+	if (!courses.length) {
+		return (
+			<section className="lp-section lp-section--tinted lp-query-section">
+				<div className="lp-container">
+					<QueryState loading={loading} error={error} onRetry={() => void refetch()} />
+				</div>
+			</section>
+		);
+	}
 
 	const [featured, ...rest] = courses;
 	const featuredAccent = categoryAccent[featured.courseCategory] || DEFAULT_ACCENT;
@@ -48,6 +58,7 @@ const TopCourses = () => {
 						{t('topCourses.browseAll')} →
 					</button>
 				</div>
+				<QueryState loading={loading} error={error} hasData={courses.length > 0} onRetry={() => void refetch()} />
 
 				<div className="lp-course-show">
 					{/* Spotlight: #1 ranked program */}

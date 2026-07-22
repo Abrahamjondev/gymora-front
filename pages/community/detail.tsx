@@ -22,6 +22,7 @@ import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
 import { sweetConfirmAlert, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import dynamic from 'next/dynamic';
+import QueryState from '../../libs/components/common/QueryState';
 
 const ToastViewerComponent = dynamic(() => import('../../libs/components/community/TViewer'), { ssr: false });
 
@@ -55,6 +56,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 
 	const {
 		loading: articleLoading,
+		error: articleError,
 		refetch: articleRefetch,
 	} = useQuery(GET_BOARD_ARTICLE, {
 		fetchPolicy: 'network-only',
@@ -68,6 +70,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 
 	const {
 		loading: commentsLoading,
+		error: commentsError,
 		refetch: commentsRefetch,
 	} = useQuery(GET_COMMENTS, {
 		fetchPolicy: 'cache-and-network',
@@ -168,6 +171,16 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
+			</Stack>
+		);
+	}
+
+	if (articleError) {
+		return (
+			<Stack sx={{ justifyContent: 'center', width: '100%', minHeight: '70vh', background: '#131314' }}>
+				<div className="lp-container">
+					<QueryState error={articleError} onRetry={() => void articleRefetch({ input: articleId })} />
+				</div>
 			</Stack>
 		);
 	}
@@ -299,6 +312,13 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 						</div>
 					</div>
 
+					<QueryState
+						loading={commentsLoading}
+						error={commentsError}
+						hasData={comments.length > 0}
+						onRetry={() => void commentsRefetch({ input: searchFilter })}
+					/>
+
 					{/* List */}
 					{comments.map((c) => (
 						<div key={c._id} className="wd-comment">
@@ -329,7 +349,7 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 						</div>
 					))}
 
-					{comments.length === 0 && !commentsLoading && <p className="wd-empty-line">{t('detail.emptyComments')}</p>}
+					{comments.length === 0 && !commentsLoading && !commentsError && <p className="wd-empty-line">{t('detail.emptyComments')}</p>}
 
 					{total > searchFilter.limit && (
 						<Stack alignItems="center" sx={{ mt: 3 }}>

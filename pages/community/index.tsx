@@ -8,6 +8,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { BoardArticle } from '../../libs/types/board-article/board-article';
 import { T } from '../../libs/types/common';
 import LikeButton from '../../libs/components/common/LikeButton';
+import QueryState from '../../libs/components/common/QueryState';
 import { useTranslation } from 'next-i18next';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { BoardArticlesInquiry } from '../../libs/types/board-article/board-article.input';
@@ -46,6 +47,8 @@ const COMMUNITY_DEFAULT_INPUT: BoardArticlesInquiry = {
 	search: {},
 };
 
+const COMMUNITY_SORTS = ['createdAt', 'articleViews', 'articleLikes'] as const;
+
 const categoryAccent: Record<string, string> = {
 	FITNESS_TIPS: '#00dce5',
 	NUTRITION: '#ffb77f',
@@ -59,7 +62,10 @@ const Community: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const [searchCommunity, setSearchCommunity] = useUrlFilter<BoardArticlesInquiry>(COMMUNITY_DEFAULT_INPUT, '/community');
+	const [searchCommunity, setSearchCommunity] = useUrlFilter<BoardArticlesInquiry>(COMMUNITY_DEFAULT_INPUT, '/community', {
+		allowedSorts: COMMUNITY_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
 
@@ -68,6 +74,7 @@ const Community: NextPage = () => {
 
 	const {
 		loading,
+		error,
 		refetch: boardArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'network-only',
@@ -153,7 +160,7 @@ const Community: NextPage = () => {
 							</p>
 							<div className="wl-badge">
 								<span className="wl-badge-dot" />
-								<span>{totalCount > 0 ? t('list.postsPublished', { count: totalCount }) : t('list.loadingPosts')}</span>
+								<span>{loading ? t('list.loadingPosts') : totalCount > 0 ? t('list.postsPublished', { count: totalCount }) : t('list.empty.status')}</span>
 							</div>
 						</div>
 						{user?._id && (user?.memberType === 'TRAINER' || user?.memberType === 'ADMIN') && (
@@ -171,12 +178,14 @@ const Community: NextPage = () => {
 				{/* Filter console */}
 				<div className="wl-console">
 					<div className="wl-console-row">
-						<div className="wl-muscles" style={{ flex: 1 }}>
+						<div className="wl-muscles" role="group" aria-label={t('common:filters.category')} style={{ flex: 1 }}>
 							{categories.map((cat) => {
 								const isActive = activeCategory === cat.value;
 								return (
 									<button
+										type="button"
 										key={cat.value}
+										aria-pressed={isActive}
 										className="cl-cat-btn"
 										style={
 											isActive
@@ -191,7 +200,7 @@ const Community: NextPage = () => {
 								);
 							})}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
+						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
 							{sortOptions.map((s) => (
 								<option key={s.value} value={s.value}>
 									{s.label}
@@ -200,6 +209,8 @@ const Community: NextPage = () => {
 						</select>
 					</div>
 				</div>
+
+				<QueryState loading={loading} error={error} hasData={boardArticles.length > 0} onRetry={() => void boardArticlesRefetch({ input: searchCommunity })} />
 
 				{/* Articles */}
 				{loading && !boardArticles.length ? (
@@ -215,22 +226,31 @@ const Community: NextPage = () => {
 							</div>
 						))}
 					</div>
-				) : boardArticles.length === 0 ? (
+				) : !error && boardArticles.length === 0 ? (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.empty.label')}</span>
 						<h3>{t('list.empty.title')}</h3>
 						<p>{t('list.empty.subtitle')}</p>
 					</div>
-				) : (
-					<div className="cm-list">
+				) : boardArticles.length > 0 ? (
+					<div id="list-results-start" className="cm-list" aria-busy={loading}>
 						{boardArticles.map((article) => {
 							const accent = categoryAccent[article.articleCategory] || DEFAULT_ACCENT;
 							return (
-								<div
-									key={article._id}
-									className="cm-row"
-									style={{ ['--accent' as any]: accent }}
-									onClick={() => pushDetailHandler(article._id)}
+									<div
+										key={article._id}
+										className="cm-row"
+										role="link"
+										tabIndex={0}
+										aria-label={t('common:actions.openItem', { title: article.articleTitle })}
+										style={{ ['--accent' as any]: accent }}
+										onClick={() => pushDetailHandler(article._id)}
+										onKeyDown={(e) => {
+										if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+											e.preventDefault();
+											pushDetailHandler(article._id);
+										}
+									}}
 								>
 									{article.articleImage && (
 										<div className="cm-thumb">
@@ -282,7 +302,7 @@ const Community: NextPage = () => {
 							);
 						})}
 					</div>
-				)}
+				) : null}
 
 				{/* Pagination */}
 				{totalCount > searchCommunity.limit && (

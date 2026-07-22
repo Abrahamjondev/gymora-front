@@ -7,6 +7,7 @@ import { Member } from '../../types/member/member';
 import { REACT_APP_API_URL } from '../../config';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+import QueryState from '../common/QueryState';
 
 const EliteTrainers = () => {
 	const router = useRouter();
@@ -15,13 +16,22 @@ const EliteTrainers = () => {
 	const [activeIdx, setActiveIdx] = useState<number>(0);
 	const sectionRef = useReveal<HTMLElement>(trainers.length > 0);
 
-	useQuery(GET_TRAINER_MEMBERS, {
+	const { loading, error, refetch } = useQuery(GET_TRAINER_MEMBERS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: { page: 1, limit: 4, sort: 'memberRank', direction: 'DESC', search: {} } },
 		onCompleted: (d: T) => setTrainers(d?.getTrainerMembers?.list ?? []),
 	});
 
-	if (!trainers.length) return null;
+	if (!trainers.length && !loading && !error) return null;
+	if (!trainers.length) {
+		return (
+			<section className="lp-section lp-query-section">
+				<div className="lp-container">
+					<QueryState loading={loading} error={error} onRetry={() => void refetch()} />
+				</div>
+			</section>
+		);
+	}
 
 	const active = trainers[activeIdx] ?? trainers[0];
 	const portraitSrc = active?.memberImage ? `${REACT_APP_API_URL}/${active.memberImage}` : '/img/profile/defaultUser.svg';
@@ -38,6 +48,7 @@ const EliteTrainers = () => {
 						{t('common:actions.viewAll')} →
 					</button>
 				</div>
+				<QueryState loading={loading} error={error} hasData={trainers.length > 0} onRetry={() => void refetch()} />
 
 				<div className="lp-trainers">
 					{/* Editorial name list */}

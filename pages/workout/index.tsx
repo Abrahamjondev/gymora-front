@@ -10,6 +10,7 @@ import { WorkoutsInquiry } from '../../libs/types/workout/workout.input';
 import { WorkoutDifficulty } from '../../libs/enums/workout.enum';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import QueryState from '../../libs/components/common/QueryState';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -41,6 +42,8 @@ const WORKOUT_DEFAULT_INPUT: WorkoutsInquiry = {
 	search: {},
 };
 
+const WORKOUT_SORTS = ['createdAt', 'workoutLikes', 'workoutViews', 'workoutRank', 'estimatedCaloriesBurned'] as const;
+
 const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
@@ -48,7 +51,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const user = useReactiveVar(userVar);
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<WorkoutsInquiry>(WORKOUT_DEFAULT_INPUT, '/workout');
+	const [searchFilter, setSearchFilter] = useUrlFilter<WorkoutsInquiry>(WORKOUT_DEFAULT_INPUT, '/workout', {
+		allowedSorts: WORKOUT_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 	const [likingWorkoutId, setLikingWorkoutId] = useState<string | null>(null);
 
@@ -61,7 +67,6 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	/** APOLLO REQUESTS **/
 	const {
 		loading,
-		data,
 		error,
 		refetch,
 	} = useQuery(GET_WORKOUTS, {
@@ -78,8 +83,8 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 
 	useEffect(() => {
 		if (!user?._id) return;
-		refetch({ input: searchFilter });
-	}, [user?._id]);
+		void refetch();
+	}, [refetch, user?._id]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -211,7 +216,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? t('list.protocolsAvailable', { count: total }) : t('list.loadingProtocols')}</span>
+					<span>{loading ? t('list.loadingProtocols') : total > 0 ? t('list.protocolsAvailable', { count: total }) : t('list.empty.status')}</span>
 					</div>
 				</div>
 
@@ -219,14 +224,17 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-							<input
+								<input
+									aria-label={t('common:actions.search')}
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<span
+								<button
+									type="button"
+									aria-label={t('common:actions.clearSearch')}
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -234,10 +242,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 									}}
 								>
 									✕
-								</span>
+								</button>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
+						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
 							{sortOptions.map((s) => (
 								<option key={s.value} value={s.value}>
 									{s.label}
@@ -247,16 +255,16 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 					</div>
 
 					<div className="wl-console-row">
-						<div className="wl-seg">
+						<div className="wl-seg" role="group" aria-label={t('common:filters.level')}>
 							{filters.map((f) => (
-								<button key={f} className={activeFilter === f ? 'is-active' : ''} onClick={() => filterHandler(f)}>
+								<button type="button" key={f} aria-pressed={activeFilter === f} className={activeFilter === f ? 'is-active' : ''} onClick={() => filterHandler(f)}>
 									{f === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${f}`)}
 								</button>
 							))}
 						</div>
-						<div className="wl-muscles">
+						<div className="wl-muscles" role="group" aria-label={t('common:filters.muscle')}>
 							{muscles.map((m) => (
-								<button key={m} className={activeMuscle === m ? 'is-active' : ''} onClick={() => muscleHandler(m)}>
+								<button type="button" key={m} aria-pressed={activeMuscle === m} className={activeMuscle === m ? 'is-active' : ''} onClick={() => muscleHandler(m)}>
 									{t(`enums:muscle.${m}`)}
 								</button>
 							))}
@@ -277,8 +285,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 					</div>
 				)}
 
+				<QueryState loading={loading} error={error} hasData={workouts.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
+
 				{/* Workout Grid */}
-				<div className="wl-grid">
+				<div id="list-results-start" className="wl-grid" aria-busy={loading}>
 					{loading && !workouts.length
 						? [1, 2, 3, 4, 5, 6].map((i) => (
 								<div key={i} className="wl-skel">
@@ -290,7 +300,20 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 								</div>
 						  ))
 						: workouts.map((workout) => (
-								<div key={workout._id} className="wl-card" onClick={() => pushDetailHandler(workout._id)}>
+								<div
+									key={workout._id}
+									className="wl-card"
+									role="link"
+									tabIndex={0}
+									aria-label={t('common:actions.openItem', { title: workout.workoutTitle })}
+									onClick={() => pushDetailHandler(workout._id)}
+									onKeyDown={(e) => {
+										if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+											e.preventDefault();
+											pushDetailHandler(workout._id);
+										}
+									}}
+								>
 									<div className="wl-card-img">
 										<img
 											src={
@@ -338,7 +361,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				</div>
 
 				{/* No results */}
-				{!loading && workouts.length === 0 && (
+				{!loading && !error && workouts.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('common:empty.noResults')}</span>
 						<h3>{t('list.empty.title')}</h3>

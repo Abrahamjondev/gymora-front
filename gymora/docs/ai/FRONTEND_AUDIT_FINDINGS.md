@@ -2,8 +2,8 @@
 
 **Audit date:** 2026-07-22
 **Branch:** `modification`
-**Status:** Read-only audit complete; implementation plan awaits user approval
-**Code changes:** None authorized from this report yet
+**Status:** Audit remediation batch approved and implemented on `modification`; remaining items are explicitly marked below.
+**Code changes:** Incremental frontend fixes completed without changing backend contracts.
 
 ## Priority scale
 
@@ -17,6 +17,8 @@
 Findings below are source- and/or browser-backed. Recommendations are not implementation approval.
 
 ### P1 — High-risk / release-blocking candidates
+
+Implementation status: AUD-001 is resolved at the environment-mapping level; AUD-002 is partially addressed by frontend query minimization and still needs a backend public projection; AUD-003 is addressed in the frontend query-state layer.
 
 #### AUD-001 — GraphQL environment mismatch makes the local app look empty
 
@@ -49,6 +51,8 @@ Findings below are source- and/or browser-backed. Recommendations are not implem
 - **Backend work:** no contract change required.
 
 ### P2 — Medium-priority functional, UX, and accessibility issues
+
+Implementation status: AUD-004, AUD-005, AUD-006, AUD-007, AUD-008, AUD-009, AUD-010, and AUD-012 are addressed in the approved frontend batch. AUD-011 remains open because the safe regex/search change belongs in the backend service layer.
 
 #### AUD-004 — Mobile hydration mismatch in the shared layout
 
@@ -156,8 +160,10 @@ Findings below are source- and/or browser-backed. Recommendations are not implem
 | Check | Result | Notes |
 | --- | --- | --- |
 | Documentation structure | Passed | Audit docs and approval policy created under `gymora/docs/ai/` |
-| Backend contract review | Passed with environment limitation | NestJS DTOs, resolvers, services, auth, and member schema inspected; live GraphQL response could not be queried because ports 3003/4001 were unreachable |
-| Browser/runtime sweep | Passed with environment limitation | Desktop/mobile public routes loaded; no overlay; network failure and mobile hydration mismatch were observed |
+| Backend contract review | Passed | NestJS DTOs, resolvers, services, auth, and member schema inspected; live remote GraphQL selections were verified against `http://187.77.111.100:4001/graphql` |
+| Browser/runtime sweep | Partially passed | Official in-app browser runtime had no available browser session; static build/type checks and direct live GraphQL checks passed. |
 | `yarn i18n:check` | Passed | 10 namespaces × 3 locales in sync |
 | `yarn lint` | Passed with warnings | Existing hook-dependency and `<img>` warnings remain |
 | `yarn build` | Passed with warnings | Production build compiled and generated all 90 static pages |
+| `yarn tsc --noEmit` | Passed | No TypeScript errors |
+| `git diff --check` | Passed | No whitespace errors |

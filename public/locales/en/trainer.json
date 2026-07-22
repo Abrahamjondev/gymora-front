@@ -19,6 +19,7 @@
 			"followers": "followers"
 		},
 		"empty": {
+			"status": "No trainers found",
 			"label": "No results",
 			"title": "No trainers match this search.",
 			"hint": "Try a different name or keyword."

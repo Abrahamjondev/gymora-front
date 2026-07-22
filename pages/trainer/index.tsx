@@ -8,6 +8,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import QueryState from '../../libs/components/common/QueryState';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -40,6 +41,8 @@ const TRAINER_DEFAULT_INPUT: TrainersInquiry = {
 	search: {},
 };
 
+const TRAINER_SORTS = ['memberRank', 'memberLikes', 'memberViews', 'createdAt'] as const;
+
 const TrainerList: NextPage = () => {
 	const device = useDeviceDetect();
 	const { t } = useTranslation('trainer');
@@ -47,7 +50,10 @@ const TrainerList: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const [trainers, setTrainers] = useState<Member[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<TrainersInquiry>(TRAINER_DEFAULT_INPUT, '/trainer');
+	const [searchFilter, setSearchFilter] = useUrlFilter<TrainersInquiry>(TRAINER_DEFAULT_INPUT, '/trainer', {
+		allowedSorts: TRAINER_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 
 	// Sort control derived from the URL-synced filter so a shared link / refresh reflects it.
@@ -56,6 +62,7 @@ const TrainerList: NextPage = () => {
 	/** APOLLO REQUESTS **/
 	const {
 		loading,
+		error,
 		refetch,
 	} = useQuery(GET_TRAINER_MEMBERS, {
 		fetchPolicy: 'network-only',
@@ -66,11 +73,6 @@ const TrainerList: NextPage = () => {
 			setTotal(data?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0);
 		},
 	});
-
-	/** LIFECYCLES **/
-	useEffect(() => {
-		refetch({ input: searchFilter });
-	}, [searchFilter]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -148,7 +150,7 @@ const TrainerList: NextPage = () => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{total > 0 ? t('list.rosterCount', { count: total }) : t('list.loadingRoster')}</span>
+						<span>{loading ? t('list.loadingRoster') : total > 0 ? t('list.rosterCount', { count: total }) : t('list.empty.status')}</span>
 					</div>
 				</div>
 
@@ -156,14 +158,17 @@ const TrainerList: NextPage = () => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-							<input
+								<input
+									aria-label={t('common:actions.search')}
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<span
+								<button
+									type="button"
+									aria-label={t('common:actions.clearSearch')}
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -171,10 +176,10 @@ const TrainerList: NextPage = () => {
 									}}
 								>
 									✕
-								</span>
+								</button>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
+						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
 							{sortOptions.map((s) => (
 								<option key={s.value} value={s.value}>
 									{s.label}
@@ -184,10 +189,25 @@ const TrainerList: NextPage = () => {
 					</div>
 				</div>
 
+				<QueryState loading={loading} error={error} hasData={trainers.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
+
 				{/* Trainer Grid */}
-				<div className="tr-grid">
+				<div id="list-results-start" className="tr-grid" aria-busy={loading}>
 					{trainers.map((trainer) => (
-						<div key={trainer._id} className="tr-card" onClick={() => pushDetailHandler(trainer._id)}>
+						<div
+							key={trainer._id}
+							className="tr-card"
+							role="link"
+							tabIndex={0}
+							aria-label={t('common:actions.openItem', { title: trainer.memberFullName || trainer.memberNick })}
+							onClick={() => pushDetailHandler(trainer._id)}
+							onKeyDown={(e) => {
+								if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
+									e.preventDefault();
+									pushDetailHandler(trainer._id);
+								}
+							}}
+						>
 							<div className="tr-card-img">
 								<img
 									src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
@@ -233,7 +253,7 @@ const TrainerList: NextPage = () => {
 				</div>
 
 				{/* No results */}
-				{!loading && trainers.length === 0 && (
+				{!loading && !error && trainers.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.empty.label')}</span>
 						<h3>{t('list.empty.title')}</h3>

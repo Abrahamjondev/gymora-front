@@ -20,6 +20,7 @@
 		"enrolledCount": "{{count}} yozilgan",
 		"viewProgram": "Dasturni ko'rish →",
 		"emptyLabel": "Natija yo'q",
+		"emptyStatus": "Dasturlar topilmadi",
 		"emptyTitle": "Bu filtrlar bo'yicha dastur topilmadi.",
 		"emptyText": "Boshqa maqsad, daraja yoki so'rovni sinab ko'ring."
 	},

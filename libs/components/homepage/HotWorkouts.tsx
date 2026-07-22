@@ -7,6 +7,7 @@ import { Workout } from '../../types/workout/workout';
 import { REACT_APP_API_URL } from '../../config';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+import QueryState from '../common/QueryState';
 
 const HotWorkouts = () => {
 	const router = useRouter();
@@ -14,13 +15,13 @@ const HotWorkouts = () => {
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
 	const sectionRef = useReveal<HTMLElement>(workouts.length > 0);
 
-	useQuery(GET_WORKOUTS, {
+	const { loading, error, refetch } = useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: { page: 1, limit: 5, sort: 'workoutRank', direction: 'DESC', search: {} } },
 		onCompleted: (d: T) => setWorkouts(d?.getWorkouts?.list ?? []),
 	});
 
-	if (!workouts.length) return null;
+	if (!workouts.length && !loading && !error) return null;
 
 	return (
 		<section ref={sectionRef} className="lp-section lp-reveal">
@@ -34,6 +35,7 @@ const HotWorkouts = () => {
 						{t('common:actions.viewAll')} →
 					</button>
 				</div>
+				<QueryState loading={loading} error={error} hasData={workouts.length > 0} onRetry={() => void refetch()} />
 
 				<div className="lp-workout-grid">
 					{workouts.slice(0, 5).map((w, i) => {

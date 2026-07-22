@@ -6,6 +6,7 @@ import { useTranslation } from 'next-i18next';
 import { GET_BOARD_ARTICLES } from '../../../apollo/user/query';
 import { T } from '../../types/common';
 import useReveal from '../../hooks/useReveal';
+import QueryState from '../common/QueryState';
 
 const ARTICLE_DATE_FORMAT = 'MMM D';
 
@@ -25,13 +26,22 @@ const CommunityPulse = () => {
 	const [articles, setArticles] = useState<ArticleItem[]>([]);
 	const sectionRef = useReveal<HTMLElement>(articles.length > 0);
 
-	useQuery(GET_BOARD_ARTICLES, {
+	const { loading, error, refetch } = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: { page: 1, limit: 3, sort: 'createdAt', direction: 'DESC', search: {} } },
 		onCompleted: (d: T) => setArticles(d?.getBoardArticles?.list ?? []),
 	});
 
-	if (!articles.length) return null;
+	if (!articles.length && !loading && !error) return null;
+	if (!articles.length) {
+		return (
+			<section className="lp-section lp-query-section">
+				<div className="lp-container">
+					<QueryState loading={loading} error={error} onRetry={() => void refetch()} />
+				</div>
+			</section>
+		);
+	}
 
 	return (
 		<section ref={sectionRef} className="lp-section lp-reveal">
@@ -45,6 +55,7 @@ const CommunityPulse = () => {
 						{t('community.join')} →
 					</button>
 				</div>
+				<QueryState loading={loading} error={error} hasData={articles.length > 0} onRetry={() => void refetch()} />
 
 				<div className="lp-community-grid">
 					{articles.map((article) => (

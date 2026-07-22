@@ -144,40 +144,57 @@ export const updateStorage = ({ jwtToken }: { jwtToken: any }) => {
 export const updateUserInfo = (jwtToken: any) => {
 	if (!jwtToken) return false;
 
-	const claims = decodeJWT<CustomJwtPayload>(jwtToken);
-	userVar({
-		_id: claims._id ?? '',
-		memberType: claims.memberType ?? '',
-		memberStatus: claims.memberStatus ?? '',
-		memberAuthType: claims.memberAuthType,
-		memberPhone: claims.memberPhone ?? '',
-		memberNick: claims.memberNick ?? '',
-		memberFullName: claims.memberFullName ?? '',
-		memberImage:
-			claims.memberImage === null || claims.memberImage === undefined
-				? '/img/profile/defaultUser.svg'
-				: `${claims.memberImage}`,
-		memberAddress: claims.memberAddress ?? '',
-		memberDesc: claims.memberDesc ?? '',
-		memberCourses: claims.memberCourses,
-		memberWorkouts: claims.memberWorkouts,
-		memberRank: claims.memberRank,
-		memberArticles: claims.memberArticles,
-		memberPoints: claims.memberPoints,
-		memberLikes: claims.memberLikes,
-		memberViews: claims.memberViews,
-		memberWarnings: claims.memberWarnings,
-		memberBlocks: claims.memberBlocks,
-	});
+	try {
+		const claims = decodeJWT<CustomJwtPayload>(jwtToken);
+		if (claims.exp && claims.exp * 1000 <= Date.now()) {
+			clearAuthSession();
+			return false;
+		}
+
+		userVar({
+			_id: claims._id ?? '',
+			memberType: claims.memberType ?? '',
+			memberStatus: claims.memberStatus ?? '',
+			memberAuthType: claims.memberAuthType,
+			memberPhone: claims.memberPhone ?? '',
+			memberNick: claims.memberNick ?? '',
+			memberFullName: claims.memberFullName ?? '',
+			memberImage:
+				claims.memberImage === null || claims.memberImage === undefined
+					? '/img/profile/defaultUser.svg'
+					: `${claims.memberImage}`,
+			memberAddress: claims.memberAddress ?? '',
+			memberDesc: claims.memberDesc ?? '',
+			memberCourses: claims.memberCourses,
+			memberWorkouts: claims.memberWorkouts,
+			memberRank: claims.memberRank,
+			memberArticles: claims.memberArticles,
+			memberPoints: claims.memberPoints,
+			memberLikes: claims.memberLikes,
+			memberViews: claims.memberViews,
+			memberWarnings: claims.memberWarnings,
+			memberBlocks: claims.memberBlocks,
+		});
+		return true;
+	} catch {
+		clearAuthSession();
+		return false;
+	}
 };
 
 export const logOut = () => {
-	deleteStorage();
-	deleteUserInfo();
+	clearAuthSession();
 	window.location.reload();
 };
 
+/** Clear a stale or invalid client session without reloading the page. */
+export function clearAuthSession() {
+	deleteStorage();
+	deleteUserInfo();
+}
+
 const deleteStorage = () => {
+	if (typeof window === 'undefined') return;
 	localStorage.removeItem('accessToken');
 	window.localStorage.setItem('logout', Date.now().toString());
 };

@@ -22,6 +22,7 @@ import { userVar } from '../../apollo/store';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { notifyMember } from '../../libs/notify';
 import CreatorCard from '../../libs/components/common/CreatorCard';
+import QueryState from '../../libs/components/common/QueryState';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -85,7 +86,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		},
 	});
 
-	const { refetch: reviewsRefetch } = useQuery(GET_WORKOUT_REVIEWS, {
+	const { loading: reviewsLoading, error: reviewsError, refetch: reviewsRefetch } = useQuery(GET_WORKOUT_REVIEWS, {
 		fetchPolicy: 'network-only',
 		variables: { input: workoutId },
 		skip: !workoutId,
@@ -202,6 +203,16 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#131314' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
+			</Stack>
+		);
+	}
+
+	if (getWorkoutError) {
+		return (
+			<Stack sx={{ justifyContent: 'center', width: '100%', minHeight: '70vh', background: '#131314' }}>
+				<div className="lp-container">
+					<QueryState error={getWorkoutError} onRetry={() => void getWorkoutRefetch({ input: workoutId })} />
+				</div>
 			</Stack>
 		);
 	}
@@ -366,6 +377,12 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 							<h3>{t('detail.comments')}</h3>
 							<span className="wd-section-count">{t('detail.commentsTotal', { count: commentTotal })}</span>
 						</div>
+						<QueryState
+							loading={getCommentsLoading}
+							error={getCommentsError}
+							hasData={workoutComments.length > 0}
+							onRetry={() => void getCommentsRefetch({ input: commentInquiry })}
+						/>
 
 						{/* Leave a comment */}
 						<div className="wd-form-card">
@@ -401,7 +418,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 							</div>
 						))}
 
-						{workoutComments.length === 0 && !getCommentsLoading && (
+						{workoutComments.length === 0 && !getCommentsLoading && !getCommentsError && (
 							<p className="wd-empty-line">{t('detail.noCommentsYet')}</p>
 						)}
 
@@ -427,6 +444,12 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 							<h3>{t('detail.athleteReviews')}</h3>
 							<span className="wd-section-count">{t('detail.reviewsCount', { count: workoutReviews.length })}</span>
 						</div>
+						<QueryState
+							loading={reviewsLoading}
+							error={reviewsError}
+							hasData={workoutReviews.length > 0}
+							onRetry={() => void reviewsRefetch({ input: workoutId })}
+						/>
 						{user?._id && (
 							<div className="wd-form-card">
 								<div className="wd-stars">
