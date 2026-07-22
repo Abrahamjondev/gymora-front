@@ -10,6 +10,9 @@ import { WorkoutsInquiry } from '../../libs/types/workout/workout.input';
 import { WorkoutDifficulty } from '../../libs/enums/workout.enum';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -62,24 +65,20 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const {
 		loading,
 		data,
-		error,
-		refetch,
 	} = useQuery(GET_WORKOUTS, {
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setWorkouts(data?.getWorkouts?.list ?? []);
-			setTotal(data?.getWorkouts?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
 
 	const [likeWorkoutMutation] = useMutation(LIKE_WORKOUT);
 
 	useEffect(() => {
-		if (!user?._id) return;
-		refetch({ input: searchFilter });
-	}, [user?._id]);
+		const result = data?.getWorkouts;
+		if (!result) return;
+		setWorkouts(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -237,13 +236,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 								</span>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.topRanked')} onChange={sortHandler} />
 					</div>
 
 					<div className="wl-console-row">
@@ -278,18 +271,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				)}
 
 				{/* Workout Grid */}
-				<div className="wl-grid">
-					{loading && !workouts.length
-						? [1, 2, 3, 4, 5, 6].map((i) => (
-								<div key={i} className="wl-skel">
-									<div className="wl-skel-img" />
-									<div className="wl-skel-body">
-										<div className="wl-skel-line" />
-										<div className="wl-skel-line" />
-									</div>
-								</div>
-						  ))
-						: workouts.map((workout) => (
+				<div className={`wl-data-shell${loading && workouts.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !workouts.length ? <ContentSkeletons variant="workout" /> : (
+					<div className={`wl-grid${loading && workouts.length ? ' is-fetching' : ''}`}>
+						{workouts.map((workout) => (
 								<div key={workout._id} className="wl-card" onClick={() => pushDetailHandler(workout._id)}>
 									<div className="wl-card-img">
 										<img
@@ -300,6 +285,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 											}
 											alt={workout.workoutTitle}
 											loading="lazy"
+											onError={(event) => {
+												event.currentTarget.onerror = null;
+												event.currentTarget.src = '/img/banner/header1.svg';
+											}}
 										/>
 										<div className="wl-card-shade" />
 										<div className="wl-card-chips">
@@ -335,6 +324,9 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 									</div>
 								</div>
 						  ))}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}

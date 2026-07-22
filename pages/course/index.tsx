@@ -15,6 +15,9 @@ import { useTranslation } from 'next-i18next';
 import { useQuery } from '@apollo/client';
 import { GET_COURSES } from '../../apollo/user/query';
 import { REACT_APP_API_URL } from '../../libs/config';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -56,19 +59,18 @@ const CourseList: NextPage = () => {
 	const activeSort = searchFilter.sort ?? 'courseRank';
 
 	/** APOLLO REQUESTS **/
-	const { loading, refetch } = useQuery(GET_COURSES, {
-		fetchPolicy: 'network-only',
+	const { loading, data } = useQuery(GET_COURSES, {
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setCourses(data?.getCourses?.list ?? []);
-			setTotal(data?.getCourses?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
 
 	useEffect(() => {
-		refetch({ input: searchFilter });
-	}, [searchFilter]);
+		const result = data?.getCourses;
+		if (!result) return;
+		setCourses(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -171,13 +173,7 @@ const CourseList: NextPage = () => {
 								</span>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => courseSortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sortTopRanked')} onChange={courseSortHandler} />
 					</div>
 
 					<div className="wl-console-row">
@@ -226,18 +222,10 @@ const CourseList: NextPage = () => {
 				)}
 
 				{/* Program Grid */}
-				<div className="cl-grid">
-					{loading && !courses.length
-						? [1, 2, 3, 4, 5, 6].map((i) => (
-								<div key={i} className="wl-skel">
-									<div className="wl-skel-img" />
-									<div className="wl-skel-body">
-										<div className="wl-skel-line" />
-										<div className="wl-skel-line" />
-									</div>
-								</div>
-						  ))
-						: courses.map((course) => {
+				<div className={`wl-data-shell${loading && courses.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !courses.length ? <ContentSkeletons variant="program" /> : (
+					<div className={`cl-grid${loading && courses.length ? ' is-fetching' : ''}`}>
+						{courses.map((course) => {
 								const accent = categoryColors[course.courseCategory] || fallbackAccent;
 								return (
 									<div
@@ -253,11 +241,15 @@ const CourseList: NextPage = () => {
 										onClick={() => pushDetailHandler(course._id)}
 									>
 										<div className="cl-card-img">
-											<img
-												src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
-												alt={course.courseTitle}
-												loading="lazy"
-											/>
+													<img
+														src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
+														alt={course.courseTitle}
+														loading="lazy"
+														onError={(event) => {
+														event.currentTarget.onerror = null;
+														event.currentTarget.src = '/img/banner/header1.svg';
+													}}
+													/>
 											<div className="cl-card-shade" />
 											<span
 												className="lp-chip"
@@ -289,6 +281,9 @@ const CourseList: NextPage = () => {
 									</div>
 								);
 						  })}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}

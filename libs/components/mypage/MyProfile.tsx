@@ -4,11 +4,12 @@ import useDeviceDetect from '../../hooks/useDeviceDetect';
 import axios from 'axios';
 import { Messages, REACT_APP_API_URL } from '../../config';
 import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
-import { useMutation, useReactiveVar } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
 import { UPDATE_MEMBER } from '../../../apollo/user/mutation';
+import { GET_MY_MEMBER } from '../../../apollo/user/query';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
 const labelStyle: React.CSSProperties = {
@@ -32,17 +33,23 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 	const [updateMember] = useMutation(UPDATE_MEMBER);
+	const { data: profileData, refetch: profileRefetch } = useQuery(GET_MY_MEMBER, {
+		fetchPolicy: 'network-only',
+		skip: !user?._id,
+	});
+	const profile = profileData?.getMyMember ?? user;
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		setUpdateData({
-			...updateData,
-			memberNick: user.memberNick,
-			memberPhone: user.memberPhone,
-			memberAddress: user.memberAddress,
-			memberImage: user.memberImage,
-		});
-	}, [user]);
+		setUpdateData((previous) => ({
+			...previous,
+			memberNick: profile.memberNick,
+			memberPhone: profile.memberPhone,
+			memberAddress: profile.memberAddress,
+			memberImage: profile.memberImage,
+			memberDesc: profile.memberDesc,
+		}));
+	}, [profile._id, profile.memberNick, profile.memberPhone, profile.memberAddress, profile.memberImage, profile.memberDesc]);
 
 	/** HANDLERS **/
 	const uploadImage = async (e: any) => {
@@ -91,13 +98,14 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 			const jwtToken = result.data.updateMember?.accessToken;
 			await updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
+			await profileRefetch();
 			await sweetMixinSuccessAlert(t('alerts.profileUpdated'));
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		} finally {
 			setSaving(false);
 		}
-	}, [updateData]);
+	}, [profileRefetch, t, updateData, user?._id]);
 
 	const isDisabled = saving || !updateData.memberNick || !updateData.memberPhone;
 

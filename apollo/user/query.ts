@@ -11,25 +11,19 @@ export const GET_TRAINER_MEMBERS = gql`
 				_id
 				memberType
 				memberStatus
-				memberAuthType
-				memberPhone
 				memberNick
 				memberFullName
 				memberImage
-				memberAddress
 				memberDesc
-				memberWarnings
-				memberBlocks
 				memberCourses
 				memberWorkouts
 				memberRank
 				memberPoints
 				memberLikes
 				memberViews
-				deletedAt
+				memberFollowers
 				createdAt
 				updatedAt
-				accessToken
 				meLiked {
 					memberId
 					likeRefId
@@ -49,12 +43,9 @@ query GetMember($input: String!) {
         _id
         memberType
         memberStatus
-        memberAuthType
-        memberPhone
         memberNick
         memberFullName
         memberImage
-        memberAddress
         memberDesc
         memberCourses
         memberWorkouts
@@ -65,12 +56,8 @@ query GetMember($input: String!) {
         memberFollowings
 				memberFollowers
         memberRank
-        memberWarnings
-        memberBlocks
-        deletedAt
         createdAt
         updatedAt
-        accessToken
         meLiked {
 					memberId
 					likeRefId
@@ -84,6 +71,32 @@ query GetMember($input: String!) {
     }
 }
 `);
+
+export const GET_MY_MEMBER = gql`
+	query GetMyMember {
+		getMyMember {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberPhone
+			memberNick
+			memberFullName
+			memberImage
+			memberAddress
+			memberDesc
+			memberCourses
+			memberWorkouts
+			memberRank
+			memberArticles
+			memberPoints
+			memberLikes
+			memberViews
+			createdAt
+			updatedAt
+		}
+	}
+`;
 
 /**************************
  *        TRAINER        *
@@ -405,25 +418,18 @@ export const GET_COMMENTS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
 					memberFullName
 					memberImage
-					memberAddress
 					memberDesc
-					memberWarnings
-					memberBlocks
 					memberCourses
 					memberWorkouts
 					memberRank
 					memberPoints
 					memberLikes
 					memberViews
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 			}
 			metaCounter {
@@ -459,12 +465,9 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
 					memberFullName
 					memberImage
-					memberAddress
 					memberDesc
 					memberCourses
 					memberWorkouts
@@ -476,9 +479,6 @@ export const GET_MEMBER_FOLLOWERS = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
 				}
@@ -503,12 +503,9 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					_id
 					memberType
 					memberStatus
-					memberAuthType
-					memberPhone
 					memberNick
 					memberFullName
 					memberImage
-					memberAddress
 					memberDesc
 					memberCourses
 					memberWorkouts
@@ -520,12 +517,8 @@ export const GET_MEMBER_FOLLOWINGS = gql`
 					memberFollowings
 					memberFollowers
 					memberRank
-					memberWarnings
-					memberBlocks
-					deletedAt
 					createdAt
 					updatedAt
-					accessToken
 				}
 				meLiked {
 					memberId

@@ -23,6 +23,7 @@ export const logIn = async (nick: string, password: string): Promise<void> => {
 		if (jwtToken) {
 			updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
+			await initializeApollo().resetStore();
 		}
 	} catch (err: any) {
 		console.warn('login err', err);
@@ -63,6 +64,7 @@ export const signUp = async (nick: string, password: string, phone: string, type
 		if (jwtToken) {
 			updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
+			await initializeApollo().resetStore();
 		}
 	} catch (err: any) {
 		console.warn('signup err', err);
@@ -109,6 +111,7 @@ export const telegramLogin = async (payload: TelegramAuthInput): Promise<void> =
 		if (jwtToken) {
 			updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
+			await initializeApollo().resetStore();
 		}
 	} catch (err: any) {
 		console.warn('telegram login err', err);
@@ -174,7 +177,10 @@ export const updateUserInfo = (jwtToken: any) => {
 export const logOut = () => {
 	deleteStorage();
 	deleteUserInfo();
-	window.location.reload();
+	void initializeApollo()
+		.clearStore()
+		.catch(() => undefined)
+		.finally(() => window.location.reload());
 };
 
 const deleteStorage = () => {

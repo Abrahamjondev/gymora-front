@@ -1,6 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/router';
 
+const scrollFilterPageToTop = () => {
+	if (typeof window === 'undefined') return;
+
+	const scrollOptions: ScrollToOptions = { top: 0, behavior: 'smooth' };
+	window.scrollTo(scrollOptions);
+	document.documentElement.scrollTo(scrollOptions);
+	document.body.scrollTo(scrollOptions);
+};
+
 /**
  * Keeps a list-page search/filter object in sync with the URL query string.
  *
@@ -44,10 +53,19 @@ const useUrlFilter = <T,>(initialInput: T, pathname: string): [T, (next: T) => v
 			const serialized = JSON.stringify(next);
 			lastPushed.current = serialized;
 			setFilter(next);
-			router.push({ pathname, query: { input: serialized } }, undefined, {
-				scroll: false,
-				shallow: true,
-			});
+			scrollFilterPageToTop();
+			void router
+				.push({ pathname, query: { input: serialized } }, undefined, {
+					scroll: false,
+					shallow: true,
+				})
+				.then(() => {
+					if (typeof window === 'undefined') return;
+					window.requestAnimationFrame(() => {
+						window.requestAnimationFrame(scrollFilterPageToTop);
+					});
+				})
+				.catch(() => undefined);
 		},
 		[router, pathname],
 	);

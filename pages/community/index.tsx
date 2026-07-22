@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
 import { Pagination, Stack } from '@mui/material';
@@ -20,6 +20,9 @@ import { Messages, REACT_APP_API_URL, appLocale } from '../../libs/config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -54,6 +57,18 @@ const categoryAccent: Record<string, string> = {
 	SUCCESS_STORY: '#66daba',
 };
 
+const ArticleThumbnail = ({ src, alt }: { src?: string; alt: string }) => {
+	const [failed, setFailed] = useState(false);
+
+	if (!src || failed) return null;
+
+	return (
+		<div className="cm-thumb">
+			<img src={src} alt={alt} loading="lazy" onError={() => setFailed(true)} />
+		</div>
+	);
+};
+
 const Community: NextPage = () => {
 	const { t } = useTranslation('community');
 	const device = useDeviceDetect();
@@ -68,16 +83,19 @@ const Community: NextPage = () => {
 
 	const {
 		loading,
-		refetch: boardArticlesRefetch,
+		data,
 	} = useQuery(GET_BOARD_ARTICLES, {
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchCommunity },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setBoardArticles(data?.getBoardArticles?.list ?? []);
-			setTotalCount(data?.getBoardArticles?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
+
+	useEffect(() => {
+		const result = data?.getBoardArticles;
+		if (!result) return;
+		setBoardArticles(result.list ?? []);
+		setTotalCount(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// View-state derived from the URL-synced filter so a shared link / refresh reflects it.
 	const activeCategory = searchCommunity.search.articleCategory ?? 'ALL';
@@ -191,38 +209,22 @@ const Community: NextPage = () => {
 								);
 							})}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.newest')} onChange={sortHandler} />
 					</div>
 				</div>
 
 				{/* Articles */}
-				{loading && !boardArticles.length ? (
-					<div className="cm-list">
-						{[1, 2, 3].map((i) => (
-							<div key={i} className="wl-skel" style={{ display: 'flex', gap: '20px', padding: '18px' }}>
-								<div className="wl-skel-img" style={{ width: '200px', aspectRatio: '16/10', borderRadius: '11px', flex: 'none' }} />
-								<div style={{ flex: 1 }}>
-									<div className="wl-skel-line" style={{ width: '40%' }} />
-									<div className="wl-skel-line" />
-									<div className="wl-skel-line" style={{ width: '70%' }} />
-								</div>
-							</div>
-						))}
-					</div>
-				) : boardArticles.length === 0 ? (
+				<div className={`wl-data-shell${loading && boardArticles.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !boardArticles.length ? (
+						<ContentSkeletons variant="article" />
+					) : boardArticles.length === 0 ? (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.empty.label')}</span>
 						<h3>{t('list.empty.title')}</h3>
 						<p>{t('list.empty.subtitle')}</p>
 					</div>
-				) : (
-					<div className="cm-list">
+					) : (
+					<div className={`cm-list${loading ? ' is-fetching' : ''}`}>
 						{boardArticles.map((article) => {
 							const accent = categoryAccent[article.articleCategory] || DEFAULT_ACCENT;
 							return (
@@ -232,11 +234,10 @@ const Community: NextPage = () => {
 									style={{ ['--accent' as any]: accent }}
 									onClick={() => pushDetailHandler(article._id)}
 								>
-									{article.articleImage && (
-										<div className="cm-thumb">
-											<img src={`${REACT_APP_API_URL}/${article.articleImage}`} alt={article.articleTitle} loading="lazy" />
-										</div>
-									)}
+									<ArticleThumbnail
+										src={article.articleImage ? `${REACT_APP_API_URL}/${article.articleImage}` : undefined}
+										alt={article.articleTitle}
+									/>
 
 									<div className="cm-body">
 										<div className="cm-meta-top">
@@ -250,9 +251,13 @@ const Community: NextPage = () => {
 															article.memberData.memberImage
 																? `${REACT_APP_API_URL}/${article.memberData.memberImage}`
 																: '/img/profile/defaultUser.svg'
-														}
-														alt={article.memberData.memberNick}
-													/>
+															}
+															alt={article.memberData.memberNick}
+															onError={(event) => {
+																event.currentTarget.onerror = null;
+																event.currentTarget.src = '/img/profile/defaultUser.svg';
+															}}
+														/>
 													<span>{article.memberData.memberNick}</span>
 												</span>
 											)}
@@ -282,7 +287,9 @@ const Community: NextPage = () => {
 							);
 						})}
 					</div>
-				)}
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
+				</div>
 
 				{/* Pagination */}
 				{totalCount > searchCommunity.limit && (

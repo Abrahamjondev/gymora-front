@@ -1,13 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { CircularProgress, Pagination, Stack } from '@mui/material';
+import { Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -56,21 +59,20 @@ const TrainerList: NextPage = () => {
 	/** APOLLO REQUESTS **/
 	const {
 		loading,
-		refetch,
+		data,
 	} = useQuery(GET_TRAINER_MEMBERS, {
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setTrainers(data?.getTrainerMembers?.list ?? []);
-			setTotal(data?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		refetch({ input: searchFilter });
-	}, [searchFilter]);
+		const result = data?.getTrainerMembers;
+		if (!result) return;
+		setTrainers(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -124,15 +126,6 @@ const TrainerList: NextPage = () => {
 		{ value: 'createdAt', label: t('list.sort.newest') },
 	];
 
-	/** LOADING STATE **/
-	if (loading && !trainers.length) {
-		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
-				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
-			</Stack>
-		);
-	}
-
 	return (
 		<div className="wl-page">
 			<div className="lp-container">
@@ -174,25 +167,25 @@ const TrainerList: NextPage = () => {
 								</span>
 							)}
 						</div>
-						<select className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.topRanked')} onChange={sortHandler} />
 					</div>
 				</div>
 
 				{/* Trainer Grid */}
-				<div className="tr-grid">
-					{trainers.map((trainer) => (
+				<div className={`wl-data-shell${loading && trainers.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !trainers.length ? <ContentSkeletons variant="trainer" /> : (
+					<div className={`tr-grid${loading && trainers.length ? ' is-fetching' : ''}`}>
+						{trainers.map((trainer) => (
 						<div key={trainer._id} className="tr-card" onClick={() => pushDetailHandler(trainer._id)}>
 							<div className="tr-card-img">
 								<img
 									src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
 									alt={trainer.memberNick}
 									loading="lazy"
+									onError={(event) => {
+										event.currentTarget.onerror = null;
+										event.currentTarget.src = '/img/profile/defaultUser.svg';
+									}}
 								/>
 								<div className="tr-card-shade" />
 								{trainer.memberRank > 0 && (
@@ -229,7 +222,10 @@ const TrainerList: NextPage = () => {
 								</div>
 							</div>
 						</div>
-					))}
+						))}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}
