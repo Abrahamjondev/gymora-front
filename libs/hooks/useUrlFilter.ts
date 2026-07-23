@@ -16,6 +16,15 @@ const isPageOnlyChange = (previous: unknown, next: unknown): boolean => {
 	return previousPage !== nextPage && JSON.stringify(previousRest) === JSON.stringify(nextRest);
 };
 
+const scrollFilterPageToTop = () => {
+	if (typeof window === 'undefined') return;
+
+	const scrollOptions: ScrollToOptions = { top: 0, behavior: 'smooth' };
+	window.scrollTo(scrollOptions);
+	document.documentElement.scrollTo(scrollOptions);
+	document.body.scrollTo(scrollOptions);
+};
+
 /**
  * Keeps a list-page search/filter object in sync with the URL query string.
  *
@@ -87,16 +96,22 @@ const useUrlFilter = <T,>(initialInput: T, pathname: string, options: UrlFilterO
 			lastPushed.current = serialized;
 			filterRef.current = normalized;
 			setFilter(normalized);
-			router.push({ pathname, query: { input: serialized } }, undefined, {
-				scroll: false,
-				shallow: true,
-			});
-
-			if (typeof window !== 'undefined' && options.scrollTarget && !isPageOnlyChange(previous, normalized)) {
-				window.requestAnimationFrame(() => {
-					document.getElementById(options.scrollTarget as string)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-				});
-			}
+			void router
+				.push({ pathname, query: { input: serialized } }, undefined, {
+					scroll: false,
+					shallow: true,
+				})
+				.then(() => {
+					if (typeof window === 'undefined' || isPageOnlyChange(previous, normalized)) return;
+					window.requestAnimationFrame(() => {
+						if (options.scrollTarget) {
+							document.getElementById(options.scrollTarget)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+						} else {
+							scrollFilterPageToTop();
+						}
+					});
+				})
+				.catch(() => undefined);
 		},
 		[normalize, options.scrollTarget, pathname, router],
 	);

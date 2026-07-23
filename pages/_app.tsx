@@ -36,6 +36,28 @@ const LocaleRestore = () => {
 	return null;
 };
 
+const NavigationProgress = () => {
+	const router = useRouter();
+	const [isNavigating, setIsNavigating] = useState(false);
+
+	useEffect(() => {
+		const handleStart = () => setIsNavigating(true);
+		const handleDone = () => setIsNavigating(false);
+
+		router.events.on('routeChangeStart', handleStart);
+		router.events.on('routeChangeComplete', handleDone);
+		router.events.on('routeChangeError', handleDone);
+
+		return () => {
+			router.events.off('routeChangeStart', handleStart);
+			router.events.off('routeChangeComplete', handleDone);
+			router.events.off('routeChangeError', handleDone);
+		};
+	}, [router.events]);
+
+	return <div className={`gnav-route-progress${isNavigating ? ' is-active' : ''}`} aria-hidden="true" />;
+};
+
 const App = ({ Component, pageProps }: AppProps) => {
 	const router = useRouter();
 	// @ts-ignore
@@ -53,6 +75,7 @@ const App = ({ Component, pageProps }: AppProps) => {
 			</Head>
 			<ThemeProvider theme={theme}>
 				<CssBaseline />
+				<NavigationProgress />
 				<PresenceSocket />
 				<LocaleRestore />
 				<Component {...pageProps} />

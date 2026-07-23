@@ -256,17 +256,22 @@ const MyPage: NextPage = () => {
 
 	const saveCourseEdit = async () => {
 		try {
-			if (!editCourse?.courseTitle) throw new Error(t('alerts.titleRequired'));
+			const courseTitle = editCourse?.courseTitle?.trim() ?? '';
+			const coursePrice = Number(editCourse?.coursePrice);
+			const courseDuration = Number(editCourse?.courseDuration);
+			if (courseTitle.length < 3 || courseTitle.length > 100) throw new Error(t('alerts.programTitleLength', { min: 3, max: 100 }));
+			if (!Number.isFinite(coursePrice) || coursePrice < 0) throw new Error(t('alerts.programPriceMin'));
+			if (!Number.isInteger(courseDuration) || courseDuration < 1) throw new Error(t('alerts.programDurationMin', { min: 1 }));
 			await updateCourseMut({
 				variables: {
 					input: {
 						_id: editCourse._id,
-						courseTitle: editCourse.courseTitle,
+						courseTitle,
 						courseDesc: editCourse.courseDesc || undefined,
 						courseDifficulty: editCourse.courseDifficulty,
 						courseCategory: editCourse.courseCategory,
-						coursePrice: Number(editCourse.coursePrice),
-						courseDuration: Number(editCourse.courseDuration),
+						coursePrice,
+						courseDuration,
 						courseThumbnail: editCourse.courseThumbnail || undefined,
 					},
 				},
@@ -276,7 +281,7 @@ const MyPage: NextPage = () => {
 			setEditCourse(null);
 			await sweetMixinSuccessAlert(t('alerts.programUpdated'));
 		} catch (err: any) {
-			sweetMixinErrorAlert(err?.graphQLErrors?.[0]?.message || err.message).then();
+			sweetMixinErrorAlert(err).then();
 		}
 	};
 	const [createWorkout] = useMutation(CREATE_WORKOUT);
@@ -309,11 +314,11 @@ const MyPage: NextPage = () => {
 
 	const createWorkoutHandler = async () => {
 		try {
-			if (!newWorkout.workoutTitle || !newWorkout.targetMuscle) throw new Error(t('alerts.titleMuscleRequired'));
+			if (!newWorkout.workoutTitle?.trim() || !newWorkout.targetMuscle) throw new Error(t('alerts.titleMuscleRequired'));
 			await createWorkout({
 				variables: {
 					input: {
-						workoutTitle: newWorkout.workoutTitle,
+						workoutTitle: newWorkout.workoutTitle.trim(),
 						workoutDesc: newWorkout.workoutDesc || undefined,
 						workoutDifficulty: newWorkout.workoutDifficulty,
 						targetMuscle: newWorkout.targetMuscle,
@@ -329,13 +334,18 @@ const MyPage: NextPage = () => {
 			if (wd?.getMemberWorkouts) setMyWorkouts(wd.getMemberWorkouts);
 			await sweetMixinSuccessAlert(t('alerts.workoutCreated'));
 			router.push({ pathname: '/mypage', query: { category: 'myWorkouts' } }, undefined, { shallow: true });
-		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+		} catch (err: any) { sweetMixinErrorAlert(err).then(); }
 	};
 
 	const createCourseHandler = async () => {
 		try {
-			if (!newCourse.courseTitle) throw new Error(t('alerts.programTitleRequired'));
-			const { data: created } = await createCourseMut({ variables: { input: { ...newCourse, coursePrice: Number(newCourse.coursePrice), courseDuration: Number(newCourse.courseDuration), courseThumbnail: newCourse.courseThumbnail || undefined } } });
+			const courseTitle = newCourse.courseTitle?.trim() ?? '';
+			const coursePrice = Number(newCourse.coursePrice);
+			const courseDuration = Number(newCourse.courseDuration);
+			if (courseTitle.length < 3 || courseTitle.length > 100) throw new Error(t('alerts.programTitleLength', { min: 3, max: 100 }));
+			if (!Number.isFinite(coursePrice) || coursePrice < 0) throw new Error(t('alerts.programPriceMin'));
+			if (!Number.isInteger(courseDuration) || courseDuration < 1) throw new Error(t('alerts.programDurationMin', { min: 1 }));
+			const { data: created } = await createCourseMut({ variables: { input: { ...newCourse, courseTitle, coursePrice, courseDuration, courseThumbnail: newCourse.courseThumbnail || undefined } } });
 			setNewCourse({ courseTitle: '', courseDesc: '', courseDifficulty: 'BEGINNER', courseCategory: 'STRENGTH', coursePrice: 0, courseDuration: 4, courseThumbnail: '' });
 			const { data: rd } = await trainerCoursesRefetch();
 			if (rd?.getTrainerCourses) setTrainerCourses(rd.getTrainerCourses);
@@ -344,16 +354,19 @@ const MyPage: NextPage = () => {
 			if (newId) setLessonCourse({ id: newId, title: created.createCourse.courseTitle });
 			await sweetMixinSuccessAlert(t('alerts.programCreated'));
 			router.push({ pathname: '/mypage', query: { category: 'trainerCourses' } }, undefined, { shallow: true });
-		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+		} catch (err: any) { sweetMixinErrorAlert(err).then(); }
 	};
 
 	const becomeTrainerHandler = async () => {
 		try {
-			if (!trainerForm.trainerBio) throw new Error(t('alerts.bioRequired'));
-			await createTrainer({ variables: { input: { trainerBio: trainerForm.trainerBio, trainerSpecializations: trainerForm.trainerSpecializations.split(',').map((s: string) => s.trim()).filter(Boolean), trainerExperience: Number(trainerForm.trainerExperience) } } });
+			const trainerBio = trainerForm.trainerBio.trim();
+			const trainerExperience = Number(trainerForm.trainerExperience);
+			if (trainerBio.length < 10 || trainerBio.length > 1000) throw new Error(t('alerts.bioLength', { min: 10, max: 1000 }));
+			if (!Number.isFinite(trainerExperience) || trainerExperience < 0) throw new Error(t('alerts.experienceMin'));
+			await createTrainer({ variables: { input: { trainerBio, trainerSpecializations: trainerForm.trainerSpecializations.split(',').map((s: string) => s.trim()).filter(Boolean), trainerExperience } } });
 			await sweetMixinSuccessAlert(t('alerts.trainerCreated'));
 			logOut();
-		} catch (err: any) { sweetMixinErrorAlert(err.message).then(); }
+		} catch (err: any) { sweetMixinErrorAlert(err).then(); }
 	};
 
 	/** Shared media + exercises editors for create/edit forms */
@@ -857,7 +870,7 @@ const MyPage: NextPage = () => {
 								<div className="wd-form-card" style={{ borderColor: 'rgba(255,138,0,0.25)', marginBottom: '18px' }}>
 									<h4 style={{ fontFamily: 'Hanken Grotesk', fontSize: '16px', fontWeight: 800, color: '#ffffff', margin: '0 0 16px' }}>{t('programs.editTitle')}</h4>
 									<div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
-										<input className="wd-input" value={editCourse.courseTitle} onChange={(e) => setEditCourse({ ...editCourse, courseTitle: e.target.value })} placeholder={t('programs.form.title')} />
+						<input className="wd-input" minLength={3} maxLength={100} value={editCourse.courseTitle} onChange={(e) => setEditCourse({ ...editCourse, courseTitle: e.target.value })} placeholder={t('programs.form.title')} />
 										<textarea className="wd-textarea" style={{ marginBottom: 0 }} value={editCourse.courseDesc ?? ''} onChange={(e) => setEditCourse({ ...editCourse, courseDesc: e.target.value })} placeholder={t('programs.form.description')} />
 										<div style={{ display: 'flex', flexWrap: 'wrap', gap: '7px' }}>
 											{courseCategoryOptions.map((catOpt) => (
@@ -875,8 +888,8 @@ const MyPage: NextPage = () => {
 													</button>
 												))}
 											</div>
-											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.coursePrice} onChange={(e) => setEditCourse({ ...editCourse, coursePrice: e.target.value })} placeholder={t('programs.form.pricePlaceholder')} />
-											<input className="wd-input" type="number" style={{ width: '120px' }} value={editCourse.courseDuration} onChange={(e) => setEditCourse({ ...editCourse, courseDuration: e.target.value })} placeholder={t('programs.form.weeksPlaceholder')} />
+										<input className="wd-input" type="number" min={0} step="0.01" style={{ width: '120px' }} value={editCourse.coursePrice} onChange={(e) => setEditCourse({ ...editCourse, coursePrice: e.target.value })} placeholder={t('programs.form.pricePlaceholder')} />
+										<input className="wd-input" type="number" min={1} step={1} style={{ width: '120px' }} value={editCourse.courseDuration} onChange={(e) => setEditCourse({ ...editCourse, courseDuration: e.target.value })} placeholder={t('programs.form.weeksPlaceholder')} />
 										</div>
 										{editCourseMedia}
 										<div style={{ display: 'flex', gap: '10px' }}>
@@ -946,7 +959,7 @@ const MyPage: NextPage = () => {
 								<div style={{ display: 'flex', flexDirection: 'column', gap: '18px' }}>
 									<div>
 										<span style={labelStyle}>{t('programs.form.title')}</span>
-										<input className="wd-input" value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder={t('programs.form.titlePlaceholder')} />
+										<input className="wd-input" minLength={3} maxLength={100} value={newCourse.courseTitle} onChange={(e) => setNewCourse({ ...newCourse, courseTitle: e.target.value })} placeholder={t('programs.form.titlePlaceholder')} />
 									</div>
 									<div>
 										<span style={labelStyle}>{t('programs.form.description')}</span>
@@ -984,11 +997,11 @@ const MyPage: NextPage = () => {
 									<div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
 										<div>
 											<span style={labelStyle}>{t('programs.form.price')}</span>
-											<input className="wd-input" type="number" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} />
+											<input className="wd-input" type="number" min={0} step="0.01" value={newCourse.coursePrice} onChange={(e) => setNewCourse({ ...newCourse, coursePrice: Number(e.target.value) })} />
 										</div>
 										<div>
 											<span style={labelStyle}>{t('programs.form.duration')}</span>
-											<input className="wd-input" type="number" value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} />
+											<input className="wd-input" type="number" min={1} step={1} value={newCourse.courseDuration} onChange={(e) => setNewCourse({ ...newCourse, courseDuration: Number(e.target.value) })} />
 										</div>
 									</div>
 									<div>
@@ -1094,9 +1107,9 @@ const MyPage: NextPage = () => {
 							<h2 style={{ fontFamily: 'Hanken Grotesk', fontSize: '28px', fontWeight: 700, color: '#e5e2e3', marginBottom: '8px' }}>{t('profile.becomeTrainer.title')}</h2>
 							<p style={{ fontFamily: 'Hanken Grotesk', fontSize: '14px', color: 'rgba(185,202,202,0.5)', marginBottom: '24px' }}>{t('profile.becomeTrainer.subtitle')}</p>
 							<div style={{ display: 'flex', flexDirection: 'column', gap: '16px', maxWidth: '500px' }}>
-								<div><span style={labelStyle}>{t('profile.becomeTrainer.bio')}</span><textarea value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder={t('profile.becomeTrainer.bioPlaceholder')} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
+								<div><span style={labelStyle}>{t('profile.becomeTrainer.bio')}</span><textarea minLength={10} maxLength={1000} value={trainerForm.trainerBio} onChange={(e) => setTrainerForm({ ...trainerForm, trainerBio: e.target.value })} placeholder={t('profile.becomeTrainer.bioPlaceholder')} style={{ ...inputStyle, minHeight: '100px', resize: 'vertical' }} /></div>
 								<div><span style={labelStyle}>{t('profile.becomeTrainer.specializations')}</span><input value={trainerForm.trainerSpecializations} onChange={(e) => setTrainerForm({ ...trainerForm, trainerSpecializations: e.target.value })} placeholder={t('profile.becomeTrainer.specializationsPlaceholder')} style={inputStyle} /></div>
-								<div><span style={labelStyle}>{t('profile.becomeTrainer.experience')}</span><input type="number" value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
+								<div><span style={labelStyle}>{t('profile.becomeTrainer.experience')}</span><input type="number" min={0} step={1} value={trainerForm.trainerExperience} onChange={(e) => setTrainerForm({ ...trainerForm, trainerExperience: Number(e.target.value) })} style={inputStyle} /></div>
 								<button onClick={becomeTrainerHandler} style={{ background: 'linear-gradient(135deg, #66daba, #00dce5)', color: '#003739', border: 'none', borderRadius: '10px', padding: '14px 32px', fontFamily: 'Hanken Grotesk', fontSize: '14px', fontWeight: 700, cursor: 'pointer', width: 'fit-content' }}>{t('profile.becomeTrainer.apply')}</button>
 							</div>
 						</div>

@@ -16,6 +16,9 @@ import { useQuery } from '@apollo/client';
 import { GET_COURSES } from '../../apollo/user/query';
 import { REACT_APP_API_URL } from '../../libs/config';
 import QueryState from '../../libs/components/common/QueryState';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -62,15 +65,18 @@ const CourseList: NextPage = () => {
 	const activeSort = searchFilter.sort ?? 'courseRank';
 
 	/** APOLLO REQUESTS **/
-	const { loading, error, refetch } = useQuery(GET_COURSES, {
-		fetchPolicy: 'network-only',
+	const { loading, data, error, refetch } = useQuery(GET_COURSES, {
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setCourses(data?.getCourses?.list ?? []);
-			setTotal(data?.getCourses?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
+
+	useEffect(() => {
+		const result = data?.getCourses;
+		if (!result) return;
+		setCourses(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -147,7 +153,7 @@ const CourseList: NextPage = () => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{loading ? t('list.loadingPrograms') : total > 0 ? t('list.programsAvailable', { count: total }) : t('list.emptyStatus')}</span>
+						<span>{total > 0 ? t('list.programsAvailable', { count: total }) : t('list.loadingPrograms')}</span>
 					</div>
 				</div>
 
@@ -155,17 +161,14 @@ const CourseList: NextPage = () => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-								<input
-									aria-label={t('common:actions.search')}
+							<input
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && courseSearchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<button
-									type="button"
-									aria-label={t('common:actions.clearSearch')}
+								<span
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -173,35 +176,27 @@ const CourseList: NextPage = () => {
 									}}
 								>
 									✕
-								</button>
+								</span>
 							)}
 						</div>
-						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => courseSortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sortTopRanked')} onChange={courseSortHandler} />
 					</div>
 
 					<div className="wl-console-row">
-						<div className="wl-seg" role="group" aria-label={t('common:filters.level')}>
+						<div className="wl-seg">
 							{difficulties.map((d) => (
-								<button type="button" key={d} aria-pressed={activeDifficulty === d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
+								<button key={d} className={activeDifficulty === d ? 'is-active' : ''} onClick={() => difficultyFilterHandler(d)}>
 									{d === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${d}`)}
 								</button>
 							))}
 						</div>
-						<div className="wl-muscles" role="group" aria-label={t('common:filters.category')} style={{ gap: '6px' }}>
+						<div className="wl-muscles" style={{ gap: '6px' }}>
 							{categories.map((cat) => {
 								const accent = categoryColors[cat];
 								const isActive = activeCategory === cat;
 								return (
-										<button
-											type="button"
-											key={cat}
-											aria-pressed={isActive}
+									<button
+										key={cat}
 										className="cl-cat-btn"
 										style={
 											isActive
@@ -235,26 +230,15 @@ const CourseList: NextPage = () => {
 				<QueryState loading={loading} error={error} hasData={courses.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Program Grid */}
-				<div id="list-results-start" className="cl-grid" aria-busy={loading}>
-					{loading && !courses.length
-						? [1, 2, 3, 4, 5, 6].map((i) => (
-								<div key={i} className="wl-skel">
-									<div className="wl-skel-img" />
-									<div className="wl-skel-body">
-										<div className="wl-skel-line" />
-										<div className="wl-skel-line" />
-									</div>
-								</div>
-						  ))
-						: courses.map((course) => {
+				<div className={`wl-data-shell${loading && courses.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !courses.length ? <ContentSkeletons variant="program" /> : (
+					<div className={`cl-grid${loading && courses.length ? ' is-fetching' : ''}`}>
+						{courses.map((course) => {
 								const accent = categoryColors[course.courseCategory] || fallbackAccent;
 								return (
-										<div
-											key={course._id}
-											className="cl-card"
-											role="link"
-											tabIndex={0}
-											aria-label={t('common:actions.openItem', { title: course.courseTitle })}
+									<div
+										key={course._id}
+										className="cl-card"
 										style={
 											{
 												'--accent': accent,
@@ -262,20 +246,18 @@ const CourseList: NextPage = () => {
 												'--accent-glow': `${accent}14`,
 											} as React.CSSProperties
 										}
-											onClick={() => pushDetailHandler(course._id)}
-											onKeyDown={(e) => {
-												if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-													e.preventDefault();
-													pushDetailHandler(course._id);
-												}
-											}}
+										onClick={() => pushDetailHandler(course._id)}
 									>
 										<div className="cl-card-img">
-											<img
-												src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
-												alt={course.courseTitle}
-												loading="lazy"
-											/>
+													<img
+														src={course.courseThumbnail ? `${REACT_APP_API_URL}/${course.courseThumbnail}` : '/img/banner/header1.svg'}
+														alt={course.courseTitle}
+														loading="lazy"
+														onError={(event) => {
+														event.currentTarget.onerror = null;
+														event.currentTarget.src = '/img/banner/header1.svg';
+													}}
+													/>
 											<div className="cl-card-shade" />
 											<span
 												className="lp-chip"
@@ -307,10 +289,13 @@ const CourseList: NextPage = () => {
 									</div>
 								);
 						  })}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}
-				{!loading && !error && courses.length === 0 && (
+				{!loading && courses.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.emptyLabel')}</span>
 						<h3>{t('list.emptyTitle')}</h3>

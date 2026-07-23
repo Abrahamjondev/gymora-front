@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { useRouter } from 'next/router';
 import { useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
@@ -7,31 +7,34 @@ import { userVar } from '../../../apollo/store';
 import { T } from '../../types/common';
 import useCountUp from '../../hooks/useCountUp';
 
-const MARQUEE_ITEMS = [
-	'muscle.Chest',
-	'muscle.Back',
-	'muscle.Legs',
-	'muscle.Shoulders',
-	'muscle.Arms',
-	'muscle.Core',
-	'muscle.Full Body',
-	'category.STRENGTH',
-	'category.CARDIO',
-	'category.YOGA',
-	'category.MOBILITY',
-	'category.NUTRITION',
-];
-
 const HeroSection = () => {
 	const router = useRouter();
 	const { t } = useTranslation('landing');
 	const user = useReactiveVar(userVar);
-	const [workoutTotal, setWorkoutTotal] = useState<number>(0);
-	const [trainerTotal, setTrainerTotal] = useState<number>(0);
-	const [courseTotal, setCourseTotal] = useState<number>(0);
+	const { data: workoutsData } = useQuery(GET_WORKOUTS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 1, search: {} } },
+	});
+	const { data: trainersData } = useQuery(GET_TRAINER_MEMBERS, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 1, search: {} } },
+	});
+	const { data: coursesData } = useQuery(GET_COURSES, {
+		fetchPolicy: 'cache-and-network',
+		variables: { input: { page: 1, limit: 1, sort: 'createdAt', direction: 'DESC', search: {} } },
+	});
+	const workoutTotal = (workoutsData as T | undefined)?.getWorkouts?.metaCounter?.[0]?.total ?? 0;
+	const trainerTotal = (trainersData as T | undefined)?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0;
+	const courseTotal = (coursesData as T | undefined)?.getCourses?.metaCounter?.[0]?.total ?? 0;
 	const workoutCount = useCountUp(workoutTotal);
 	const trainerCount = useCountUp(trainerTotal);
 	const courseCount = useCountUp(courseTotal);
+	const heroStats = [
+		{ value: workoutTotal > 0 ? `${workoutCount}+` : '—', label: t('common:stats.workouts') },
+		{ value: trainerTotal > 0 ? `${trainerCount}+` : '—', label: t('common:nav.trainers') },
+		{ value: courseTotal > 0 ? `${courseCount}+` : '—', label: t('common:stats.programs') },
+		{ value: '24/7', label: t('hero.statAccess') },
+	];
 
 	// Role-aware hero CTAs — a logged-in member never sees "Get Started Free"
 	const heroCta = !user?._id
@@ -57,24 +60,6 @@ const HeroSection = () => {
 				primary: { label: t('hero.ctaContinueTraining'), action: () => router.push('/workout') },
 				secondary: { label: t('hero.ctaMyDashboard'), action: () => router.push('/mypage') },
 		  };
-
-	useQuery(GET_WORKOUTS, {
-		fetchPolicy: 'cache-and-network',
-		variables: { input: { page: 1, limit: 1, search: {} } },
-		onCompleted: (d: T) => setWorkoutTotal(d?.getWorkouts?.metaCounter?.[0]?.total ?? 0),
-	});
-
-	useQuery(GET_TRAINER_MEMBERS, {
-		fetchPolicy: 'cache-and-network',
-		variables: { input: { page: 1, limit: 1, search: {} } },
-		onCompleted: (d: T) => setTrainerTotal(d?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0),
-	});
-
-	useQuery(GET_COURSES, {
-		fetchPolicy: 'cache-and-network',
-		variables: { input: { page: 1, limit: 1, sort: 'createdAt', direction: 'DESC', search: {} } },
-		onCompleted: (d: T) => setCourseTotal(d?.getCourses?.metaCounter?.[0]?.total ?? 0),
-	});
 
 	return (
 		<>
@@ -140,38 +125,25 @@ const HeroSection = () => {
 							</button>
 						</div>
 
-						<div className="lp-hero-stats">
-							{[
-								{ value: workoutTotal > 0 ? `${workoutCount}+` : '—', label: t('common:stats.workouts') },
-								{ value: trainerTotal > 0 ? `${trainerCount}+` : '—', label: t('common:nav.trainers') },
-								{ value: courseTotal > 0 ? `${courseCount}+` : '—', label: t('common:stats.programs') },
-								{ value: '24/7', label: t('hero.statAccess') },
-							].map((stat) => (
-								<div key={stat.label}>
-									<span className="lp-stat-value">{stat.value}</span>
-									<span className="lp-stat-label">{stat.label}</span>
-								</div>
-							))}
-						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* Discipline marquee */}
-			<div className="lp-marquee" aria-hidden="true">
-				<div className="lp-marquee-track">
-					{[0, 1].map((copy) => (
-						<React.Fragment key={copy}>
-							{MARQUEE_ITEMS.map((item) => (
-								<span key={`${copy}-${item}`} className="lp-marquee-item">
-									{t(`enums:${item}`)}
-								</span>
-							))}
-						</React.Fragment>
+			<div className="lp-stats-deck" aria-label={t('hero.statsLabel')}>
+				<div className="lp-stats-deck-inner">
+					{heroStats.map((stat, index) => (
+						<div key={stat.label} className={`lp-stat-card${index === heroStats.length - 1 ? ' is-accent' : ''}`}>
+							<span className="lp-stat-card-index">0{index + 1}</span>
+							<div>
+								<span className="lp-stat-card-value">{stat.value}</span>
+								<span className="lp-stat-card-label">{stat.label}</span>
+							</div>
+							<span className="lp-stat-card-signal" aria-hidden="true" />
+						</div>
 					))}
+					</div>
 				</div>
-			</div>
-		</>
+			</>
 	);
 };
 

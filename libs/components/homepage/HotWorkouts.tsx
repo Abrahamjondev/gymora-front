@@ -37,11 +37,11 @@ const HotWorkouts = () => {
 				</div>
 				<QueryState loading={loading} error={error} hasData={workouts.length > 0} onRetry={() => void refetch()} />
 
-				<div className="lp-workout-grid">
+				<div className="lp-workout-grid lp-workout-grid--observatory">
 					{workouts.slice(0, 5).map((w, i) => {
 						const isFeatured = i === 0;
 						return (
-							<div
+						<article
 								key={w._id}
 								className={`lp-wcard${isFeatured ? ' lp-wcard--feature' : ''}`}
 								onClick={() => router.push({ pathname: '/workout/detail', query: { id: w._id } })}
@@ -53,47 +53,31 @@ const HotWorkouts = () => {
 										loading="lazy"
 									/>
 									<div className="lp-wcard-shade" />
-									<div style={{ position: 'absolute', top: '12px', left: '12px', display: 'flex', gap: '6px', alignItems: 'center' }}>
+									<div className="lp-wcard-topline">
 										<span className={`lp-rank${isFeatured ? ' lp-chip--cyan' : ''}`}>#{i + 1}</span>
 										{isFeatured && <span className="lp-chip lp-chip--cyan">{t('hotWorkouts.trending')}</span>}
 									</div>
-									<div style={{ position: 'absolute', bottom: '12px', left: '12px', display: 'flex', gap: '6px' }}>
+									<div className="lp-wcard-taxonomy">
 										<span className="lp-chip">{t(`enums:muscle.${w.targetMuscle}`)}</span>
 										<span className="lp-chip">{t(`enums:difficulty.${w.workoutDifficulty}`)}</span>
 									</div>
 								</div>
 
 								<div className="lp-wcard-body">
-									<h3
-										style={{
-											fontFamily: 'Hanken Grotesk',
-											fontSize: '16px',
-											fontWeight: 600,
-											color: '#e5e2e3',
-											lineHeight: '1.3',
-											margin: '0 0 8px',
-											overflow: 'hidden',
-											textOverflow: 'ellipsis',
-											whiteSpace: 'nowrap',
-										}}
-									>
-										{w.workoutTitle}
-									</h3>
-									<div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-										<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 700, color: '#ffc08f' }}>
-											{t('hotWorkouts.kcal', { count: w.estimatedCaloriesBurned })}
-										</span>
-										<div style={{ display: 'flex', gap: '12px' }}>
-											<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.8)' }}>
-												<b style={{ color: '#ffffff' }}>{w.workoutViews ?? 0}</b> {t('common:stats.views')}
-											</span>
-											<span style={{ fontFamily: 'Hanken Grotesk', fontSize: '13px', fontWeight: 600, color: 'rgba(213,226,226,0.8)' }}>
-												♥ <b style={{ color: '#ffffff' }}>{w.workoutLikes ?? 0}</b>
-											</span>
+									<div className="lp-wcard-title-row">
+										<h3>{w.workoutTitle}</h3>
+										<span className="lp-wcard-index">{String(i + 1).padStart(2, '0')}</span>
+									</div>
+									<div className="lp-wcard-data">
+										<span className="lp-wcard-kcal">{t('hotWorkouts.kcal', { count: w.estimatedCaloriesBurned })}</span>
+										<div className="lp-wcard-stats">
+											<span><b>{w.workoutViews ?? 0}</b> {t('common:stats.views')}</span>
+											<span><b>♥</b> {w.workoutLikes ?? 0}</span>
 										</div>
 									</div>
+									<span className="lp-wcard-signal" aria-hidden="true" />
 								</div>
-							</div>
+							</article>
 						);
 					})}
 				</div>

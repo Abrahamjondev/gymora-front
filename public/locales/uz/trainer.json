@@ -15,8 +15,12 @@
 		},
 		"defaultBio": "Professional fitnes murabbiyi",
 		"card": {
+			"profileLabel": "Murabbiy profili",
+			"rank": "Reyting",
+			"programs": "dastur",
 			"workouts": "mashq",
-			"followers": "obunachi"
+			"followers": "obunachi",
+			"openProfile": "{{name}} profilini ochish"
 		},
 		"empty": {
 			"status": "Murabbiylar topilmadi",

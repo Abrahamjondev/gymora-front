@@ -2,13 +2,14 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import axios from 'axios';
-import { Messages, REACT_APP_API_URL } from '../../config';
+import { AUTH_LIMITS, Messages, REACT_APP_API_URL } from '../../config';
 import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
-import { useMutation, useReactiveVar } from '@apollo/client';
+import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { userVar } from '../../../apollo/store';
 import { MemberUpdate } from '../../types/member/member.update';
 import { UPDATE_MEMBER } from '../../../apollo/user/mutation';
+import { GET_MY_MEMBER } from '../../../apollo/user/query';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../sweetAlert';
 
 const labelStyle: React.CSSProperties = {
@@ -32,17 +33,23 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 
 	/** APOLLO REQUESTS **/
 	const [updateMember] = useMutation(UPDATE_MEMBER);
+	const { data: profileData, refetch: profileRefetch } = useQuery(GET_MY_MEMBER, {
+		fetchPolicy: 'network-only',
+		skip: !user?._id,
+	});
+	const profile = profileData?.getMyMember ?? user;
 
 	/** LIFECYCLES **/
 	useEffect(() => {
-		setUpdateData({
-			...updateData,
-			memberNick: user.memberNick,
-			memberPhone: user.memberPhone,
-			memberAddress: user.memberAddress,
-			memberImage: user.memberImage,
-		});
-	}, [user]);
+		setUpdateData((previous) => ({
+			...previous,
+			memberNick: profile.memberNick,
+			memberPhone: profile.memberPhone,
+			memberAddress: profile.memberAddress,
+			memberImage: profile.memberImage,
+			memberDesc: profile.memberDesc,
+		}));
+	}, [profile._id, profile.memberNick, profile.memberPhone, profile.memberAddress, profile.memberImage, profile.memberDesc]);
 
 	/** HANDLERS **/
 	const uploadImage = async (e: any) => {
@@ -84,20 +91,25 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 	const updateProfileHandler = useCallback(async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
+			const nickname = updateData.memberNick?.trim() ?? '';
+			if (nickname.length < AUTH_LIMITS.nickMin || nickname.length > AUTH_LIMITS.nickMax) {
+				throw new Error(t('alerts.profileNicknameLength', { min: AUTH_LIMITS.nickMin, max: AUTH_LIMITS.nickMax }));
+			}
 			setSaving(true);
 			const result = await updateMember({
-				variables: { input: { ...updateData, _id: user._id } },
+				variables: { input: { ...updateData, memberNick: nickname, _id: user._id } },
 			});
 			const jwtToken = result.data.updateMember?.accessToken;
 			await updateStorage({ jwtToken });
 			updateUserInfo(jwtToken);
+			await profileRefetch();
 			await sweetMixinSuccessAlert(t('alerts.profileUpdated'));
 		} catch (err: any) {
 			sweetErrorHandling(err).then();
 		} finally {
 			setSaving(false);
 		}
-	}, [updateData]);
+	}, [profileRefetch, t, updateData, user?._id]);
 
 	const isDisabled = saving || !updateData.memberNick || !updateData.memberPhone;
 
@@ -161,6 +173,8 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 							type="text"
 							placeholder={t('profile.usernamePlaceholder')}
 							value={updateData.memberNick || ''}
+							minLength={AUTH_LIMITS.nickMin}
+							maxLength={AUTH_LIMITS.nickMax}
 							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberNick: value })}
 						/>
 					</div>

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import { useRouter } from 'next/router';
-import { CircularProgress, Pagination, Stack } from '@mui/material';
+import { Pagination, Stack } from '@mui/material';
 import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import useUrlFilter from '../../libs/hooks/useUrlFilter';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
@@ -9,6 +9,9 @@ import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
 import QueryState from '../../libs/components/common/QueryState';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -62,17 +65,22 @@ const TrainerList: NextPage = () => {
 	/** APOLLO REQUESTS **/
 	const {
 		loading,
+		data,
 		error,
 		refetch,
 	} = useQuery(GET_TRAINER_MEMBERS, {
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setTrainers(data?.getTrainerMembers?.list ?? []);
-			setTotal(data?.getTrainerMembers?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
+
+	/** LIFECYCLES **/
+	useEffect(() => {
+		const result = data?.getTrainerMembers;
+		if (!result) return;
+		setTrainers(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -119,21 +127,18 @@ const TrainerList: NextPage = () => {
 		router.push({ pathname: '/trainer/detail', query: { id: memberId } });
 	};
 
+	const cardKeyDownHandler = (event: React.KeyboardEvent<HTMLElement>, memberId: string) => {
+		if (event.key !== 'Enter' && event.key !== ' ') return;
+		event.preventDefault();
+		pushDetailHandler(memberId);
+	};
+
 	const sortOptions = [
 		{ value: 'memberRank', label: t('list.sort.topRanked') },
 		{ value: 'memberLikes', label: t('list.sort.mostLiked') },
 		{ value: 'memberViews', label: t('list.sort.mostViewed') },
 		{ value: 'createdAt', label: t('list.sort.newest') },
 	];
-
-	/** LOADING STATE **/
-	if (loading && !trainers.length) {
-		return (
-			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
-				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
-			</Stack>
-		);
-	}
 
 	return (
 		<div className="wl-page">
@@ -150,7 +155,7 @@ const TrainerList: NextPage = () => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-						<span>{loading ? t('list.loadingRoster') : total > 0 ? t('list.rosterCount', { count: total }) : t('list.empty.status')}</span>
+						<span>{total > 0 ? t('list.rosterCount', { count: total }) : t('list.loadingRoster')}</span>
 					</div>
 				</div>
 
@@ -158,17 +163,14 @@ const TrainerList: NextPage = () => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-								<input
-									aria-label={t('common:actions.search')}
+							<input
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<button
-									type="button"
-									aria-label={t('common:actions.clearSearch')}
+								<span
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -176,84 +178,98 @@ const TrainerList: NextPage = () => {
 									}}
 								>
 									✕
-								</button>
+								</span>
 							)}
 						</div>
-						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.topRanked')} onChange={sortHandler} />
 					</div>
 				</div>
 
 				<QueryState loading={loading} error={error} hasData={trainers.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Trainer Grid */}
-				<div id="list-results-start" className="tr-grid" aria-busy={loading}>
-					{trainers.map((trainer) => (
-						<div
-							key={trainer._id}
-							className="tr-card"
-							role="link"
-							tabIndex={0}
-							aria-label={t('common:actions.openItem', { title: trainer.memberFullName || trainer.memberNick })}
-							onClick={() => pushDetailHandler(trainer._id)}
-							onKeyDown={(e) => {
-								if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-									e.preventDefault();
-									pushDetailHandler(trainer._id);
-								}
-							}}
-						>
-							<div className="tr-card-img">
-								<img
-									src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
-									alt={trainer.memberNick}
-									loading="lazy"
-								/>
-								<div className="tr-card-shade" />
-								{trainer.memberRank > 0 && (
-									<div className="tr-card-rank">
-										<span className="tr-card-star">★</span>
-										{trainer.memberRank}
-									</div>
-								)}
-								<div className="tr-card-overlay">
-									<h3>
-										{trainer.memberFullName || trainer.memberNick}
-										{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
-									</h3>
-									<p>{trainer.memberDesc || t('list.defaultBio')}</p>
-								</div>
-							</div>
+				<div className={`wl-data-shell${loading && trainers.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !trainers.length ? <ContentSkeletons variant="trainer" /> : (
+					<div className={`tr-grid${loading && trainers.length ? ' is-fetching' : ''}`}>
+						{trainers.map((trainer, index) => {
+							const trainerName = trainer.memberFullName || trainer.memberNick;
+							return (
+								<article
+									key={trainer._id}
+									className={`tr-card${index === 0 ? ' is-featured' : ''}`}
+									onClick={() => pushDetailHandler(trainer._id)}
+									onKeyDown={(event) => cardKeyDownHandler(event, trainer._id)}
+									role="button"
+									tabIndex={0}
+									aria-label={t('list.card.openProfile', { name: trainerName })}
+								>
+									<div className="tr-card-shell">
+										<div className="tr-card-img">
+											<img
+												src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
+												alt={trainer.memberNick}
+												loading="lazy"
+												onError={(event) => {
+													event.currentTarget.onerror = null;
+													event.currentTarget.src = '/img/profile/defaultUser.svg';
+												}}
+											/>
+											<div className="tr-card-shade" aria-hidden="true" />
+											<div className="tr-card-image-grid" aria-hidden="true" />
+											<div className="tr-card-scan" aria-hidden="true" />
+											{trainer.memberRank > 0 && (
+												<div className="tr-card-rank">
+													<span>{t('list.card.rank')}</span>
+													<strong>{trainer.memberRank}</strong>
+												</div>
+											)}
+										</div>
 
-							<div className="tr-card-foot">
-								<div className="tr-card-meta">
-									<span>
-										<b>{trainer.memberWorkouts}</b> {t('list.card.workouts')}
-									</span>
-									<span>
-										<b>{trainer.memberFollowers}</b> {t('list.card.followers')}
-									</span>
-								</div>
-								<div className="tr-card-side">
-									<LikeButton
-										liked={!!trainer.meLiked?.[0]?.myFavorite}
-										count={trainer.memberLikes ?? 0}
-										onClick={(e) => likeHandler(e, trainer._id)}
-									/>
-									<span className="tr-card-arrow">→</span>
-								</div>
-							</div>
-						</div>
-					))}
+										<div className="tr-card-body">
+											<div className="tr-card-identity">
+												<span className="tr-card-kicker">{t('list.card.profileLabel')}</span>
+												<h3>{trainerName}</h3>
+												{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
+												<p>{trainer.memberDesc || t('list.defaultBio')}</p>
+											</div>
+
+											<div className="tr-card-stats">
+												<div>
+													<strong>{trainer.memberWorkouts}</strong>
+													<span>{t('list.card.workouts')}</span>
+												</div>
+												<div>
+													<strong>{trainer.memberCourses}</strong>
+													<span>{t('list.card.programs')}</span>
+												</div>
+												<div>
+													<strong>{trainer.memberFollowers}</strong>
+													<span>{t('list.card.followers')}</span>
+												</div>
+											</div>
+										</div>
+
+										<div className="tr-card-foot">
+											<LikeButton
+												liked={!!trainer.meLiked?.[0]?.myFavorite}
+												count={trainer.memberLikes ?? 0}
+												onClick={(event) => likeHandler(event, trainer._id)}
+											/>
+											<span className="tr-card-arrow" aria-hidden="true">
+												<span>↗</span>
+											</span>
+										</div>
+									</div>
+								</article>
+							);
+						})}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}
-				{!loading && !error && trainers.length === 0 && (
+				{!loading && trainers.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('list.empty.label')}</span>
 						<h3>{t('list.empty.title')}</h3>

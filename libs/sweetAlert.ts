@@ -3,13 +3,64 @@ import 'animate.css';
 import { i18n } from 'next-i18next';
 import { Messages } from './config';
 
+const collectErrorMessages = (value: unknown, output: string[] = []): string[] => {
+	if (!value) return output;
+	if (typeof value === 'string') {
+		const trimmed = value.trim();
+		if (trimmed) output.push(trimmed);
+		return output;
+	}
+	if (Array.isArray(value)) {
+		value.forEach((item) => collectErrorMessages(item, output));
+		return output;
+	}
+	if (typeof value === 'object') {
+		const candidate = value as Record<string, unknown>;
+		if (candidate.message) collectErrorMessages(candidate.message, output);
+		if (candidate.response) collectErrorMessages(candidate.response, output);
+		if (candidate.result) collectErrorMessages(candidate.result, output);
+		if (candidate.extensions) collectErrorMessages(candidate.extensions, output);
+	}
+	return output;
+};
+
+/**
+ * Converts Apollo/Nest/HTTP errors into one useful message for every alert path.
+ * Nest validation errors can be nested under extensions.exception.response.message
+ * and can also arrive as an array, so callers must not read only error.message.
+ */
+export const getErrorMessage = (error: unknown, fallback?: string): string => {
+	const source = (error && typeof error === 'object' ? error : {}) as Record<string, any>;
+	const candidates = [
+		source.graphQLErrors,
+		source.networkError?.result?.errors,
+		source.networkError?.message,
+		source.message,
+		error,
+	];
+	const messages = Array.from(new Set(candidates.flatMap((value) => collectErrorMessages(value)))).map((message) =>
+		message.replace(/^Definer:\s*/i, '').trim(),
+	);
+	const meaningful = messages.filter((message) => message && !/^bad request(?: exception)?$/i.test(message));
+	const combined = meaningful.join('\n');
+
+	if (combined) return combined;
+	if (messages.some((message) => /network|failed to fetch|load failed/i.test(message))) {
+		return i18n?.t('common:alerts.networkError', { defaultValue: 'We could not reach Gymora. Check your connection and try again.' }) ?? 'We could not reach Gymora. Check your connection and try again.';
+	}
+	if (messages.some((message) => /bad request|internal server error|unexpected error/i.test(message))) {
+		return i18n?.t('common:alerts.invalidInput', { defaultValue: 'Please check your input and try again.' }) ?? 'Please check your input and try again.';
+	}
+	return fallback ?? i18n?.t('common:alerts.somethingWrong', { defaultValue: 'Something went wrong!' }) ?? 'Something went wrong!';
+};
+
 // Localized button labels for non-React Swal calls (common ns is always loaded)
 const btn = (key: string, fallback: string) => i18n?.t(`common:${key}`, { defaultValue: fallback }) ?? fallback;
 
 export const sweetErrorHandling = async (err: any) => {
 	await Swal.fire({
 		icon: 'error',
-		text: err.message,
+		text: getErrorMessage(err),
 		showConfirmButton: false,
 	});
 };
@@ -64,19 +115,19 @@ export const sweetLoginConfirmAlert = (msg: string) => {
 	});
 };
 
-export const sweetErrorAlert = async (msg: string, duration: number = 3000) => {
+export const sweetErrorAlert = async (msg: unknown, duration: number = 3000) => {
 	await Swal.fire({
 		icon: 'error',
-		title: msg,
+		title: getErrorMessage(msg),
 		showConfirmButton: false,
 		timer: duration,
 	});
 };
 
-export const sweetMixinErrorAlert = async (msg: string, duration: number = 3000) => {
+export const sweetMixinErrorAlert = async (msg: unknown, duration: number = 3000) => {
 	await Swal.fire({
 		icon: 'error',
-		title: msg,
+		title: getErrorMessage(msg),
 		showConfirmButton: false,
 		timer: duration,
 	});
@@ -96,7 +147,7 @@ export const sweetBasicAlert = async (text: string) => {
 };
 
 export const sweetErrorHandlingForAdmin = async (err: any) => {
-	const errorMessage = err.message ?? Messages.error1;
+	const errorMessage = getErrorMessage(err, Messages.error1);
 	await Swal.fire({
 		icon: 'error',
 		text: errorMessage,

@@ -3,8 +3,8 @@
 		"badgeWorkouts": "{{count}}+ mashq mavjud",
 		"badgeDefault": "Gymora usuli",
 		"badgeWelcome": "Xush kelibsiz, {{name}}",
-		"titleLine1": "Har bir",
-		"titleLine2": "takror muhim.",
+		"titleLine1": "Keyingi darajangni",
+		"titleLine2": "qur",
 		"subtitle": "Murabbiylar tuzgan mashqlar, tizimli dasturlar va kuchayish sari aniq yo'l.",
 		"ctaGetStarted": "Mashg'ulotni boshlash",
 		"ctaBrowsePrograms": "Dasturlarni ko'rish",
@@ -14,7 +14,8 @@
 		"ctaBrowsePlatform": "Platformani ko'rish",
 		"ctaContinueTraining": "Mashg'ulotni davom ettirish",
 		"ctaMyDashboard": "Kabinetni ochish",
-		"statAccess": "Doimiy kirish"
+		"statAccess": "Doimiy kirish",
+		"statsLabel": "Platformaning jonli ko'rsatkichlari"
 	},
 	"hotWorkouts": {
 		"eyebrow": "Shu hafta trendda",
@@ -59,6 +60,21 @@
 		"title": "Zaldan olingan bilimlar",
 		"join": "Muhokamaga qo'shilish",
 		"memberFallback": "A'zo"
+	},
+	"performanceSignal": {
+		"eyebrow": "Jonli mashg'ulot signali",
+		"title": "Platforma siz bilan birga harakatlanadi",
+		"viewLibrary": "Kutubxonani ochish",
+		"live": "Hozir jonli",
+		"workoutLabel": "Joriy protokol",
+		"programLabel": "Tizimli yo'nalish",
+		"trainerLabel": "Zaldagi murabbiy",
+		"communityLabel": "So'nggi signal",
+		"coachStatus": "Tasdiqlangan murabbiy",
+		"workoutsShort": "mashq",
+		"followersShort": "obunachi",
+		"footerLeft": "Harakatni davom ettirishning to'rt yo'li",
+		"footerRight": "Gymora bilan sinxron"
 	},
 	"pricing": {
 		"eyebrow": "A'zolik",

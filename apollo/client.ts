@@ -4,7 +4,7 @@ import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { onError } from '@apollo/client/link/error';
 import { clearAuthSession, getJwtToken } from '../libs/auth';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
-import { sweetErrorAlert } from '../libs/sweetAlert';
+import { getErrorMessage, sweetErrorAlert } from '../libs/sweetAlert';
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 let sessionRecoveryStarted = false;
@@ -76,10 +76,11 @@ function createIsomorphicLink() {
 			const skipGlobal = operation.getContext()?.skipGlobalError;
 			const authFailure = graphQLErrors?.some(({ message }) => isAuthFailure(message));
 			if (authFailure) recoverExpiredSession();
-			if (graphQLErrors && !skipGlobal && !authFailure) {
-				graphQLErrors.map(({ message }) => {
-					if (!message.includes('input')) sweetErrorAlert(message);
-				});
+			const isMutation = operation.query.definitions.some(
+				(definition: any) => definition.kind === 'OperationDefinition' && definition.operation === 'mutation',
+			);
+			if (!skipGlobal && !isMutation && !authFailure && (graphQLErrors?.length || networkError)) {
+				void sweetErrorAlert(getErrorMessage({ graphQLErrors, networkError }));
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);
 		});

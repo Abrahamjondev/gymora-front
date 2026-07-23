@@ -34,13 +34,20 @@ const HowItWorks = () => {
 					</div>
 				</div>
 
-				<div className="lp-how-grid">
+				<div className="lp-how-grid lp-how-grid--runway">
+					<span className="lp-how-runway-line" aria-hidden="true" />
 					{steps.map((step) => (
-						<div key={step.num} className="lp-how-card">
-							<span className="lp-how-num">{step.num}</span>
-							<h3>{step.title}</h3>
-							<p>{step.desc}</p>
-						</div>
+						<article key={step.num} className="lp-how-card">
+							<div className="lp-how-card-top">
+								<span className="lp-how-num">{step.num}</span>
+								<span className="lp-how-node" aria-hidden="true" />
+							</div>
+							<div className="lp-how-card-copy">
+								<h3>{step.title}</h3>
+								<p>{step.desc}</p>
+							</div>
+							<span className="lp-how-card-glow" aria-hidden="true" />
+						</article>
 					))}
 				</div>
 			</div>

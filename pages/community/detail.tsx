@@ -111,10 +111,11 @@ const CommunityDetail: NextPage = ({ initialInput, ...props }: T) => {
 	};
 
 	const createCommentHandler = async () => {
-		if (!comment) return;
+		const commentContent = comment.trim();
+		if (!commentContent) return;
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
-			const commentInput: CommentInput = { commentGroup: CommentGroup.ARTICLE, commentRefId: articleId, commentContent: comment };
+			const commentInput: CommentInput = { commentGroup: CommentGroup.ARTICLE, commentRefId: articleId, commentContent };
 			await createComment({ variables: { input: commentInput } });
 			notifyMember((boardArticle as any)?.memberId, user._id, 'SYSTEM', 'New comment on your article', `${user.memberNick} commented on "${boardArticle?.articleTitle}"`);
 			const { data: cd } = await commentsRefetch({ input: searchFilter });

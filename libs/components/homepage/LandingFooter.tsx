@@ -38,7 +38,14 @@ const LandingFooter = () => {
 
 	return (
 		<footer className="lp-footer">
+			<div className="lp-footer-watermark" aria-hidden="true">GYMORA</div>
 			<div className="lp-container">
+				<div className="lp-footer-signal" aria-hidden="true">
+					<span />
+					<span />
+					<span />
+					<span />
+				</div>
 				<div className="lp-footer-grid">
 					<div className="lp-footer-brand">
 						<div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>

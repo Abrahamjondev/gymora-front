@@ -60,18 +60,12 @@ const TopCourses = () => {
 				</div>
 				<QueryState loading={loading} error={error} hasData={courses.length > 0} onRetry={() => void refetch()} />
 
-				<div className="lp-course-show">
+				<div className="lp-course-show lp-course-show--index">
 					{/* Spotlight: #1 ranked program */}
 					<div
 						className="lp-course-feature"
-						style={{ boxShadow: `0 0 70px ${featuredAccent}0e` }}
+						style={{ ['--accent' as any]: featuredAccent }}
 						onClick={() => openCourse(featured._id)}
-						onMouseOver={(e) => {
-							(e.currentTarget as HTMLElement).style.borderColor = `${featuredAccent}45`;
-						}}
-						onMouseOut={(e) => {
-							(e.currentTarget as HTMLElement).style.borderColor = 'rgba(255,255,255,0.07)';
-						}}
 					>
 						<img
 							className="lp-course-feature-img"
@@ -80,10 +74,11 @@ const TopCourses = () => {
 							loading="lazy"
 						/>
 						<div className="lp-course-feature-shade" />
+						<span className="lp-course-feature-index">01</span>
 						<span className="lp-course-feature-price">{featured.coursePrice > 0 ? `$${featured.coursePrice}` : t('topCourses.free')}</span>
 
 						<div className="lp-course-feature-body">
-							<div style={{ display: 'flex', gap: '8px', marginBottom: '14px' }}>
+							<div className="lp-course-feature-tags">
 								<span
 									className="lp-chip"
 									style={{ background: `${featuredAccent}20`, borderColor: `${featuredAccent}35`, color: featuredAccent }}

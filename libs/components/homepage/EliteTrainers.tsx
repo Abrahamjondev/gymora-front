@@ -50,14 +50,16 @@ const EliteTrainers = () => {
 				</div>
 				<QueryState loading={loading} error={error} hasData={trainers.length > 0} onRetry={() => void refetch()} />
 
-				<div className="lp-trainers">
+				<div className="lp-trainers lp-trainers--roster">
 					{/* Editorial name list */}
-					<div>
+					<div className="lp-trainer-roster-list">
 						{trainers.map((trainer, i) => (
-							<div
+							<button
 								key={trainer._id}
+								type="button"
 								className={`lp-trainer-row${i === activeIdx ? ' is-active' : ''}`}
 								onMouseEnter={() => setActiveIdx(i)}
+								onFocus={() => setActiveIdx(i)}
 								onClick={() => router.push({ pathname: '/trainer/detail', query: { id: trainer._id } })}
 							>
 								<span className="lp-trainer-name">
@@ -68,19 +70,9 @@ const EliteTrainers = () => {
 									<span>{t('eliteTrainers.workoutsCount', { count: trainer.memberWorkouts })}</span>
 									<span>{t('eliteTrainers.followersCount', { count: trainer.memberFollowers })}</span>
 								</span>
-							</div>
+							</button>
 						))}
-						<p
-							style={{
-								fontFamily: 'Hanken Grotesk',
-								fontSize: '13px',
-								color: 'rgba(205,218,218,0.65)',
-								marginTop: '20px',
-								lineHeight: 1.6,
-							}}
-						>
-							{t('eliteTrainers.note')}
-						</p>
+						<p className="lp-trainer-note">{t('eliteTrainers.note')}</p>
 					</div>
 
 					{/* Portrait panel follows the hovered name */}
@@ -89,10 +81,15 @@ const EliteTrainers = () => {
 						onClick={() => router.push({ pathname: '/trainer/detail', query: { id: active._id } })}
 						style={{ cursor: 'pointer' }}
 					>
-						<img key={active._id} src={portraitSrc} alt={active.memberNick} loading="lazy" style={{ animation: 'fadeIn 0.45s ease both' }} />
+						<img key={active._id} className="lp-trainer-portrait-image" src={portraitSrc} alt={active.memberNick} loading="lazy" />
+						<div className="lp-portrait-index">0{activeIdx + 1}</div>
 						<div className="lp-portrait-overlay">
 							<h3>{active.memberFullName || active.memberNick}</h3>
 							{active.memberDesc && <p>{active.memberDesc}</p>}
+							<div className="lp-portrait-stats">
+								<span>{t('eliteTrainers.workoutsCount', { count: active.memberWorkouts })}</span>
+								<span>{t('eliteTrainers.followersCount', { count: active.memberFollowers })}</span>
+							</div>
 						</div>
 					</div>
 				</div>

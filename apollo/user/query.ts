@@ -72,6 +72,32 @@ query GetMember($input: String!) {
 }
 `);
 
+export const GET_MY_MEMBER = gql`
+	query GetMyMember {
+		getMyMember {
+			_id
+			memberType
+			memberStatus
+			memberAuthType
+			memberPhone
+			memberNick
+			memberFullName
+			memberImage
+			memberAddress
+			memberDesc
+			memberCourses
+			memberWorkouts
+			memberRank
+			memberArticles
+			memberPoints
+			memberLikes
+			memberViews
+			createdAt
+			updatedAt
+		}
+	}
+`;
+
 /**************************
  *        TRAINER        *
  *************************/

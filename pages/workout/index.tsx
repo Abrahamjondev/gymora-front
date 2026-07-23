@@ -11,6 +11,9 @@ import { WorkoutDifficulty } from '../../libs/enums/workout.enum';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
 import QueryState from '../../libs/components/common/QueryState';
+import FilterSelect from '../../libs/components/common/FilterSelect';
+import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
+import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
 import { T } from '../../libs/types/common';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
 import { useTranslation } from 'next-i18next';
@@ -67,19 +70,23 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	/** APOLLO REQUESTS **/
 	const {
 		loading,
+		data,
 		error,
 		refetch,
 	} = useQuery(GET_WORKOUTS, {
-		fetchPolicy: 'network-only',
+		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
-		onCompleted: (data: T) => {
-			setWorkouts(data?.getWorkouts?.list ?? []);
-			setTotal(data?.getWorkouts?.metaCounter?.[0]?.total ?? 0);
-		},
 	});
 
 	const [likeWorkoutMutation] = useMutation(LIKE_WORKOUT);
+
+	useEffect(() => {
+		const result = data?.getWorkouts;
+		if (!result) return;
+		setWorkouts(result.list ?? []);
+		setTotal(result.metaCounter?.[0]?.total ?? 0);
+	}, [data]);
 
 	useEffect(() => {
 		if (!user?._id) return;
@@ -216,7 +223,7 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 					</p>
 					<div className="wl-badge">
 						<span className="wl-badge-dot" />
-					<span>{loading ? t('list.loadingProtocols') : total > 0 ? t('list.protocolsAvailable', { count: total }) : t('list.empty.status')}</span>
+						<span>{total > 0 ? t('list.protocolsAvailable', { count: total }) : t('list.loadingProtocols')}</span>
 					</div>
 				</div>
 
@@ -224,17 +231,14 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				<div className="wl-console">
 					<div className="wl-console-row">
 						<div className="wl-search">
-								<input
-									aria-label={t('common:actions.search')}
+							<input
 								value={searchText}
 								onChange={(e) => setSearchText(e.target.value)}
 								onKeyDown={(e) => e.key === 'Enter' && searchHandler()}
 								placeholder={t('list.searchPlaceholder')}
 							/>
 							{searchText && (
-								<button
-									type="button"
-									aria-label={t('common:actions.clearSearch')}
+								<span
 									className="wl-search-clear"
 									onClick={() => {
 										setSearchText('');
@@ -242,29 +246,23 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 									}}
 								>
 									✕
-								</button>
+								</span>
 							)}
 						</div>
-						<select aria-label={t('common:actions.sortBy')} className="wl-sort" value={activeSort} onChange={(e) => sortHandler(e.target.value)}>
-							{sortOptions.map((s) => (
-								<option key={s.value} value={s.value}>
-									{s.label}
-								</option>
-							))}
-						</select>
+						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.topRanked')} onChange={sortHandler} />
 					</div>
 
 					<div className="wl-console-row">
-						<div className="wl-seg" role="group" aria-label={t('common:filters.level')}>
+						<div className="wl-seg">
 							{filters.map((f) => (
-								<button type="button" key={f} aria-pressed={activeFilter === f} className={activeFilter === f ? 'is-active' : ''} onClick={() => filterHandler(f)}>
+								<button key={f} className={activeFilter === f ? 'is-active' : ''} onClick={() => filterHandler(f)}>
 									{f === 'ALL' ? t('list.allLevels') : t(`enums:difficulty.${f}`)}
 								</button>
 							))}
 						</div>
-						<div className="wl-muscles" role="group" aria-label={t('common:filters.muscle')}>
+						<div className="wl-muscles">
 							{muscles.map((m) => (
-								<button type="button" key={m} aria-pressed={activeMuscle === m} className={activeMuscle === m ? 'is-active' : ''} onClick={() => muscleHandler(m)}>
+								<button key={m} className={activeMuscle === m ? 'is-active' : ''} onClick={() => muscleHandler(m)}>
 									{t(`enums:muscle.${m}`)}
 								</button>
 							))}
@@ -288,32 +286,11 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 				<QueryState loading={loading} error={error} hasData={workouts.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Workout Grid */}
-				<div id="list-results-start" className="wl-grid" aria-busy={loading}>
-					{loading && !workouts.length
-						? [1, 2, 3, 4, 5, 6].map((i) => (
-								<div key={i} className="wl-skel">
-									<div className="wl-skel-img" />
-									<div className="wl-skel-body">
-										<div className="wl-skel-line" />
-										<div className="wl-skel-line" />
-									</div>
-								</div>
-						  ))
-						: workouts.map((workout) => (
-								<div
-									key={workout._id}
-									className="wl-card"
-									role="link"
-									tabIndex={0}
-									aria-label={t('common:actions.openItem', { title: workout.workoutTitle })}
-									onClick={() => pushDetailHandler(workout._id)}
-									onKeyDown={(e) => {
-										if (e.target === e.currentTarget && (e.key === 'Enter' || e.key === ' ')) {
-											e.preventDefault();
-											pushDetailHandler(workout._id);
-										}
-									}}
-								>
+				<div className={`wl-data-shell${loading && workouts.length ? ' is-fetching' : ''}`} aria-busy={loading}>
+					{loading && !workouts.length ? <ContentSkeletons variant="workout" /> : (
+					<div className={`wl-grid${loading && workouts.length ? ' is-fetching' : ''}`}>
+						{workouts.map((workout) => (
+								<div key={workout._id} className="wl-card" onClick={() => pushDetailHandler(workout._id)}>
 									<div className="wl-card-img">
 										<img
 											src={
@@ -323,6 +300,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 											}
 											alt={workout.workoutTitle}
 											loading="lazy"
+											onError={(event) => {
+												event.currentTarget.onerror = null;
+												event.currentTarget.src = '/img/banner/header1.svg';
+											}}
 										/>
 										<div className="wl-card-shade" />
 										<div className="wl-card-chips">
@@ -358,10 +339,13 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 									</div>
 								</div>
 						  ))}
+					</div>
+					)}
+					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}
 				</div>
 
 				{/* No results */}
-				{!loading && !error && workouts.length === 0 && (
+				{!loading && workouts.length === 0 && (
 					<div className="wl-empty">
 						<span className="wl-empty-label">{t('common:empty.noResults')}</span>
 						<h3>{t('list.empty.title')}</h3>

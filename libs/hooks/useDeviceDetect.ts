@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react';
 
 const useDeviceDetect = (): string => {
-	// Keep the first client render identical to SSR. Reading matchMedia in the
-	// initial state makes mobile hydration render a different root tree.
+	// Keep the first render identical on the server and client. Reading
+	// matchMedia during initial render makes SSR choose `desktop` while a
+	// mobile browser chooses `mobile`, which causes a hydration mismatch and
+	// can leave the page blank until the next refresh/HMR pass.
 	const [device, setDevice] = useState('desktop');
 
 	useEffect(() => {

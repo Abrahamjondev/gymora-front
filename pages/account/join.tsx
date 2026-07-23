@@ -4,7 +4,8 @@ import useDeviceDetect from '../../libs/hooks/useDeviceDetect';
 import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { useRouter } from 'next/router';
 import { logIn, signUp, telegramLogin } from '../../libs/auth';
-import { sweetMixinErrorAlert } from '../../libs/sweetAlert';
+import { AUTH_LIMITS } from '../../libs/config';
+import { getErrorMessage, sweetMixinErrorAlert } from '../../libs/sweetAlert';
 import TelegramLoginButton from '../../libs/components/common/TelegramLoginButton';
 import { TelegramAuthInput } from '../../libs/types/telegramAuth';
 import { serverSideTranslations } from 'next-i18next/serverSideTranslations';
@@ -51,12 +52,24 @@ const Join: NextPage = () => {
 				await sweetMixinErrorAlert(t('alerts.fillAllFields'));
 				return;
 			}
+			if (input.nick.length < AUTH_LIMITS.nickMin || input.nick.length > AUTH_LIMITS.nickMax) {
+				await sweetMixinErrorAlert(t('alerts.nicknameLength', { min: AUTH_LIMITS.nickMin, max: AUTH_LIMITS.nickMax }));
+				return;
+			}
+			if (input.password.length < AUTH_LIMITS.passwordMinLogin) {
+				await sweetMixinErrorAlert(t('alerts.passwordTooShortLogin', { min: AUTH_LIMITS.passwordMinLogin }));
+				return;
+			}
+			if (input.password.length > AUTH_LIMITS.passwordMax) {
+				await sweetMixinErrorAlert(t('alerts.passwordTooLong', { max: AUTH_LIMITS.passwordMax }));
+				return;
+			}
 			setBusy(true);
 			await logIn(input.nick, input.password);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
 			setBusy(false);
-			const msg = (err.message || t('alerts.loginFailed')).replace('Definer: ', '');
+			const msg = getErrorMessage(err, t('alerts.loginFailed'));
 			await sweetMixinErrorAlert(msg);
 		}
 	}, [input, t]);
@@ -67,12 +80,24 @@ const Join: NextPage = () => {
 				await sweetMixinErrorAlert(t('alerts.fillAllFields'));
 				return;
 			}
+			if (input.nick.length < AUTH_LIMITS.nickMin || input.nick.length > AUTH_LIMITS.nickMax) {
+				await sweetMixinErrorAlert(t('alerts.nicknameLength', { min: AUTH_LIMITS.nickMin, max: AUTH_LIMITS.nickMax }));
+				return;
+			}
+			if (input.password.length < AUTH_LIMITS.passwordMinSignup) {
+				await sweetMixinErrorAlert(t('alerts.passwordTooShortSignup', { min: AUTH_LIMITS.passwordMinSignup }));
+				return;
+			}
+			if (input.password.length > AUTH_LIMITS.passwordMax) {
+				await sweetMixinErrorAlert(t('alerts.passwordTooLong', { max: AUTH_LIMITS.passwordMax }));
+				return;
+			}
 			setBusy(true);
 			await signUp(input.nick, input.password, input.phone, input.type);
 			await router.push(`${router.query.referrer ?? '/'}`);
 		} catch (err: any) {
 			setBusy(false);
-			const msg = (err.message || t('alerts.signupFailed')).replace('Definer: ', '');
+			const msg = getErrorMessage(err, t('alerts.signupFailed'));
 			await sweetMixinErrorAlert(msg);
 		}
 	}, [input, t]);
@@ -85,7 +110,7 @@ const Join: NextPage = () => {
 				await router.push(`${router.query.referrer ?? '/'}`);
 			} catch (err: any) {
 				setBusy(false);
-				const msg = (err.message || t('alerts.telegramFailed')).replace('Definer: ', '');
+				const msg = getErrorMessage(err, t('alerts.telegramFailed'));
 				await sweetMixinErrorAlert(msg);
 			}
 		},
@@ -149,6 +174,8 @@ const Join: NextPage = () => {
 								type="text"
 								placeholder={t('form.nicknamePlaceholder')}
 								value={input.nick}
+								minLength={AUTH_LIMITS.nickMin}
+								maxLength={AUTH_LIMITS.nickMax}
 								onChange={(e) => handleInput('nick', e.target.value)}
 								onKeyDown={onEnter}
 							/>
@@ -160,9 +187,12 @@ const Join: NextPage = () => {
 								type="password"
 								placeholder={t('form.passwordPlaceholder')}
 								value={input.password}
+								minLength={loginView ? AUTH_LIMITS.passwordMinLogin : AUTH_LIMITS.passwordMinSignup}
+								maxLength={AUTH_LIMITS.passwordMax}
 								onChange={(e) => handleInput('password', e.target.value)}
 								onKeyDown={onEnter}
 							/>
+							{!loginView && <small className="au-field-hint">{t('form.passwordHintSignup')}</small>}
 						</div>
 						{!loginView && (
 							<div>
