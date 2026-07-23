@@ -46,13 +46,14 @@ const CommunityPulse = () => {
 					</button>
 				</div>
 
-				<div className="lp-community-grid">
-					{articles.map((article) => (
+				<div className="lp-community-grid lp-community-grid--signal">
+					{articles.map((article, index) => (
 						<div
 							key={article._id}
-							className="lp-article-card"
+							className={`lp-article-card${index === 0 ? ' lp-article-card--feature' : ''}`}
 							onClick={() => router.push({ pathname: '/community/detail', query: { id: article._id } })}
 						>
+							<span className="lp-article-index">0{index + 1}</span>
 							<span className="lp-article-cat">
 								{t(`enums:articleCategory.${article.articleCategory}`, {
 									defaultValue: article.articleCategory?.replace(/_/g, ' '),
@@ -66,6 +67,7 @@ const CommunityPulse = () => {
 									{moment(article.createdAt).format(ARTICLE_DATE_FORMAT)}
 								</span>
 							</div>
+							<span className="lp-article-signal" aria-hidden="true" />
 						</div>
 					))}
 				</div>

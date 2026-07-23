@@ -15,8 +15,12 @@
 		},
 		"defaultBio": "Professional fitness trainer",
 		"card": {
+			"profileLabel": "Trainer profile",
+			"rank": "Rank",
+			"programs": "programs",
 			"workouts": "workouts",
-			"followers": "followers"
+			"followers": "followers",
+			"openProfile": "Open {{name}}'s profile"
 		},
 		"empty": {
 			"label": "No results",

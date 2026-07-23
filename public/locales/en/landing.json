@@ -3,8 +3,8 @@
 		"badgeWorkouts": "{{count}}+ workouts available",
 		"badgeDefault": "The Gymora method",
 		"badgeWelcome": "Welcome back, {{name}}",
-		"titleLine1": "Make your",
-		"titleLine2": "next rep count.",
+		"titleLine1": "Build your",
+		"titleLine2": "next level",
 		"subtitle": "Trainer-built workouts, structured programs, and a clear path from showing up to getting stronger.",
 		"ctaGetStarted": "Start training",
 		"ctaBrowsePrograms": "Explore programs",
@@ -14,7 +14,8 @@
 		"ctaBrowsePlatform": "Browse Platform",
 		"ctaContinueTraining": "Continue training",
 		"ctaMyDashboard": "Open dashboard",
-		"statAccess": "Access"
+		"statAccess": "Access",
+		"statsLabel": "Live platform metrics"
 	},
 	"hotWorkouts": {
 		"eyebrow": "Trending this week",
@@ -59,6 +60,21 @@
 		"title": "Knowledge from the floor",
 		"join": "Join the conversation",
 		"memberFallback": "Member"
+	},
+	"performanceSignal": {
+		"eyebrow": "Live training signal",
+		"title": "The platform moves with you",
+		"viewLibrary": "Open the library",
+		"live": "Live now",
+		"workoutLabel": "Current protocol",
+		"programLabel": "Structured path",
+		"trainerLabel": "Coach on the floor",
+		"communityLabel": "Latest signal",
+		"coachStatus": "Verified coach",
+		"workoutsShort": "workouts",
+		"followersShort": "followers",
+		"footerLeft": "Four ways to keep moving",
+		"footerRight": "Synced with Gymora"
 	},
 	"pricing": {
 		"eyebrow": "Membership",

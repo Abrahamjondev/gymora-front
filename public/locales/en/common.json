@@ -85,6 +85,8 @@
 	},
 	"alerts": {
 		"somethingWrong": "Something went wrong!",
+		"invalidInput": "Please check your input and try again.",
+		"networkError": "We could not reach Gymora. Check your connection and try again.",
 		"loginFirst": "Please login first!",
 		"fillAllInputs": "Please fulfill all inputs!",
 		"messageEmpty": "Message is empty!",

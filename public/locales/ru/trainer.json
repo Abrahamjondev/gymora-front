@@ -15,8 +15,12 @@
 		},
 		"defaultBio": "Профессиональный фитнес-тренер",
 		"card": {
+			"profileLabel": "Профиль тренера",
+			"rank": "Ранг",
+			"programs": "программ",
 			"workouts": "тренировок",
-			"followers": "подписчиков"
+			"followers": "подписчиков",
+			"openProfile": "Открыть профиль {{name}}"
 		},
 		"empty": {
 			"label": "Нет результатов",

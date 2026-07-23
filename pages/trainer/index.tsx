@@ -119,6 +119,12 @@ const TrainerList: NextPage = () => {
 		router.push({ pathname: '/trainer/detail', query: { id: memberId } });
 	};
 
+	const cardKeyDownHandler = (event: React.KeyboardEvent<HTMLElement>, memberId: string) => {
+		if (event.key !== 'Enter' && event.key !== ' ') return;
+		event.preventDefault();
+		pushDetailHandler(memberId);
+	};
+
 	const sortOptions = [
 		{ value: 'memberRank', label: t('list.sort.topRanked') },
 		{ value: 'memberLikes', label: t('list.sort.mostLiked') },
@@ -175,54 +181,78 @@ const TrainerList: NextPage = () => {
 				<div className={`wl-data-shell${loading && trainers.length ? ' is-fetching' : ''}`} aria-busy={loading}>
 					{loading && !trainers.length ? <ContentSkeletons variant="trainer" /> : (
 					<div className={`tr-grid${loading && trainers.length ? ' is-fetching' : ''}`}>
-						{trainers.map((trainer) => (
-						<div key={trainer._id} className="tr-card" onClick={() => pushDetailHandler(trainer._id)}>
-							<div className="tr-card-img">
-								<img
-									src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
-									alt={trainer.memberNick}
-									loading="lazy"
-									onError={(event) => {
-										event.currentTarget.onerror = null;
-										event.currentTarget.src = '/img/profile/defaultUser.svg';
-									}}
-								/>
-								<div className="tr-card-shade" />
-								{trainer.memberRank > 0 && (
-									<div className="tr-card-rank">
-										<span className="tr-card-star">★</span>
-										{trainer.memberRank}
-									</div>
-								)}
-								<div className="tr-card-overlay">
-									<h3>
-										{trainer.memberFullName || trainer.memberNick}
-										{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
-									</h3>
-									<p>{trainer.memberDesc || t('list.defaultBio')}</p>
-								</div>
-							</div>
+						{trainers.map((trainer, index) => {
+							const trainerName = trainer.memberFullName || trainer.memberNick;
+							return (
+								<article
+									key={trainer._id}
+									className={`tr-card${index === 0 ? ' is-featured' : ''}`}
+									onClick={() => pushDetailHandler(trainer._id)}
+									onKeyDown={(event) => cardKeyDownHandler(event, trainer._id)}
+									role="button"
+									tabIndex={0}
+									aria-label={t('list.card.openProfile', { name: trainerName })}
+								>
+									<div className="tr-card-shell">
+										<div className="tr-card-img">
+											<img
+												src={trainer.memberImage ? `${REACT_APP_API_URL}/${trainer.memberImage}` : '/img/profile/defaultUser.svg'}
+												alt={trainer.memberNick}
+												loading="lazy"
+												onError={(event) => {
+													event.currentTarget.onerror = null;
+													event.currentTarget.src = '/img/profile/defaultUser.svg';
+												}}
+											/>
+											<div className="tr-card-shade" aria-hidden="true" />
+											<div className="tr-card-image-grid" aria-hidden="true" />
+											<div className="tr-card-scan" aria-hidden="true" />
+											{trainer.memberRank > 0 && (
+												<div className="tr-card-rank">
+													<span>{t('list.card.rank')}</span>
+													<strong>{trainer.memberRank}</strong>
+												</div>
+											)}
+										</div>
 
-							<div className="tr-card-foot">
-								<div className="tr-card-meta">
-									<span>
-										<b>{trainer.memberWorkouts}</b> {t('list.card.workouts')}
-									</span>
-									<span>
-										<b>{trainer.memberFollowers}</b> {t('list.card.followers')}
-									</span>
-								</div>
-								<div className="tr-card-side">
-									<LikeButton
-										liked={!!trainer.meLiked?.[0]?.myFavorite}
-										count={trainer.memberLikes ?? 0}
-										onClick={(e) => likeHandler(e, trainer._id)}
-									/>
-									<span className="tr-card-arrow">→</span>
-								</div>
-							</div>
-						</div>
-						))}
+										<div className="tr-card-body">
+											<div className="tr-card-identity">
+												<span className="tr-card-kicker">{t('list.card.profileLabel')}</span>
+												<h3>{trainerName}</h3>
+												{trainer.memberFullName && <span className="tr-card-nick">@{trainer.memberNick}</span>}
+												<p>{trainer.memberDesc || t('list.defaultBio')}</p>
+											</div>
+
+											<div className="tr-card-stats">
+												<div>
+													<strong>{trainer.memberWorkouts}</strong>
+													<span>{t('list.card.workouts')}</span>
+												</div>
+												<div>
+													<strong>{trainer.memberCourses}</strong>
+													<span>{t('list.card.programs')}</span>
+												</div>
+												<div>
+													<strong>{trainer.memberFollowers}</strong>
+													<span>{t('list.card.followers')}</span>
+												</div>
+											</div>
+										</div>
+
+										<div className="tr-card-foot">
+											<LikeButton
+												liked={!!trainer.meLiked?.[0]?.myFavorite}
+												count={trainer.memberLikes ?? 0}
+												onClick={(event) => likeHandler(event, trainer._id)}
+											/>
+											<span className="tr-card-arrow" aria-hidden="true">
+												<span>↗</span>
+											</span>
+										</div>
+									</div>
+								</article>
+							);
+						})}
 					</div>
 					)}
 					{loading && <DataLoadingOverlay label={t('common:actions.loading')} />}

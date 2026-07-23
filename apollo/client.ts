@@ -4,7 +4,7 @@ import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { onError } from '@apollo/client/link/error';
 import { getJwtToken } from '../libs/auth';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
-import { sweetErrorAlert } from '../libs/sweetAlert';
+import { getErrorMessage, sweetErrorAlert } from '../libs/sweetAlert';
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
 
@@ -47,10 +47,11 @@ function createIsomorphicLink() {
 			// Operations can opt out of the global error popup when they handle
 			// errors themselves (e.g. best-effort deletes of stale rows).
 			const skipGlobal = operation.getContext()?.skipGlobalError;
-			if (graphQLErrors && !skipGlobal) {
-				graphQLErrors.map(({ message }) => {
-					if (!message.includes('input')) sweetErrorAlert(message);
-				});
+			const isMutation = operation.query.definitions.some(
+				(definition: any) => definition.kind === 'OperationDefinition' && definition.operation === 'mutation',
+			);
+			if (!skipGlobal && !isMutation && (graphQLErrors?.length || networkError)) {
+				void sweetErrorAlert(getErrorMessage({ graphQLErrors, networkError }));
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);
 		});

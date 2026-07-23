@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react';
 import { NextPage } from 'next';
 import useDeviceDetect from '../../hooks/useDeviceDetect';
 import axios from 'axios';
-import { Messages, REACT_APP_API_URL } from '../../config';
+import { AUTH_LIMITS, Messages, REACT_APP_API_URL } from '../../config';
 import { getJwtToken, updateStorage, updateUserInfo } from '../../auth';
 import { useMutation, useQuery, useReactiveVar } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
@@ -91,9 +91,13 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 	const updateProfileHandler = useCallback(async () => {
 		try {
 			if (!user?._id) throw new Error(Messages.error2);
+			const nickname = updateData.memberNick?.trim() ?? '';
+			if (nickname.length < AUTH_LIMITS.nickMin || nickname.length > AUTH_LIMITS.nickMax) {
+				throw new Error(t('alerts.profileNicknameLength', { min: AUTH_LIMITS.nickMin, max: AUTH_LIMITS.nickMax }));
+			}
 			setSaving(true);
 			const result = await updateMember({
-				variables: { input: { ...updateData, _id: user._id } },
+				variables: { input: { ...updateData, memberNick: nickname, _id: user._id } },
 			});
 			const jwtToken = result.data.updateMember?.accessToken;
 			await updateStorage({ jwtToken });
@@ -169,6 +173,8 @@ const MyProfile: NextPage = ({ initialValues, ...props }: any) => {
 							type="text"
 							placeholder={t('profile.usernamePlaceholder')}
 							value={updateData.memberNick || ''}
+							minLength={AUTH_LIMITS.nickMin}
+							maxLength={AUTH_LIMITS.nickMax}
 							onChange={({ target: { value } }) => setUpdateData({ ...updateData, memberNick: value })}
 						/>
 					</div>

@@ -185,7 +185,9 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 	const createCommentHandler = async () => {
 		try {
 			if (!user._id) throw new Error(Message.NOT_AUTHENTICATED);
-			await createComment({ variables: { input: insertCommentData } });
+			const commentContent = insertCommentData.commentContent.trim();
+			if (!commentContent) throw new Error(t('common:alerts.fillAllInputs'));
+			await createComment({ variables: { input: { ...insertCommentData, commentContent } } });
 			notifyMember((workout as any)?.memberId, user._id, 'WORKOUT', 'New comment on your workout', `${user.memberNick} commented on "${workout?.workoutTitle}"`);
 			setInsertCommentData({ ...insertCommentData, commentContent: '' });
 			// Set manually — refetch doesn't reliably re-fire onCompleted
@@ -371,6 +373,7 @@ const WorkoutDetail: NextPage = ({ initialComment, ...props }: any) => {
 						<div className="wd-form-card">
 							<textarea
 								className="wd-textarea"
+								maxLength={100}
 								onChange={({ target: { value } }) => setInsertCommentData({ ...insertCommentData, commentContent: value })}
 								value={insertCommentData.commentContent}
 								placeholder={t('detail.commentPlaceholder')}

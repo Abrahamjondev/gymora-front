@@ -2,7 +2,7 @@ import decodeJWT from 'jwt-decode';
 import { initializeApollo } from '../../apollo/client';
 import { userVar } from '../../apollo/store';
 import { CustomJwtPayload } from '../types/customJwtPayload';
-import { sweetMixinErrorAlert } from '../sweetAlert';
+import { getErrorMessage } from '../sweetAlert';
 import { LOGIN, SIGN_UP, TELEGRAM_AUTH } from '../../apollo/user/mutation';
 import { TelegramAuthInput } from '../types/telegramAuth';
 
@@ -52,7 +52,7 @@ const requestJwtToken = async ({
 		return { jwtToken: accessToken };
 	} catch (err: any) {
 		console.log('request token err', err.graphQLErrors);
-		const message = err.graphQLErrors?.[0]?.message || err.message || 'Login failed';
+		const message = getErrorMessage(err, 'Login failed');
 		throw new Error(message);
 	}
 };
@@ -99,7 +99,7 @@ const requestSignUpJwtToken = async ({
 		return { jwtToken: accessToken };
 	} catch (err: any) {
 		console.log('request token err', err.graphQLErrors);
-		const message = err.graphQLErrors?.[0]?.message || err.message || 'Signup failed';
+		const message = getErrorMessage(err, 'Signup failed');
 		throw new Error(message);
 	}
 };
@@ -134,7 +134,7 @@ const requestTelegramJwtToken = async (payload: TelegramAuthInput): Promise<{ jw
 		return { jwtToken: accessToken };
 	} catch (err: any) {
 		console.log('request telegram token err', err.graphQLErrors);
-		const message = err.graphQLErrors?.[0]?.message || err.message || 'Telegram login failed';
+		const message = getErrorMessage(err, 'Telegram login failed');
 		throw new Error(message);
 	}
 };

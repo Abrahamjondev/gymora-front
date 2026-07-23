@@ -11,8 +11,7 @@ import '@toast-ui/editor/dist/theme/toastui-editor-dark.css';
 import { useMutation } from '@apollo/client';
 import { useTranslation } from 'next-i18next';
 import { CREATE_BOARD_ARTICLE, UPDATE_BOARD_ARTICLE } from '../../../apollo/user/mutation';
-import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSuccessAlert } from '../../sweetAlert';
-import { Message } from '../../enums/common.enum';
+import { getErrorMessage, sweetErrorHandling, sweetMixinErrorAlert, sweetTopSuccessAlert } from '../../sweetAlert';
 
 const categories: { value: BoardArticleCategory; label: string; accent: string }[] = [
 	{ value: BoardArticleCategory.FITNESS_TIPS, label: 'Fitness Tips', accent: '#00dce5' },
@@ -103,10 +102,17 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 		try {
 			const editor = editorRef.current;
 			const articleContent = editor?.getInstance().getHTML() as string;
-			const isEmptyContent = !articleContent || articleContent.replace(/<[^>]*>/g, '').trim() === '';
+			const plainContent = articleContent?.replace(/<[^>]*>/g, '').trim() ?? '';
+			const isEmptyContent = plainContent === '';
 
 			if (isEmptyContent || !articleTitle.trim()) {
-				throw new Error(Message.INSERT_ALL_INPUTS);
+				throw new Error(t('common:alerts.fillAllInputs'));
+			}
+			if (!isEdit && (articleTitle.trim().length < 5 || articleTitle.trim().length > 100)) {
+				throw new Error(t('alerts.articleTitleLength', { min: 5, max: 100 }));
+			}
+			if (!isEdit && (plainContent.length < 20 || plainContent.length > 5000)) {
+				throw new Error(t('alerts.articleContentLength', { min: 20, max: 5000 }));
 			}
 
 			setPublishing(true);
@@ -139,8 +145,7 @@ const TuiEditor = ({ editArticle }: { editArticle?: T }) => {
 			await router.push({ pathname: '/mypage', query: { category: 'myArticles' } });
 		} catch (err: any) {
 			setPublishing(false);
-			const msg = err?.graphQLErrors?.[0]?.message || err?.message || Message.INSERT_ALL_INPUTS;
-			sweetErrorHandling(new Error(msg.replace('Definer: ', ''))).then();
+			sweetErrorHandling(new Error(getErrorMessage(err, t('common:alerts.fillAllInputs')))).then();
 		}
 	};
 

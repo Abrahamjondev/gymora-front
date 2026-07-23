@@ -3,8 +3,8 @@
 		"badgeWorkouts": "Доступно {{count}}+ тренировок",
 		"badgeDefault": "Метод Gymora",
 		"badgeWelcome": "С возвращением, {{name}}",
-		"titleLine1": "Пусть каждый",
-		"titleLine2": "повтор работает.",
+		"titleLine1": "Создай свой",
+		"titleLine2": "следующий уровень",
 		"subtitle": "Тренировки от тренеров, структурированные программы и понятный путь к силе.",
 		"ctaGetStarted": "Начать тренировку",
 		"ctaBrowsePrograms": "Смотреть программы",
@@ -14,7 +14,8 @@
 		"ctaBrowsePlatform": "Обзор платформы",
 		"ctaContinueTraining": "Продолжить тренировку",
 		"ctaMyDashboard": "Открыть кабинет",
-		"statAccess": "Доступ"
+		"statAccess": "Доступ",
+		"statsLabel": "Актуальные показатели платформы"
 	},
 	"hotWorkouts": {
 		"eyebrow": "В тренде на этой неделе",
@@ -59,6 +60,21 @@
 		"title": "Знания из зала",
 		"join": "Присоединиться к обсуждению",
 		"memberFallback": "Участник"
+	},
+	"performanceSignal": {
+		"eyebrow": "Живой сигнал тренировок",
+		"title": "Платформа движется вместе с вами",
+		"viewLibrary": "Открыть библиотеку",
+		"live": "В эфире",
+		"workoutLabel": "Текущий протокол",
+		"programLabel": "Структурированный путь",
+		"trainerLabel": "Тренер в зале",
+		"communityLabel": "Последний сигнал",
+		"coachStatus": "Проверенный тренер",
+		"workoutsShort": "тренировок",
+		"followersShort": "подписчиков",
+		"footerLeft": "Четыре способа двигаться дальше",
+		"footerRight": "Синхронизировано с Gymora"
 	},
 	"pricing": {
 		"eyebrow": "Подписка",

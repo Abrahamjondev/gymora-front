@@ -85,6 +85,8 @@
 	},
 	"alerts": {
 		"somethingWrong": "Nimadir noto'g'ri ketdi!",
+		"invalidInput": "Kiritilgan ma'lumotlarni tekshirib, qayta urinib ko'ring.",
+		"networkError": "Gymora bilan bog'lanib bo'lmadi. Internetni tekshirib, qayta urinib ko'ring.",
 		"loginFirst": "Avval tizimga kiring!",
 		"fillAllInputs": "Barcha maydonlarni to'ldiring!",
 		"messageEmpty": "Xabar bo'sh!",
