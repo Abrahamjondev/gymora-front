@@ -1,14 +1,28 @@
-name: Deploy
+name: CI + Deploy
 
-# master'ga push -> serverda git pull + konteyner qayta quriladi.
-# Faqat shu loyiha konteyneriga tegadi (docker compose o'z faylidagini boshqaradi).
+# 1) check: GitHub serverida kod quriladi — buzilgan bo'lsa shu yerda to'xtaydi.
+# 2) deploy: FAQAT check yashil bo'lsa serverga SSH qilib yangilaydi.
 on:
   push:
     branches: [master]
 
 jobs:
+  check:
+    name: Build check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install
+        run: yarn install
+      - name: Build
+        run: yarn build
+
   deploy:
     name: Deploy to server
+    needs: check
     runs-on: ubuntu-latest
     steps:
       - name: SSH deploy
