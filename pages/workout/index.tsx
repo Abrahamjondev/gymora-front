@@ -10,6 +10,7 @@ import { WorkoutsInquiry } from '../../libs/types/workout/workout.input';
 import { WorkoutDifficulty } from '../../libs/enums/workout.enum';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import QueryState from '../../libs/components/common/QueryState';
 import FilterSelect from '../../libs/components/common/FilterSelect';
 import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
 import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
@@ -44,6 +45,8 @@ const WORKOUT_DEFAULT_INPUT: WorkoutsInquiry = {
 	search: {},
 };
 
+const WORKOUT_SORTS = ['createdAt', 'workoutLikes', 'workoutViews', 'workoutRank', 'estimatedCaloriesBurned'] as const;
+
 const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const device = useDeviceDetect();
 	const router = useRouter();
@@ -51,7 +54,10 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const user = useReactiveVar(userVar);
 	const [workouts, setWorkouts] = useState<Workout[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<WorkoutsInquiry>(WORKOUT_DEFAULT_INPUT, '/workout');
+	const [searchFilter, setSearchFilter] = useUrlFilter<WorkoutsInquiry>(WORKOUT_DEFAULT_INPUT, '/workout', {
+		allowedSorts: WORKOUT_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 	const [likingWorkoutId, setLikingWorkoutId] = useState<string | null>(null);
 
@@ -65,6 +71,8 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 	const {
 		loading,
 		data,
+		error,
+		refetch,
 	} = useQuery(GET_WORKOUTS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
@@ -79,6 +87,11 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 		setWorkouts(result.list ?? []);
 		setTotal(result.metaCounter?.[0]?.total ?? 0);
 	}, [data]);
+
+	useEffect(() => {
+		if (!user?._id) return;
+		void refetch();
+	}, [refetch, user?._id]);
 
 	// Keep the search box in sync when the filter comes from the URL (shared link, back/forward).
 	useEffect(() => {
@@ -269,6 +282,8 @@ const WorkoutList: NextPage = ({ initialInput, ...props }: T) => {
 						</button>
 					</div>
 				)}
+
+				<QueryState loading={loading} error={error} hasData={workouts.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Workout Grid */}
 				<div className={`wl-data-shell${loading && workouts.length ? ' is-fetching' : ''}`} aria-busy={loading}>

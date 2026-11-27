@@ -2,11 +2,38 @@ import { useMemo } from 'react';
 import { ApolloClient, ApolloLink, InMemoryCache, from, NormalizedCacheObject } from '@apollo/client';
 import createUploadLink from 'apollo-upload-client/public/createUploadLink.js';
 import { onError } from '@apollo/client/link/error';
-import { getJwtToken } from '../libs/auth';
+import { clearAuthSession, getJwtToken } from '../libs/auth';
 import { TokenRefreshLink } from 'apollo-link-token-refresh';
 import { getErrorMessage, sweetErrorAlert } from '../libs/sweetAlert';
 
 let apolloClient: ApolloClient<NormalizedCacheObject>;
+let sessionRecoveryStarted = false;
+
+const isAuthFailure = (message: string) => {
+	const normalized = message.toLowerCase();
+	return (
+		normalized.includes('token_not_exist') ||
+		normalized.includes('not_authenticated') ||
+		normalized.includes('unauthorized') ||
+		normalized.includes('jwt expired') ||
+		normalized.includes('jwt malformed')
+	);
+};
+
+const recoverExpiredSession = () => {
+	if (typeof window === 'undefined' || sessionRecoveryStarted) return;
+	sessionRecoveryStarted = true;
+	clearAuthSession();
+
+	const path = window.location.pathname;
+	const isPrivatePath = /^\/(?:ru\/|uz\/)?(?:mypage|subscription|_admin)(?:\/|$)/.test(path);
+	if (isPrivatePath) {
+		const localePrefix = path.match(/^\/(ru|uz)(?:\/|$)/)?.[1];
+		window.location.assign(`${localePrefix ? `/${localePrefix}` : ''}/account/join`);
+	} else {
+		window.location.reload();
+	}
+};
 
 function getHeaders() {
 	const headers = {} as HeadersInit;
@@ -47,10 +74,12 @@ function createIsomorphicLink() {
 			// Operations can opt out of the global error popup when they handle
 			// errors themselves (e.g. best-effort deletes of stale rows).
 			const skipGlobal = operation.getContext()?.skipGlobalError;
+			const authFailure = graphQLErrors?.some(({ message }) => isAuthFailure(message));
+			if (authFailure) recoverExpiredSession();
 			const isMutation = operation.query.definitions.some(
 				(definition: any) => definition.kind === 'OperationDefinition' && definition.operation === 'mutation',
 			);
-			if (!skipGlobal && !isMutation && (graphQLErrors?.length || networkError)) {
+			if (!skipGlobal && !isMutation && !authFailure && (graphQLErrors?.length || networkError)) {
 				void sweetErrorAlert(getErrorMessage({ graphQLErrors, networkError }));
 			}
 			if (networkError) console.log(`[Network error]: ${networkError}`);

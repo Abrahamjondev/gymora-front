@@ -95,6 +95,92 @@ textarea {
 	outline-offset: 3px;
 }
 
+.lp-query-state {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+	margin: 20px 0;
+	padding: 16px 18px;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 14px;
+	background: rgba(255, 255, 255, 0.025);
+	font-family: 'Hanken Grotesk', sans-serif;
+	color: #dce8e8;
+}
+
+.lp-query-state--error {
+	border-color: rgba(255, 138, 138, 0.26);
+	background: rgba(255, 55, 95, 0.055);
+}
+
+.lp-query-state--refresh {
+	justify-content: center;
+	padding: 10px 14px;
+	margin: 0 0 14px;
+	font-size: 13px;
+	color: rgba(220, 232, 232, 0.68);
+}
+
+.lp-query-state--initial {
+	justify-content: center;
+	min-height: 78px;
+	color: rgba(220, 232, 232, 0.68);
+}
+
+.lp-query-section {
+	min-height: 150px;
+}
+
+.lp-query-state-mark {
+	display: grid;
+	place-items: center;
+	width: 28px;
+	height: 28px;
+	flex: none;
+	border: 1px solid rgba(255, 138, 138, 0.45);
+	border-radius: 50%;
+	color: #ff8a8a;
+	font-family: 'JetBrains Mono', monospace;
+	font-weight: 800;
+}
+
+.lp-query-state-copy {
+	min-width: 0;
+	flex: 1;
+}
+
+.lp-query-state-copy strong {
+	display: block;
+	font-size: 14px;
+	font-weight: 700;
+}
+
+.lp-query-state-copy p {
+	margin: 4px 0 0;
+	font-size: 13px;
+	line-height: 1.45;
+	color: rgba(220, 232, 232, 0.62);
+}
+
+.lp-query-state-retry {
+	flex: none;
+	padding: 9px 15px;
+	font-size: 12px;
+}
+
+.lp-query-state-spinner {
+	width: 13px;
+	height: 13px;
+	border: 2px solid rgba(0, 220, 229, 0.22);
+	border-top-color: #00dce5;
+	border-radius: 50%;
+	animation: lpQuerySpin 0.75s linear infinite;
+}
+
+@keyframes lpQuerySpin {
+	to { transform: rotate(360deg); }
+}
+
 @media (prefers-reduced-motion: reduce) {
 	*,
 	*::before,
@@ -107,6 +193,15 @@ textarea {
 }
 
 @media (max-width: 640px) {
+	.lp-query-state {
+		align-items: flex-start;
+		flex-wrap: wrap;
+	}
+
+	.lp-query-state-retry {
+		margin-left: 42px;
+	}
+
 	input,
 	select,
 	textarea {

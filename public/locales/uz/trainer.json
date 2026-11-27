@@ -23,6 +23,7 @@
 			"openProfile": "{{name}} profilini ochish"
 		},
 		"empty": {
+			"status": "Murabbiylar topilmadi",
 			"label": "Natija yo'q",
 			"title": "Bu qidiruvga mos murabbiy topilmadi.",
 			"hint": "Boshqa ism yoki kalit so'zni sinab ko'ring."

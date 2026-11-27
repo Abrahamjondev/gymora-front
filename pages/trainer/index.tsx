@@ -8,6 +8,7 @@ import withLayoutBasic from '../../libs/components/layout/LayoutBasic';
 import { Member } from '../../libs/types/member/member';
 import { Direction } from '../../libs/enums/common.enum';
 import LikeButton from '../../libs/components/common/LikeButton';
+import QueryState from '../../libs/components/common/QueryState';
 import FilterSelect from '../../libs/components/common/FilterSelect';
 import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
 import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
@@ -43,6 +44,8 @@ const TRAINER_DEFAULT_INPUT: TrainersInquiry = {
 	search: {},
 };
 
+const TRAINER_SORTS = ['memberRank', 'memberLikes', 'memberViews', 'createdAt'] as const;
+
 const TrainerList: NextPage = () => {
 	const device = useDeviceDetect();
 	const { t } = useTranslation('trainer');
@@ -50,7 +53,10 @@ const TrainerList: NextPage = () => {
 	const user = useReactiveVar(userVar);
 	const [trainers, setTrainers] = useState<Member[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<TrainersInquiry>(TRAINER_DEFAULT_INPUT, '/trainer');
+	const [searchFilter, setSearchFilter] = useUrlFilter<TrainersInquiry>(TRAINER_DEFAULT_INPUT, '/trainer', {
+		allowedSorts: TRAINER_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 
 	// Sort control derived from the URL-synced filter so a shared link / refresh reflects it.
@@ -60,6 +66,8 @@ const TrainerList: NextPage = () => {
 	const {
 		loading,
 		data,
+		error,
+		refetch,
 	} = useQuery(GET_TRAINER_MEMBERS, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
@@ -176,6 +184,8 @@ const TrainerList: NextPage = () => {
 						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.topRanked')} onChange={sortHandler} />
 					</div>
 				</div>
+
+				<QueryState loading={loading} error={error} hasData={trainers.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Trainer Grid */}
 				<div className={`wl-data-shell${loading && trainers.length ? ' is-fetching' : ''}`} aria-busy={loading}>

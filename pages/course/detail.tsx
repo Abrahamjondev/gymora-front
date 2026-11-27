@@ -17,6 +17,7 @@ import { userVar } from '../../apollo/store';
 import VideoPlayer from '../../libs/components/common/VideoPlayer';
 import LikeButton from '../../libs/components/common/LikeButton';
 import { sweetMixinErrorAlert, sweetMixinSuccessAlert } from '../../libs/sweetAlert';
+import QueryState from '../../libs/components/common/QueryState';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: { ...(await serverSideTranslations(locale, ['common', 'program', 'enums'])) },
@@ -66,7 +67,7 @@ const CourseDetail: NextPage = () => {
 		router.push({ pathname: router.pathname, query }, undefined, { shallow: true });
 	};
 
-	const { loading, refetch } = useQuery(GET_COURSE, {
+	const { loading, error, refetch } = useQuery(GET_COURSE, {
 		fetchPolicy: 'network-only',
 		variables: { input: courseId },
 		skip: !courseId,
@@ -227,6 +228,16 @@ const CourseDetail: NextPage = () => {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
+			</Stack>
+		);
+	}
+
+	if (error) {
+		return (
+			<Stack sx={{ justifyContent: 'center', width: '100%', minHeight: '70vh', background: '#0d0d0e' }}>
+				<div className="lp-container">
+					<QueryState error={error} onRetry={() => void refetch({ input: courseId })} />
+				</div>
 			</Stack>
 		);
 	}

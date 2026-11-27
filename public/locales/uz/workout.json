@@ -18,6 +18,7 @@
 		"activeLabel": "Faol:",
 		"kcal": "{{count}} KKAL",
 		"empty": {
+			"status": "Protokollar topilmadi",
 			"title": "Bu protokolga mos natija topilmadi.",
 			"subtitle": "Boshqa mushak guruhi, daraja yoki qidiruv so'zini sinab ko'ring."
 		}

@@ -51,7 +51,15 @@
 		"post": "Yuborish",
 		"backToTop": "Yuqoriga",
 		"like": "Yoqdi",
-		"liked": "Yoqdi"
+		"liked": "Yoqdi",
+		"sortBy": "Natijalarni saralash",
+		"clearSearch": "Qidiruvni tozalash",
+		"openItem": "Ochish: {{title}}"
+	},
+	"filters": {
+		"level": "Daraja bo'yicha filtr",
+		"muscle": "Mushak guruhi bo'yicha filtr",
+		"category": "Kategoriya bo'yicha filtr"
 	},
 	"stats": {
 		"views": "ko'rishlar",
@@ -79,6 +87,13 @@
 	"empty": {
 		"noResults": "Hech narsa topilmadi",
 		"tryAdjusting": "Filtr yoki qidiruvni o'zgartirib ko'ring."
+	},
+	"query": {
+		"errorTitle": "Ma'lumotlarni yuklab bo'lmadi.",
+		"errorHint": "Internetni tekshirib, qayta urinib ko'ring.",
+		"retry": "Qayta urinish",
+		"loading": "Ma'lumotlar yuklanmoqda...",
+		"refreshing": "Natijalar yangilanmoqda..."
 	},
 	"videoPlayer": {
 		"title": "Video"

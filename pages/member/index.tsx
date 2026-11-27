@@ -23,6 +23,7 @@ import { Workout } from '../../libs/types/workout/workout';
 import { T } from '../../libs/types/common';
 import LikeButton from '../../libs/components/common/LikeButton';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import QueryState from '../../libs/components/common/QueryState';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: {
@@ -55,7 +56,7 @@ const MemberPage: NextPage = () => {
 	const [unsubscribeMutation] = useMutation(UNSUBSCRIBE);
 	const [likeTargetMember] = useMutation(LIKE_TARGET_MEMBER);
 
-	const { loading: memberLoading, refetch: memberRefetch } = useQuery(GET_MEMBER, {
+	const { loading: memberLoading, error: memberError, refetch: memberRefetch } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'network-only',
 		variables: { input: memberId },
 		skip: !memberId,
@@ -160,6 +161,16 @@ const MemberPage: NextPage = () => {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
+			</Stack>
+		);
+	}
+
+	if (memberError) {
+		return (
+			<Stack sx={{ justifyContent: 'center', width: '100%', minHeight: '70vh', background: '#0d0d0e' }}>
+				<div className="lp-container">
+					<QueryState error={memberError} onRetry={() => void memberRefetch({ input: memberId })} />
+				</div>
 			</Stack>
 		);
 	}

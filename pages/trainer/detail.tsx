@@ -29,6 +29,7 @@ import { Workout } from '../../libs/types/workout/workout';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
 import { sweetErrorHandling, sweetMixinErrorAlert, sweetMixinSuccessAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
+import QueryState from '../../libs/components/common/QueryState';
 
 export const getStaticProps = async ({ locale }: any) => ({
 	props: { ...(await serverSideTranslations(locale, ['common', 'trainer', 'enums'])) },
@@ -72,7 +73,7 @@ const TrainerDetail: NextPage = () => {
 	const [peopleTab, setPeopleTab] = useState<'followers' | 'followings'>('followers');
 
 	/** APOLLO **/
-	const { loading: memberLoading, refetch: memberRefetch } = useQuery(GET_MEMBER, {
+	const { loading: memberLoading, error: memberError, refetch: memberRefetch } = useQuery(GET_MEMBER, {
 		fetchPolicy: 'network-only',
 		variables: { input: memberId },
 		skip: !memberId,
@@ -80,7 +81,7 @@ const TrainerDetail: NextPage = () => {
 			if (d?.getMember) setMember(d.getMember);
 		},
 	});
-	const { loading: trainerLoading } = useQuery(GET_TRAINER_BY_MEMBER_ID, {
+	const { loading: trainerLoading, error: trainerError, refetch: trainerRefetch } = useQuery(GET_TRAINER_BY_MEMBER_ID, {
 		fetchPolicy: 'network-only',
 		variables: { input: memberId },
 		skip: !memberId,
@@ -206,6 +207,22 @@ const TrainerDetail: NextPage = () => {
 		return (
 			<Stack sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: '100%', height: '100vh', background: '#0d0d0e' }}>
 				<CircularProgress size={'4rem'} sx={{ color: '#00dce5' }} />
+			</Stack>
+		);
+	}
+
+	if (memberError || trainerError) {
+		return (
+			<Stack sx={{ justifyContent: 'center', width: '100%', minHeight: '70vh', background: '#0d0d0e' }}>
+				<div className="lp-container">
+					<QueryState
+						error={memberError || trainerError}
+						onRetry={() => {
+							void memberRefetch({ input: memberId });
+							void trainerRefetch({ input: memberId });
+						}}
+					/>
+				</div>
 			</Stack>
 		);
 	}

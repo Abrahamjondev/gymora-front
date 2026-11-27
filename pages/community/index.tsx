@@ -20,6 +20,7 @@ import { Messages, REACT_APP_API_URL, appLocale } from '../../libs/config';
 import { sweetMixinErrorAlert, sweetTopSmallSuccessAlert } from '../../libs/sweetAlert';
 import { userVar } from '../../apollo/store';
 import { notifyMember } from '../../libs/notify';
+import QueryState from '../../libs/components/common/QueryState';
 import FilterSelect from '../../libs/components/common/FilterSelect';
 import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
 import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
@@ -49,6 +50,8 @@ const COMMUNITY_DEFAULT_INPUT: BoardArticlesInquiry = {
 	search: {},
 };
 
+const COMMUNITY_SORTS = ['createdAt', 'articleViews', 'articleLikes'] as const;
+
 const categoryAccent: Record<string, string> = {
 	FITNESS_TIPS: '#00dce5',
 	NUTRITION: '#ffb77f',
@@ -74,7 +77,10 @@ const Community: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const user = useReactiveVar(userVar);
-	const [searchCommunity, setSearchCommunity] = useUrlFilter<BoardArticlesInquiry>(COMMUNITY_DEFAULT_INPUT, '/community');
+	const [searchCommunity, setSearchCommunity] = useUrlFilter<BoardArticlesInquiry>(COMMUNITY_DEFAULT_INPUT, '/community', {
+		allowedSorts: COMMUNITY_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [boardArticles, setBoardArticles] = useState<BoardArticle[]>([]);
 	const [totalCount, setTotalCount] = useState<number>(0);
 
@@ -84,6 +90,8 @@ const Community: NextPage = () => {
 	const {
 		loading,
 		data,
+		error,
+		refetch: boardArticlesRefetch,
 	} = useQuery(GET_BOARD_ARTICLES, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: searchCommunity },
@@ -212,6 +220,8 @@ const Community: NextPage = () => {
 						<FilterSelect value={activeSort} options={sortOptions} ariaLabel={t('list.sort.newest')} onChange={sortHandler} />
 					</div>
 				</div>
+
+				<QueryState loading={loading} error={error} hasData={boardArticles.length > 0} onRetry={() => void boardArticlesRefetch({ input: searchCommunity })} />
 
 				{/* Articles */}
 				<div className={`wl-data-shell${loading && boardArticles.length ? ' is-fetching' : ''}`} aria-busy={loading}>

@@ -15,6 +15,7 @@ import { useTranslation } from 'next-i18next';
 import { useQuery } from '@apollo/client';
 import { GET_COURSES } from '../../apollo/user/query';
 import { REACT_APP_API_URL } from '../../libs/config';
+import QueryState from '../../libs/components/common/QueryState';
 import FilterSelect from '../../libs/components/common/FilterSelect';
 import DataLoadingOverlay from '../../libs/components/common/DataLoadingOverlay';
 import ContentSkeletons from '../../libs/components/common/ContentSkeletons';
@@ -43,13 +44,18 @@ const COURSE_DEFAULT_INPUT: CoursesInquiry = {
 	search: {},
 };
 
+const COURSE_SORTS = ['courseRank', 'courseRating', 'coursePrice', 'createdAt'] as const;
+
 const CourseList: NextPage = () => {
 	const device = useDeviceDetect();
 	const router = useRouter();
 	const { t } = useTranslation('program');
 	const [courses, setCourses] = useState<Course[]>([]);
 	const [total, setTotal] = useState<number>(0);
-	const [searchFilter, setSearchFilter] = useUrlFilter<CoursesInquiry>(COURSE_DEFAULT_INPUT, '/course');
+	const [searchFilter, setSearchFilter] = useUrlFilter<CoursesInquiry>(COURSE_DEFAULT_INPUT, '/course', {
+		allowedSorts: COURSE_SORTS,
+		scrollTarget: 'list-results-start',
+	});
 	const [searchText, setSearchText] = useState<string>('');
 
 	// View-state derived from the URL-synced filter so a shared link / refresh
@@ -59,7 +65,7 @@ const CourseList: NextPage = () => {
 	const activeSort = searchFilter.sort ?? 'courseRank';
 
 	/** APOLLO REQUESTS **/
-	const { loading, data } = useQuery(GET_COURSES, {
+	const { loading, data, error, refetch } = useQuery(GET_COURSES, {
 		fetchPolicy: 'cache-and-network',
 		variables: { input: searchFilter },
 		notifyOnNetworkStatusChange: true,
@@ -220,6 +226,8 @@ const CourseList: NextPage = () => {
 						</button>
 					</div>
 				)}
+
+				<QueryState loading={loading} error={error} hasData={courses.length > 0} onRetry={() => void refetch({ input: searchFilter })} />
 
 				{/* Program Grid */}
 				<div className={`wl-data-shell${loading && courses.length ? ' is-fetching' : ''}`} aria-busy={loading}>
